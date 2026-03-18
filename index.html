@@ -178,7 +178,7 @@ import {
   signOut, onAuthStateChanged, updateProfile
 } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
 import {
-  getFirestore, collection, doc, addDoc, getDoc, getDocs,
+  getFirestore, collection, doc, addDoc, setDoc, getDoc, getDocs,
   updateDoc, deleteDoc, query, where, orderBy, serverTimestamp, writeBatch
 } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
@@ -1039,15 +1039,170 @@ window.confirmDelete = confirmDelete;
 window.toast = toast;
 
 // ══════════════════════════════════════════════
+//  VEGAS NOIR SEED — only runs for the owner UID
+//  once, ever. Safe to leave in for other users.
+// ══════════════════════════════════════════════
+const OWNER_UID     = 'vCXND7JhhscwvGoWS4kztBBDmbk2';
+const VEGAS_SEED_ID = 'seed-vegas-noir-v1';
+
+async function maybeSeedVegasNoir() {
+  if (currentUser.uid !== OWNER_UID) return;
+  // Check if already seeded
+  const existing = await fsGet('projects', VEGAS_SEED_ID);
+  if (existing) return;
+
+  const pid = VEGAS_SEED_ID;
+  const t   = serverTimestamp;
+
+  // ── Project ──
+  await setDoc(userDoc('projects', pid), {
+    name: 'Vegas Noir', colorLabel: 'gold',
+    description: 'A weary Las Vegas bartender, framed for murder, goes on the run with a high-profile escort who holds the key to a decade-old mystery. Neo-noir / thriller / dark comedy. 5-Act structure.',
+    tags: ['neo-noir','thriller','dark comedy','screenplay'],
+    createdAt: t(), updatedAt: t()
+  });
+
+  // ── Characters ──
+  const chars = [
+    { _id:'buck',    name:'Jason "Buck" Buchanan III',  age:'Early 30s', pronouns:'he/him', occupation:'Bartender / The Scapegoat',        traits:'Observant, cynical, secretly hopeful. A listener by trade. Dry wit, high tolerance for chaos. Handsome but perpetually tired. Calloused bar hands.',                                                                                            backstory:"Grew up in local Vegas. Saving tips in a hidden floor safe for years. Wants to move to the Pacific Northwest — he calls it the Quiet. Drives a 2003 Ford Taurus with a finicky starter requiring percussive maintenance. Holds a Favor from The Mayor earned by handling an assault on The Mayor's daughter with total discretion." },
+    { _id:'nina',    name:'Nina (Real Name: Natalie)',   age:'Late 20s',  pronouns:'she/her',occupation:'High-End Escort / Former Jazz Singer', traits:'Guarded, sharp-tongued, pragmatic. Trusts no one. Chameleonic — equally at ease with billionaires or street thugs. Stunning, with a hardness in her eyes that betrays exhaustion.',                                                   backstory:"Came to Vegas 10 years ago as a jazz singer. Renamed herself after Nina Simone. Witnessed Sal murder her idol Julianna Vane. Became a high-end escort to survive. She is Sal's primary loose end." },
+    { _id:'sal',     name:'Salvatore "Sal" Moretti',    age:'60s',       pronouns:'he/him', occupation:'Mob Boss / Corporate Criminal',      traits:'Grandfatherly, polished, soft-spoken. Obsessively orderly. Uses corporate euphemisms: "resolve the liability" not "kill him."',                                                                                                          backstory:'Transitioning from mob to legitimate business via the Paradiso Hotel. Murdered jazz singer Julianna Vane 10 years ago and buried her under the Paradiso foundation. Frames Buck for the murder of Elena.' },
+    { _id:'dej',     name:'Detective Charles DeJohnette',age:'40s-50s',  pronouns:'he/him', occupation:'LVPD Detective',                      traits:'Cynical, weary, conformist. Rumpled suit, looks like he has not slept in a week. Peers call him De-John, De-Joan, or De-Jentti interchangeably.',                                                                                          backstory:"Blames himself for a rookie's death during the original Julianna Vane investigation. Has quietly re-opened the cold case. Has a parasitic truce with Sal." },
+    { _id:'mayor',   name:'The Mayor',                  age:'Unknown',   pronouns:'he/him', occupation:'Underground Crime Boss',              traits:'Big, boisterous, dangerous. Flashy tailored suits. Always holding court in a booth. Calls Buck "The Mechanic" dismissively.',                                                                                                           backstory:"Controls the underground. Owns the construction unions that built the Paradiso. Despises Sal's legitimacy play. Thrives on people owing him things." },
+    { _id:'yuri',    name:'Yuri',                       age:'Unknown',   pronouns:'he/him', occupation:"Laundromat Owner / Gatekeeper",       traits:"Eastern European. Always in a tracksuit. Guards the hidden entrance to The Mayor's club. Has a documented weakness for showgirls.",                                                                                                   backstory:"Runs the laundromat as a front for The Mayor's money laundering. Diamond stole his watch once. He forgave her." },
+    { _id:'renzo',   name:'Lorenzo "Renzo" Musco',      age:'Unknown',   pronouns:'he/him', occupation:'Drug Dealer / Aspiring Mastermind',   traits:'Loud clothes, too much cologne. Delusional about his own competence. Desperately wants to be a Player.',                                                                                                                             backstory:"Cousin to Lenny and Dante. His crew's van is mistaken for federal surveillance by Sal." },
+    { _id:'lenny',   name:'Lorenzo "Lenny" Musco',      age:'Unknown',   pronouns:'he/him', occupation:'Muscle',                              traits:'Massive. Loyal to Renzo despite all available evidence.',                                                                                                                                                                            backstory:'Arrested at the Paradiso.' },
+    { _id:'dante',   name:'Dante Musco',                age:'Unknown',   pronouns:'he/him', occupation:'Muscle',                              traits:'Large, loyal, incurious about consequences.',                                                                                                                                                                                       backstory:'Arrested at the Paradiso.' },
+    { _id:'diamond', name:'Diamond',                    age:'Unknown',   pronouns:'she/her',occupation:'Fremont Street Showgirl',              traits:"The Face of the showgirl duo. All charm. Runs the honey trap. Possibly still has Yuri's Rolex.",                                                                                                                                    backstory:"One of Nina's closest allies. Knows the storm tunnels well." },
+    { _id:'crystal', name:'Crystal',                    age:'Unknown',   pronouns:'she/her',occupation:'Fremont Street Showgirl',              traits:'The Muscle. Protector, enforcer, straight-talker. When Crystal locks a door, it stays locked.',                                                                                                                                    backstory:"Part of Nina's sisterhood. Warns the group about the storm tunnels." },
+    { _id:'gary',    name:'Gary',                       age:'Unknown',   pronouns:'he/him', occupation:'Tourist / The Fall Guy',               traits:'Beige cargo shorts. Fanny pack. Sunburned. Well-meaning in a way that makes everything worse.',                                                                                                                                     backstory:"Shows a cop Buck's photo while complaining about a ruined vacation photo — accidentally escalating the manhunt. Arrested as a heist accomplice." },
+    { _id:'brenda',  name:'Brenda',                     age:'Unknown',   pronouns:'she/her',occupation:'Tourist / The Fall Guy',               traits:"Gary's partner in accidental chaos.",                                                                                                                                                                                              backstory:'Wandered through three crime scenes looking for a buffet. Arrested at the Paradiso.' },
+  ];
+  for (const c of chars) {
+    const {_id, ...data} = c;
+    await setDoc(userDoc('characters', pid+'-'+_id), { storyProjectId:pid, ...data, createdAt:t(), updatedAt:t() });
+  }
+
+  // ── Locations ──
+  const locs = [
+    { _id:'cage',     name:'The Cage (Bar)',                   description:'An old Vegas dive bar. Dark, sticky, honest.',                                                                                                                                         atmosphere:'Lived-in, amber-lit, the smell of spilled beer and lime juice.',                                     storyRole:"Buck's workplace. Elena's body discovered here." },
+    { _id:'paradiso', name:'The Paradiso Hotel — Grand Lobby', description:'A nearly complete mega-resort. Pristine, empty, enormous. All white marble and harsh LED lighting.',                                                                                   atmosphere:'Uncanny. Too clean. The hum of air systems and nothing else.',                                       storyRole:'Act III convergence point. All four plot threads collide here.' },
+    { _id:'sub',      name:'The Paradiso Sub-Levels',          description:'Raw concrete bowels beneath the Paradiso. Industrial, unfinished.',                                                                                                                    atmosphere:'Cold, damp, the smell of concrete and old secrets.',                                                 storyRole:"Where Sal buried Julianna Vane. Buck and Nina's destination." },
+    { _id:'lounge',   name:"The Mayor's Lounge",               description:'A gilded bunker. Dark, smoky, red velvet booths, gold accents.',                                                                                                                       atmosphere:'Saxophone through the walls, shadows with purpose.',                                                 storyRole:"The Mayor's court. Where Buck calls in the Favor and the counter-plan is formed." },
+    { _id:'laundro',  name:'The Laundromat',                   description:"Front for The Mayor's money laundering. Hidden door behind a commercial dryer on a track.",                                                                                            atmosphere:'Fluorescent up front, secretive in the back.',                                                       storyRole:'Gateway to The Mayor. Site of the costume change.' },
+    { _id:'apt',      name:'The Showgirl Apartment',           description:'Cramped, dingy. Smells of hairspray and ramen.',                                                                                                                                       atmosphere:'Chaotic warmth. A fortress by necessity.',                                                           storyRole:"Safe house for Act II. Where Crystal locks Buck inside." },
+    { _id:'tunnels',  name:'The Las Vegas Storm Tunnels',      description:'Dark, wet, graffiti-covered storm drains.',                                                                                                                                            atmosphere:'Oppressive. Every sound echoes.',                                                                    storyRole:'Escape route. Site of the hostile inhabitant encounter.' },
+    { _id:'fremont',  name:'Fremont Street Experience',        description:'The older, louder cousin of the Strip.',                                                                                                                                               atmosphere:'The Glitz and the Grit coexisting uneasily.',                                                        storyRole:"Where Buck finds Nina. Where Gary escalates the manhunt." },
+  ];
+  for (const l of locs) {
+    const {_id, ...data} = l;
+    await setDoc(userDoc('locations', pid+'-'+_id), { storyProjectId:pid, ...data, createdAt:t(), updatedAt:t() });
+  }
+
+  // ── World ──
+  await setDoc(userDoc('worlds', pid+'-world'), {
+    storyProjectId: pid,
+    moodAndTone:   'Neo-noir with dark comedy threading. Two sonic worlds: The Glitz (EDM, slot chimes, harsh LEDs) vs The Jazz (analog warmth, saxophone, shadows, gritty truth).',
+    lawsOfPhysics: 'Heightened realism. Coincidences compound. Comic timing is physics. A 2003 Ford Taurus with a finicky starter is a load-bearing plot device.',
+    society:       'Las Vegas as a feudal system. Sal represents corporate crime going legitimate. The Mayor represents the underground that refuses to die. Tourists exist in a parallel universe that keeps crashing into the main plot.',
+    history:       "Ten years prior: Sal murdered jazz singer Julianna Vane and buried her under the Paradiso foundation. DeJohnette botched the investigation — a rookie died. Nina witnessed the murder.",
+    technology:    'Contemporary. Burner phones. BOLO radio dispatches. A van that looks exactly like a federal surveillance vehicle, which it is not.',
+    conflicts:     "A-Plot: Sal frames Buck for Elena's murder. B-Plot: DeJohnette re-opens the Julianna Vane cold case. C-Plot: Renzo targets the Paradiso soft opening; Sal assumes it is a federal sting. D-Plot: Gary and Brenda make everything worse and get arrested for a crime they did not commit.",
+    createdAt: t(), updatedAt: t()
+  });
+
+  // ── Scenes ──
+  const scenes = [
+    { _id:'s01', seq:1,  title:'Card 01 — The Last Call',              description:"Buck wants to close up The Cage. Renzo wants to brag. Renzo pitches Buck on the Paradiso heist. Buck declines.",                                                                                                        locationId:pid+'-cage',    characterIds:[pid+'-buck',pid+'-renzo'] },
+    { _id:'s02', seq:2,  title:'Card 02 — The Street Hustle',          description:'Renzo works the Strip. He encounters Gary and Brenda, pitches them drugs, they politely decline but keep his card.',                                                                                                     locationId:pid+'-fremont', characterIds:[pid+'-renzo',pid+'-gary',pid+'-brenda'] },
+    { _id:'s03', seq:3,  title:'Card 03 — The Alley',                  description:"Buck steps out through the alley after closing. He notices a black SUV idling. He ignores it.",                                                                                                                         locationId:pid+'-cage',    characterIds:[pid+'-buck'] },
+    { _id:'s04', seq:4,  title:'Card 04 — The Discovery',              description:"Buck finds Elena's body in the bar bathroom.",                                                                                                                                                                           locationId:pid+'-cage',    characterIds:[pid+'-buck'] },
+    { _id:'s05', seq:5,  title:'Card 05 — The Frame',                  description:"Sal's crew sets the scene. Buck is photographed with the body. The lie is constructed.",                                                                                                                                locationId:pid+'-cage',    characterIds:[pid+'-buck',pid+'-sal'] },
+    { _id:'s06', seq:6,  title:'Card 06 — The Escape',                 description:"Buck fights the Taurus's finicky starter. Percussive maintenance. Three attempts. He escapes.",                                                                                                                         locationId:pid+'-cage',    characterIds:[pid+'-buck'] },
+    { _id:'s07', seq:7,  title:'Card 07 — The Descent',                description:'Buck merges into Fremont Street chaos. Paranoia sets in. Every face is a threat.',                                                                                                                                      locationId:pid+'-fremont', characterIds:[pid+'-buck'] },
+    { _id:'s08', seq:8,  title:'Card 08 — The Siren',                  description:'Buck spots Nina performing karaoke at a dive bar. Recognizes her from information in the back room. Decides to tail her.',                                                                                              locationId:pid+'-fremont', characterIds:[pid+'-buck',pid+'-nina'] },
+    { _id:'s09', seq:9,  title:'Card 09 — The Clean Up',               description:"DeJohnette surveys the crime scene at The Cage. He knows the official story is wrong. Pockets a missed clue.",                                                                                                         locationId:pid+'-cage',    characterIds:[pid+'-dej'] },
+    { _id:'s10', seq:10, title:'Card 10 — The Tail',                   description:'Buck follows Nina through Fremont Street. She wants to go home. He cannot lose her.',                                                                                                                                   locationId:pid+'-fremont', characterIds:[pid+'-buck',pid+'-nina'] },
+    { _id:'s11', seq:11, title:'Card 11 — The Photo Op',               description:"Nina stops to talk with Diamond and Crystal. Gary and Brenda intercept Buck for a tourist photo. Gary gets grabby with Nina. Buck de-escalates in bartender mode — earning Nina's attention.",                          locationId:pid+'-fremont', characterIds:[pid+'-buck',pid+'-nina',pid+'-diamond',pid+'-crystal',pid+'-gary',pid+'-brenda'] },
+    { _id:'s12', seq:12, title:'Card 12 — The Pitch',                  description:'Buck corners Nina in a side alley. Drops the bomb: he knows about Julianna Vane. Her anonymity evaporates. She takes the lead.',                                                                                       locationId:pid+'-fremont', characterIds:[pid+'-buck',pid+'-nina'] },
+    { _id:'s13', seq:13, title:'Card 13 — The Safe House',             description:"Nina leads Buck to the showgirl apartment. Room goes hostile. Crystal locks the deadbolt with Buck inside.",                                                                                                             locationId:pid+'-apt',     characterIds:[pid+'-buck',pid+'-nina',pid+'-diamond',pid+'-crystal'] },
+    { _id:'s14', seq:14, title:'Card 14 — The Interrogation',          description:"Nina pushes Buck into a chair. He explains the frame job. He mentions Elena. The room shifts — Elena was their friend. Nina realizes she is next.",                                                                      locationId:pid+'-apt',     characterIds:[pid+'-buck',pid+'-nina',pid+'-diamond',pid+'-crystal'] },
+    { _id:'s15', seq:15, title:'Card 15 — The Warm Engine',            description:"DeJohnette finds Buck's 2003 Taurus in a dark parking lot corner. Places his hand on the hood. Still warm. Calls for a silent perimeter.",                                                                              locationId:pid+'-fremont', characterIds:[pid+'-dej'] },
+    { _id:'s16', seq:16, title:'Card 16 — The Accidental Snitch',      description:"Gary shows a cop the blurry photo of Buck, complaining about a rude guy. The cop recognizes Buck from the BOLO. Gary and Brenda look proud.",                                                                           locationId:pid+'-fremont', characterIds:[pid+'-gary',pid+'-brenda',pid+'-dej'] },
+    { _id:'s17', seq:17, title:'Card 17 — The Exit Strategy',          description:"The group is boxed in. Buck pitches The Mayor and explains The Favor. Diamond suggests the tunnels. Crystal warns them what is down there.",                                                                              locationId:pid+'-apt',     characterIds:[pid+'-buck',pid+'-nina',pid+'-diamond',pid+'-crystal'] },
+    { _id:'s18', seq:18, title:'Card 18 — The Toll',                   description:'The group descends into the storm tunnels. Wrong turn. A hostile inhabitant corners them with a knife.',                                                                                                                 locationId:pid+'-tunnels', characterIds:[pid+'-buck',pid+'-nina',pid+'-diamond',pid+'-crystal'] },
+    { _id:'s19', seq:19, title:'Card 19 — The Echo',                   description:'A gunshot echoes down the tunnel — police raid. The inhabitant flees. The group sprints deeper into the dark.',                                                                                                          locationId:pid+'-tunnels', characterIds:[pid+'-buck',pid+'-nina',pid+'-diamond',pid+'-crystal'] },
+    { _id:'s20', seq:20, title:'Card 20 — The Golden Cage',            description:"Sal's security reports a van outside the Paradiso with three men. Sal assumes federal surveillance. He orders his security to stand down.",                                                                               locationId:pid+'-paradiso',characterIds:[pid+'-sal'] },
+    { _id:'s21', seq:21, title:'Card 21 — The Routine',                description:"The group emerges from the tunnels smelling terrible. Diamond runs the honey trap on Yuri. Crystal runs good cop/bad cop. Yuri lets them in.",                                                                           locationId:pid+'-laundro', characterIds:[pid+'-buck',pid+'-nina',pid+'-diamond',pid+'-crystal',pid+'-yuri'] },
+    { _id:'s22', seq:22, title:'Card 22 — The Rinse Cycle',            description:"Yuri tells them they can't see The Mayor looking like that. They raid the unclaimed dry cleaning rack. Buck finds an ill-fitting suit. Nina finds a trench coat. The hidden door is revealed.",                         locationId:pid+'-laundro', characterIds:[pid+'-buck',pid+'-nina',pid+'-diamond',pid+'-crystal',pid+'-yuri'] },
+    { _id:'s23', seq:23, title:'Card 23 — The Gilded Bunker',          description:"The group enters through the hidden door. They believe they are unnoticed. Two massive bouncers materialize from the shadows before they take three steps.",                                                              locationId:pid+'-lounge',  characterIds:[pid+'-buck',pid+'-nina',pid+'-diamond',pid+'-crystal',pid+'-mayor'] },
+    { _id:'s24', seq:24, title:'Card 24 — The Court of Public Opinion',description:"The Mayor greets Buck: 'Well, if it isn't The Mechanic.' Offers a clean vanish. Buck refuses. Nina drops the bomb: Sal killed Julianna Vane. The table goes silent.",                                                  locationId:pid+'-lounge',  characterIds:[pid+'-buck',pid+'-nina',pid+'-mayor'] },
+    { _id:'s25', seq:25, title:'Card 25 — The Enemy of My Enemy',      description:"The Mayor connects the dots: Vane's body destroys Sal's legitimate legacy. The soft opening is tomorrow — chaos as cover. He can get them inside.",                                                                      locationId:pid+'-lounge',  characterIds:[pid+'-buck',pid+'-nina',pid+'-mayor'] },
+    { _id:'s26', seq:26, title:'Card 26 — The Armory',                 description:"The Mayor equips the group with union credentials and catering uniforms. Hands Buck a burner: find the body, call me, I call the press. If Sal finds you first — I never saw you.",                                    locationId:pid+'-lounge',  characterIds:[pid+'-buck',pid+'-nina',pid+'-diamond',pid+'-crystal',pid+'-mayor'] },
+  ];
+  for (const sc of scenes) {
+    const {_id, seq, ...data} = sc;
+    await setDoc(userDoc('scenes', pid+'-'+_id), { storyProjectId:pid, sequenceNumber:seq, ...data, createdAt:t(), updatedAt:t() });
+  }
+
+  // ── Outline ──
+  const outlineItems = [
+    {order:0,  level:1, text:'ACT I — EXPOSITION'},
+    {order:1,  level:2, text:'Beat 1: Buck closes The Cage'},
+    {order:2,  level:2, text:'Beat 2: Renzo pitches Buck (fails). Meets Gary and Brenda.'},
+    {order:3,  level:2, text:'Beat 3: Inciting Incident — Buck finds Elena'},
+    {order:4,  level:2, text:'Beat 4: Sal frames Buck. Buck runs.'},
+    {order:5,  level:1, text:'ACT II — RISING ACTION'},
+    {order:6,  level:2, text:'Beat 5: Buck finds Nina at the karaoke bar'},
+    {order:7,  level:2, text:'Beat 6: The Showgirls provide the safe house'},
+    {order:8,  level:2, text:'Beat 7: Manhunt escalates — Photo Op, Tunnels, Police Raid'},
+    {order:9,  level:2, text:'Beat 8: The Favor — Reaching The Mayor and forming the plan'},
+    {order:10, level:1, text:'ACT III — CLIMAX'},
+    {order:11, level:2, text:'Beat 9: Convergence at the Paradiso soft opening'},
+    {order:12, level:2, text:"Beat 10: Renzo's crew enters. Gary and Brenda wander in."},
+    {order:13, level:2, text:"Beat 11: Sal holds fire — mistakes Renzo's van for Feds"},
+    {order:14, level:2, text:'Beat 12: Buck and Nina find the burial site'},
+    {order:15, level:1, text:'ACT IV — FALLING ACTION'},
+    {order:16, level:2, text:'Beat 13: DeJohnette arrests Renzo, Lenny, and Dante'},
+    {order:17, level:2, text:'Beat 14: Gary and Brenda arrested as accomplices'},
+    {order:18, level:2, text:'Beat 15: Buck and Nina cornered in the basement'},
+    {order:19, level:1, text:'ACT V — RESOLUTION'},
+    {order:20, level:2, text:'Beat 16: The Leverage — Buck and Nina play their hand'},
+    {order:21, level:2, text:'Beat 17: Sal exposed. DeJohnette gets his resolution.'},
+    {order:22, level:2, text:'Beat 18: Buck and Nina escape into the desert'},
+    {order:23, level:1, text:'THEMATIC NOTE'},
+    {order:24, level:2, text:'The Jazz (truth) defeats The Glitz (artifice)'},
+    {order:25, level:2, text:'Buck gets his Quiet. Nina gets her name back.'},
+  ];
+  for (const o of outlineItems) {
+    await setDoc(userDoc('outlines', pid+'-o'+o.order), { storyProjectId:pid, ...o, createdAt:t(), updatedAt:t() });
+  }
+
+  // ── Screenplay document ──
+  await setDoc(userDoc('documents', pid+'-draft'), {
+    storyProjectId: pid,
+    title: 'Vegas Noir — Draft Script',
+    type: 'screenplay',
+    content: '<p data-type="scene-heading">FADE IN:</p><p data-type="scene-heading">INT. THE CAGE (BAR) - NIGHT</p><p data-type="action">The last dive bar on a block of dive bars. Neon beer signs buzz against the dark. The stools are sticky. The floor is honest.</p><p data-type="action">BUCK (early 30s, handsome in the way that comes from not trying) wipes down the bar with the focused indifference of a man counting down the minutes.</p><p data-type="character">RENZO</p><p data-type="dialogue">You know what your problem is, Buck?</p><p data-type="character">BUCK</p><p data-type="parenthetical">(without looking up)</p><p data-type="dialogue">I have a feeling you\'re going to tell me.</p><p data-type="character">RENZO</p><p data-type="dialogue">You got no vision. This city is full of opportunities and you\'re wiping down the same bar you\'ve been wiping down for six years.</p><p data-type="character">BUCK</p><p data-type="dialogue">Seven. We close in ten minutes, Renzo.</p><p data-type="action">Renzo slides a cocktail napkin across the bar. Crude diagram. Boxes, arrows, dollar signs.</p><p data-type="character">RENZO</p><p data-type="dialogue">The Paradiso. Soft opening. One night only. I got a crew, I got a plan—</p><p data-type="character">BUCK</p><p data-type="dialogue">No.</p><p data-type="action">Buck drops the napkin in the trash without looking at it. Turns off the bar lights one by one.</p><p data-type="character">BUCK (CONT\'D)</p><p data-type="dialogue">Goodnight, Renzo.</p><p data-type="transition">CUT TO:</p><p data-type="scene-heading">EXT. LAS VEGAS STRIP - CONTINUOUS</p><p data-type="action">Renzo pushes into the assault of the Strip. He smooths his shirt. He is undeterred. He has never been deterred by anything in his life, which is most of his problem.</p><p data-type="action">Ahead: GARY and BRENDA. Beige cargo shorts. Fanny packs. Sunburned. Studying a paper map.</p><p data-type="character">RENZO</p><p data-type="parenthetical">(pivoting seamlessly)</p><p data-type="dialogue">Folks! You look like people who know how to have a good time.</p><p data-type="character">GARY</p><p data-type="dialogue">Oh! We\'re from Akron.</p><p data-type="character">BRENDA</p><p data-type="dialogue">We don\'t do drugs, sweetheart.</p><p data-type="character">GARY</p><p data-type="dialogue">But we appreciate the offer. Very friendly city.</p><p data-type="action">Gary accepts Renzo\'s card with both hands, like it is a gift.</p><p data-type="transition">CUT TO:</p><p data-type="scene-heading">EXT. ALLEYWAY - BEHIND THE CAGE - NIGHT</p><p data-type="action">Buck steps out the back. At the end of the alley: a black SUV, engine running. Dark windows.</p><p data-type="action">Buck looks at it. Looks away. Heads for his car.</p><p data-type="scene-heading">INT. THE CAGE (BATHROOM) - MOMENTS LATER</p><p data-type="action">Buck pushes back through the door. He forgot his keys.</p><p data-type="action">He stops. The bathroom door is open. The light is on.</p><p data-type="action">ELENA is on the floor. She is not moving.</p><p data-type="action">He takes out his phone. Then stops. In the mirror: two men in the back room shadow. One taking photographs. The other watching Buck hold his phone.</p><p data-type="character">SAL (O.S.)</p><p data-type="parenthetical">(quiet, almost gentle)</p><p data-type="dialogue">Put the phone down, son. We have a situation that needs to be... resolved.</p><p data-type="transition">CUT TO:</p><p data-type="scene-heading">EXT. ALLEYWAY - MOMENTS LATER</p><p data-type="action">Buck gets to the Taurus. Key in the ignition. Nothing.</p><p data-type="action">He hits the dash. Turns the key three times. Waits.</p><p data-type="action">Behind him: the back door swings open. A man in a dark suit steps out.</p><p data-type="action">Buck turns the key. The Taurus starts. He pulls out without headlights.</p><p data-type="transition">SMASH CUT TO:</p><p data-type="scene-heading">EXT. FREMONT STREET EXPERIENCE - NIGHT</p><p data-type="action">Buck merges into the river of people. Paranoia is a physical sensation. Every face is a variable.</p><p data-type="action">He keeps moving.</p><p data-type="transition">FADE OUT.</p>',
+    titlePage: { title:'Vegas Noir', writtenBy:'', basedOn:'Based on original material', contact:'' },
+    createdAt: t(), updatedAt: t()
+  });
+
+  console.log('Vegas Noir seeded successfully.');
+}
+
+// ══════════════════════════════════════════════
 //  AUTH STATE LISTENER — app entry point
 // ══════════════════════════════════════════════
-onAuthStateChanged(auth, user=>{
+onAuthStateChanged(auth, async user=>{
   if(user){
     currentUser = user;
     document.getElementById('auth-container').innerHTML='';
     document.getElementById('topbar').style.display='flex';
     document.getElementById('main').style.display='flex';
     document.getElementById('logo-btn').addEventListener('click',()=>navigate('home'));
+    // Seed Vegas Noir for the owner account, silently
+    await maybeSeedVegasNoir();
     navigate('home');
   } else {
     currentUser = null;
