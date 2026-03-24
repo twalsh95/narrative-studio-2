@@ -203,6 +203,17 @@
   /* Guided prompts toggle */
   .guide-toggle{font-size:12px;color:var(--primary);cursor:pointer;margin-bottom:6px;display:inline-flex;align-items:center;gap:4px;opacity:0.8;}
   .guide-toggle:hover{opacity:1;}
+  /* Outline tabs */
+  .outline-tabs{display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:20px;overflow-x:auto;}
+  .outline-tab{padding:9px 16px;font-size:13px;cursor:pointer;color:var(--fg3);border-bottom:2px solid transparent;transition:all 0.15s;white-space:nowrap;font-family:'Lora',serif;}
+  .outline-tab:hover{color:var(--fg2);}
+  .outline-tab.active{color:var(--primary);border-bottom-color:var(--primary);}
+  .outline-tab-add{padding:9px 12px;font-size:18px;cursor:pointer;color:var(--fg3);line-height:1;transition:color 0.15s;}
+  .outline-tab-add:hover{color:var(--primary);}
+  /* Draggable outline items */
+  .outline-item{cursor:grab;user-select:none;}
+  .outline-item.dragging{opacity:0.4;cursor:grabbing;}
+  .outline-item.drag-over{border-color:var(--primary);background:var(--active-bg);}
 </style>
 </head>
 <body>
@@ -957,53 +968,327 @@ async function renderWorld(container, projectId){
 }
 
 // ══════════════════════════════════════════════
-//  OUTLINE
+//  OUTLINE  (multi-outline with tabs + drag-to-reorder)
 // ══════════════════════════════════════════════
-async function renderOutline(container, projectId){
-  container.innerHTML='<div style="padding:60px;text-align:center;color:var(--fg3);">Loading…</div>';
-  const outlines = await fsQuery('outlines',where('storyProjectId','==',projectId));
-  outlines.sort((a,b)=>(a.order||0)-(b.order||0));
-  container.innerHTML='';
+
+// Story structure templates
+const STRUCTURE_TEMPLATES = {
+  'blank': { name:'Blank Outline', items:[] },
+  'three-act': { name:'Three-Act Structure', items:[
+    {text:'ACT ONE — SETUP', level:1},
+    {text:'Opening image / status quo', level:2},
+    {text:'Inciting incident', level:2},
+    {text:'Debate / refusal of the call', level:2},
+    {text:'Break into Act Two', level:2},
+    {text:'ACT TWO — CONFRONTATION', level:1},
+    {text:'New world / fun and games', level:2},
+    {text:'Midpoint shift', level:2},
+    {text:'Bad guys close in', level:2},
+    {text:'All is lost / dark night of the soul', level:2},
+    {text:'Break into Act Three', level:2},
+    {text:'ACT THREE — RESOLUTION', level:1},
+    {text:'Finale', level:2},
+    {text:'Final image', level:2},
+  ]},
+  'five-act': { name:"Five-Act (Freytag's Pyramid)", items:[
+    {text:'ACT I — EXPOSITION', level:1},
+    {text:'Establish world and protagonist', level:2},
+    {text:'Inciting incident', level:2},
+    {text:'ACT II — RISING ACTION', level:1},
+    {text:'Complications escalate', level:2},
+    {text:'Stakes raised', level:2},
+    {text:'ACT III — CLIMAX', level:1},
+    {text:'Point of no return', level:2},
+    {text:'Crisis / confrontation', level:2},
+    {text:'ACT IV — FALLING ACTION', level:1},
+    {text:'Consequences unfold', level:2},
+    {text:'Loose ends surface', level:2},
+    {text:'ACT V — RESOLUTION', level:1},
+    {text:'Denouement', level:2},
+    {text:'New equilibrium', level:2},
+  ]},
+  'heros-journey': { name:"Hero's Journey", items:[
+    {text:'1. The Ordinary World', level:1},
+    {text:'2. Call to Adventure', level:1},
+    {text:'3. Refusal of the Call', level:1},
+    {text:'4. Meeting the Mentor', level:1},
+    {text:'5. Crossing the Threshold', level:1},
+    {text:'6. Tests, Allies, Enemies', level:1},
+    {text:'7. Approach to the Inmost Cave', level:1},
+    {text:'8. The Ordeal', level:1},
+    {text:'9. The Reward', level:1},
+    {text:'10. The Road Back', level:1},
+    {text:'11. The Resurrection', level:1},
+    {text:'12. Return with the Elixir', level:1},
+  ]},
+  'save-the-cat': { name:'Save the Cat (Blake Snyder)', items:[
+    {text:'Opening image (p.1)', level:1},
+    {text:'Theme stated (p.5)', level:1},
+    {text:'Setup (pp.1–10)', level:1},
+    {text:'Catalyst (p.12)', level:1},
+    {text:'Debate (pp.12–25)', level:1},
+    {text:'Break into Two (p.25)', level:1},
+    {text:'B story (p.30)', level:1},
+    {text:'Fun and Games (pp.30–55)', level:1},
+    {text:'Midpoint (p.55)', level:1},
+    {text:'Bad guys close in (pp.55–75)', level:1},
+    {text:'All is lost (p.75)', level:1},
+    {text:'Dark night of the soul (pp.75–85)', level:1},
+    {text:'Break into Three (p.85)', level:1},
+    {text:'Finale (pp.85–110)', level:1},
+    {text:'Final image (p.110)', level:1},
+  ]},
+  'kishoten': { name:'Kishōtenketsu (4-Act)', items:[
+    {text:'KI — Introduction', level:1},
+    {text:'Establish characters and world', level:2},
+    {text:'Sow the seeds quietly', level:2},
+    {text:'SHŌ — Development', level:1},
+    {text:'Deepen what was introduced', level:2},
+    {text:'No conflict yet — enrichment', level:2},
+    {text:'TEN — Twist', level:1},
+    {text:'Unexpected turn — not a conflict, a revelation', level:2},
+    {text:'Recontextualises everything before it', level:2},
+    {text:'KETSU — Reconciliation', level:1},
+    {text:'Bring the threads together', level:2},
+    {text:'Resolution through understanding, not conquest', level:2},
+  ]},
+  'story-circle': { name:"Dan Harmon's Story Circle", items:[
+    {text:'1. A character is in a zone of comfort', level:1},
+    {text:'2. But they want something', level:1},
+    {text:'3. They enter an unfamiliar situation', level:1},
+    {text:'4. They adapt to it', level:1},
+    {text:'5. They get what they wanted', level:1},
+    {text:'6. But pay a heavy price for it', level:1},
+    {text:'7. Then return to their familiar situation', level:1},
+    {text:'8. Having changed', level:1},
+  ]},
+};
+
+// Active outline ID per project (session-only — resets to first on reload)
+const _activeOutlineId = {};
+
+async function renderOutline(container, projectId) {
+  container.innerHTML = '<div style="padding:60px;text-align:center;color:var(--fg3);">Loading…</div>';
+
+  // Load all outlines (grouped by outlineId)
+  const allItems = await fsQuery('outlines', where('storyProjectId','==',projectId));
+  // Get distinct outline groups
+  const outlineGroups = {};
+  allItems.forEach(item => {
+    const gid = item.outlineId || 'default';
+    if (!outlineGroups[gid]) outlineGroups[gid] = { id:gid, name:item.outlineName||'Outline', items:[] };
+    outlineGroups[gid].items.push(item);
+  });
+  // If no outlines exist, create a default one
+  if (Object.keys(outlineGroups).length === 0) {
+    outlineGroups['default'] = { id:'default', name:'Outline', items:[] };
+  }
+  // Sort items within each group
+  Object.values(outlineGroups).forEach(g => g.items.sort((a,b)=>(a.order||0)-(b.order||0)));
+
+  const groupList = Object.values(outlineGroups);
+  // Determine active group
+  if (!_activeOutlineId[projectId] || !outlineGroups[_activeOutlineId[projectId]]) {
+    _activeOutlineId[projectId] = groupList[0].id;
+  }
+
+  container.innerHTML = '';
   const wrap = el('div',{class:'page'});
-  wrap.innerHTML=`<div class="page-header"><div><div class="page-title">Outline</div><div class="page-subtitle">Tab to indent · Shift+Tab to outdent · Enter for new item · Backspace on empty line to delete.</div></div><button class="btn btn-primary" id="add-outline-btn">+ Add Item</button></div><div class="outline-list" id="outline-list"></div>`;
+
+  // Header
+  const header = el('div',{class:'page-header'});
+  header.innerHTML = '<div><div class="page-title">Outline</div><div class="page-subtitle">Multiple outlines supported — add a new one with +</div></div>';
+  const headerRight = el('div',{style:'display:flex;gap:8px;align-items:center;flex-wrap:wrap;'});
+
+  // Structure template dropdown
+  const structLabel = el('span',{style:'font-size:12px;color:var(--fg3);'});structLabel.textContent='New from template:';
+  const structSelect = el('select',{class:'select',style:'width:auto;font-size:12px;padding:5px 10px;'});
+  Object.entries(STRUCTURE_TEMPLATES).forEach(([k,v])=>{
+    const opt=document.createElement('option');opt.value=k;opt.textContent=v.name;
+    structSelect.appendChild(opt);
+  });
+  const addFromTemplate = el('button',{class:'btn btn-primary btn-sm',onclick:async()=>{
+    const key = structSelect.value;
+    const tmpl = STRUCTURE_TEMPLATES[key];
+    const newId = 'ol-'+Date.now();
+    const name = tmpl.name === 'Blank Outline' ? 'New Outline' : tmpl.name;
+    // Create items
+    for(let i=0;i<tmpl.items.length;i++){
+      const it = tmpl.items[i];
+      await fsCreate('outlines',{storyProjectId:projectId,outlineId:newId,outlineName:name,text:it.text,level:it.level,order:i});
+    }
+    if(tmpl.items.length === 0){
+      // blank — create one empty item so the group exists
+      await fsCreate('outlines',{storyProjectId:projectId,outlineId:newId,outlineName:name,text:'',level:1,order:0});
+    }
+    _activeOutlineId[projectId] = newId;
+    await renderOutline(container, projectId);
+  }});
+  addFromTemplate.textContent = '+ Create';
+  headerRight.append(structLabel, structSelect, addFromTemplate);
+  header.appendChild(headerRight);
+  wrap.appendChild(header);
+
+  // Tabs
+  const tabs = el('div',{class:'outline-tabs'});
+  groupList.forEach(g => {
+    const tab = el('div',{class:'outline-tab'+(_activeOutlineId[projectId]===g.id?' active':'')});
+    tab.textContent = g.name;
+    tab.onclick = () => { _activeOutlineId[projectId]=g.id; renderOutline(container,projectId); };
+    // Double-click to rename
+    tab.ondblclick = async(e) => {
+      e.stopPropagation();
+      const newName = prompt('Rename outline:', g.name);
+      if(!newName || newName===g.name) return;
+      // Update all items in this group
+      const groupItems = allItems.filter(i=>(i.outlineId||'default')===g.id);
+      await Promise.all(groupItems.map(i=>fsUpdate('outlines',i.id,{outlineName:newName})));
+      await renderOutline(container,projectId);
+    };
+    tabs.appendChild(tab);
+  });
+  // Delete tab button (only if more than one outline)
+  if(groupList.length > 1){
+    const activeGroup = outlineGroups[_activeOutlineId[projectId]];
+    const delTab = el('div',{class:'outline-tab',style:'color:var(--red);margin-left:auto;',onclick:()=>{
+      confirmDelete('Delete outline "'+activeGroup.name+'" and all its items?', async()=>{
+        await Promise.all(activeGroup.items.map(i=>fsDelete('outlines',i.id)));
+        _activeOutlineId[projectId] = groupList.find(g=>g.id!==activeGroup.id)?.id || 'default';
+        await renderOutline(container,projectId);
+      });
+    }});
+    delTab.textContent = '✕ Delete';
+    tabs.appendChild(delTab);
+  }
+  wrap.appendChild(tabs);
+
+  // Active outline items
+  const listContainer = el('div',{id:'outline-list'});
+  wrap.appendChild(listContainer);
   container.appendChild(wrap);
-  wrap.querySelector('#add-outline-btn').onclick=()=>addOutlineItem(projectId,outlines.length,1,outlines);
-  renderOutlineList(projectId, outlines);
+
+  const activeGroup = outlineGroups[_activeOutlineId[projectId]];
+  renderOutlineList(projectId, activeGroup.items, activeGroup.id, activeGroup.name, container);
+
+  // Add item button at bottom
+  const addBtn = el('button',{class:'btn btn-ghost btn-sm',style:'margin-top:14px;',onclick:()=>{
+    addOutlineItem(projectId, activeGroup.id, activeGroup.name, activeGroup.items.length, 1, container);
+  }});
+  addBtn.textContent = '+ Add Item';
+  wrap.appendChild(addBtn);
 }
 
-function renderOutlineList(projectId, outlines){
-  const list = document.getElementById('outline-list'); if(!list) return;
-  list.innerHTML='';
-  if(outlines.length===0){list.appendChild(emptyState('≡','Empty Outline','Add beats, acts, or chapters to plan your story.'));return;}
-  outlines.forEach(o=>{
+function renderOutlineList(projectId, items, outlineId, outlineName, container) {
+  const list = document.getElementById('outline-list');
+  if(!list) return;
+  list.innerHTML = '';
+
+  if(items.length === 0){
+    list.appendChild(emptyState('≡','Empty Outline','Add beats, acts, or chapters. Or create from a template above.'));
+    return;
+  }
+
+  let dragSrc = null;
+
+  items.forEach(o => {
     const item = el('div',{class:'outline-item',style:'margin-left:'+((o.level-1)*22)+'px'});
-    const handle = el('div',{class:'outline-handle'});handle.textContent='⠿';
+    item.draggable = true;
+    item.dataset.id = o.id;
+
     const content = el('div',{class:'outline-content'});
     const input = el('input',{placeholder:'Outline beat...',value:o.text||''});
-    input.addEventListener('blur',async()=>{await fsUpdate('outlines',o.id,{text:input.value});});
-    input.addEventListener('keydown',async e=>{
-      if(e.key==='Enter'){e.preventDefault(); const outlines2=await fsQuery('outlines',where('storyProjectId','==',projectId)); outlines2.sort((a,b)=>(a.order||0)-(b.order||0)); addOutlineItem(projectId,o.order+1,o.level,outlines2);}
-      if(e.key==='Tab'){e.preventDefault(); const nl=e.shiftKey?Math.max(1,o.level-1):Math.min(4,o.level+1); await fsUpdate('outlines',o.id,{level:nl}); const outlines2=await fsQuery('outlines',where('storyProjectId','==',projectId)); outlines2.sort((a,b)=>(a.order||0)-(b.order||0)); renderOutlineList(projectId,outlines2);}
-      if(e.key==='Backspace'&&input.value===''){e.preventDefault(); await fsDelete('outlines',o.id); const outlines2=await fsQuery('outlines',where('storyProjectId','==',projectId)); outlines2.sort((a,b)=>(a.order||0)-(b.order||0)); renderOutlineList(projectId,outlines2);}
+    input.addEventListener('blur', async()=>{ await fsUpdate('outlines',o.id,{text:input.value}); });
+    input.addEventListener('keydown', async e=>{
+      if(e.key==='Enter'){
+        e.preventDefault();
+        const newItems = await fsQuery('outlines',where('storyProjectId','==',projectId),where('outlineId','==',outlineId));
+        newItems.sort((a,b)=>(a.order||0)-(b.order||0));
+        addOutlineItem(projectId,outlineId,outlineName,o.order+1,o.level,container);
+      }
+      if(e.key==='Tab'){
+        e.preventDefault();
+        const nl=e.shiftKey?Math.max(1,o.level-1):Math.min(4,o.level+1);
+        await fsUpdate('outlines',o.id,{level:nl});
+        await refreshOutlineList(projectId,outlineId,outlineName,container);
+      }
+      if(e.key==='Backspace'&&input.value===''){
+        e.preventDefault();
+        await fsDelete('outlines',o.id);
+        await refreshOutlineList(projectId,outlineId,outlineName,container);
+      }
     });
+
     const levelDots = el('div',{class:'outline-level'});
     for(let i=1;i<=4;i++){
       (function(lvl){
-        const d=el('div',{style:'width:8px;height:8px;border-radius:50%;background:'+(lvl<=o.level?'var(--primary)':'var(--border)')+';cursor:pointer;',onclick:async()=>{await fsUpdate('outlines',o.id,{level:lvl}); const outlines2=await fsQuery('outlines',where('storyProjectId','==',projectId)); outlines2.sort((a,b)=>(a.order||0)-(b.order||0)); renderOutlineList(projectId,outlines2);}});
+        const d=el('div',{style:'width:8px;height:8px;border-radius:50%;background:'+(lvl<=o.level?'var(--primary)':'var(--border)')+';cursor:pointer;flex-shrink:0;',onclick:async()=>{
+          await fsUpdate('outlines',o.id,{level:lvl});
+          await refreshOutlineList(projectId,outlineId,outlineName,container);
+        }});
         levelDots.appendChild(d);
       })(i);
     }
-    const del=el('button',{class:'btn-icon',style:'font-size:11px;',onclick:async()=>{await fsDelete('outlines',o.id); const outlines2=await fsQuery('outlines',where('storyProjectId','==',projectId)); outlines2.sort((a,b)=>(a.order||0)-(b.order||0)); renderOutlineList(projectId,outlines2);}});del.textContent='✕';
-    content.append(input,levelDots); item.append(handle,content,del); list.appendChild(item);
+
+    const del = el('button',{class:'btn-icon',style:'font-size:11px;',onclick:async()=>{
+      await fsDelete('outlines',o.id);
+      await refreshOutlineList(projectId,outlineId,outlineName,container);
+    }});del.textContent='✕';
+
+    content.append(input,levelDots);
+    item.append(content,del);
+    list.appendChild(item);
+
+    // ── Drag-and-drop ──
+    item.addEventListener('dragstart', e=>{
+      dragSrc = item;
+      item.classList.add('dragging');
+      e.dataTransfer.effectAllowed='move';
+      e.dataTransfer.setData('text/plain',o.id);
+    });
+    item.addEventListener('dragend', ()=>{
+      item.classList.remove('dragging');
+      list.querySelectorAll('.outline-item').forEach(i=>i.classList.remove('drag-over'));
+    });
+    item.addEventListener('dragover', e=>{
+      e.preventDefault();
+      e.dataTransfer.dropEffect='move';
+      list.querySelectorAll('.outline-item').forEach(i=>i.classList.remove('drag-over'));
+      item.classList.add('drag-over');
+    });
+    item.addEventListener('drop', async e=>{
+      e.preventDefault();
+      if(dragSrc===item) return;
+      item.classList.remove('drag-over');
+      // Reorder: collect all items in DOM order, reassign order values
+      const allItemEls = Array.from(list.querySelectorAll('.outline-item'));
+      const srcIdx = allItemEls.indexOf(dragSrc);
+      const dstIdx = allItemEls.indexOf(item);
+      // Move src to dst position
+      if(srcIdx < dstIdx) item.after(dragSrc);
+      else item.before(dragSrc);
+      // Write new order to Firestore
+      const reordered = Array.from(list.querySelectorAll('.outline-item'));
+      await Promise.all(reordered.map((el,i)=>fsUpdate('outlines',el.dataset.id,{order:i})));
+      await refreshOutlineList(projectId,outlineId,outlineName,container);
+    });
   });
 }
 
-async function addOutlineItem(projectId, order, level, currentOutlines){
-  await fsCreate('outlines',{storyProjectId:projectId,text:'',level:level||1,order:order||currentOutlines.length});
-  const outlines2 = await fsQuery('outlines',where('storyProjectId','==',projectId));
-  outlines2.sort((a,b)=>(a.order||0)-(b.order||0));
-  renderOutlineList(projectId,outlines2);
-  setTimeout(()=>{const inputs=document.querySelectorAll('#outline-list input');if(inputs.length)inputs[inputs.length-1].focus();},100);
+async function refreshOutlineList(projectId, outlineId, outlineName, container) {
+  // Fetch all outlines for project, then filter client-side to avoid composite index requirement
+  const all = await fsQuery('outlines',where('storyProjectId','==',projectId));
+  const fresh = all.filter(i=>(i.outlineId||'default')===outlineId);
+  fresh.sort((a,b)=>(a.order||0)-(b.order||0));
+  renderOutlineList(projectId,fresh,outlineId,outlineName,container);
+}
+
+async function addOutlineItem(projectId, outlineId, outlineName, order, level, container) {
+  await fsCreate('outlines',{storyProjectId:projectId,outlineId,outlineName,text:'',level:level||1,order:order||0});
+  await refreshOutlineList(projectId,outlineId,outlineName,container);
+  setTimeout(()=>{
+    const inputs=document.querySelectorAll('#outline-list input');
+    if(inputs.length) inputs[inputs.length-1].focus();
+  },100);
 }
 
 // ══════════════════════════════════════════════
@@ -1260,6 +1545,7 @@ function renderScreenplayEditor(view, doc, projectId) {
         else if(currentSpType==='dialogue') setSpType('action',typeBar);
         else if(currentSpType==='parenthetical') setSpType('dialogue',typeBar);
         applyTypeToCurrentLine(editor,currentSpType);
+        applyContinuedMarkers(editor);
       },0);
     }
   });
@@ -1281,6 +1567,7 @@ function renderScreenplayEditor(view, doc, projectId) {
 
   editor.addEventListener('mouseup', () => { removeSuggestions(); syncTypeFromCursor(editor, typeBar); });
   editor.addEventListener('input', () => {
+    applyContinuedMarkers(editor);
     clearTimeout(editorSaveTimer);
     editorSaveTimer = setTimeout(async()=>{ showSaving(); await fsUpdate('documents',doc.id,{content:editor.innerHTML}); showSaved(); }, 1000);
   });
@@ -1295,11 +1582,89 @@ function renderScreenplayEditor(view, doc, projectId) {
   const wc=el('div',{class:'editor-word-count'},'Tab cycles line types · I/E + Tab autofills INT./EXT. · ↑↓ navigate suggestions');
   view.append(toolbar,body,wc);
   if(!doc.content) applyTypeToCurrentLine(editor,'scene-heading');
+  else setTimeout(()=>applyContinuedMarkers(editor), 50);
 }
 
 function setSpType(type,typeBar){currentSpType=type;typeBar.querySelectorAll('.type-btn').forEach(b=>b.classList.toggle('active',b.dataset.type===type));}
-function applyTypeToCurrentLine(editor,type){const sel=window.getSelection();if(!sel.rangeCount)return;let node=sel.getRangeAt(0).startContainer;while(node&&node.parentNode!==editor)node=node.parentNode;if(node&&node!==editor){node.dataset.type=type;}else{const p=document.createElement('p');p.dataset.type=type;editor.appendChild(p);const r=document.createRange();r.setStart(p,0);r.collapse(true);sel.removeAllRanges();sel.addRange(r);}}
-function syncTypeFromCursor(editor,typeBar){const sel=window.getSelection();if(!sel.rangeCount)return;let node=sel.getRangeAt(0).startContainer;while(node&&node.parentNode!==editor)node=node.parentNode;if(node&&node.dataset&&node.dataset.type)setSpType(node.dataset.type,typeBar);}
+
+function applyTypeToCurrentLine(editor,type){
+  const sel=window.getSelection();if(!sel.rangeCount)return;
+  let node=sel.getRangeAt(0).startContainer;
+  while(node&&node.parentNode!==editor)node=node.parentNode;
+  if(node&&node!==editor){node.dataset.type=type;}
+  else{
+    const p=document.createElement('p');p.dataset.type=type;editor.appendChild(p);
+    const r=document.createRange();r.setStart(p,0);r.collapse(true);
+    sel.removeAllRanges();sel.addRange(r);
+  }
+  // After setting type, refresh CONT'D markers
+  setTimeout(()=>applyContinuedMarkers(editor),0);
+}
+
+function syncTypeFromCursor(editor,typeBar){
+  const sel=window.getSelection();if(!sel.rangeCount)return;
+  let node=sel.getRangeAt(0).startContainer;
+  while(node&&node.parentNode!==editor)node=node.parentNode;
+  if(node&&node.dataset&&node.dataset.type)setSpType(node.dataset.type,typeBar);
+}
+
+// ── CONT'D logic ──
+// Rule: if a character line's name matches the most recent previous character
+// line name (regardless of intervening action/dialogue/parenthetical lines),
+// append (CONT'D) to the second occurrence.
+function getCharName(node){
+  // Strip existing (CONT'D) suffix to get the base name
+  return (node.textContent||'').replace(/\s*\(CONT'D\)\s*$/i,'').trim().toUpperCase();
+}
+
+function applyContinuedMarkers(editor){
+  const lines = Array.from(editor.children);
+  let lastCharName = null;
+
+  lines.forEach(node=>{
+    const type = node.dataset && node.dataset.type;
+
+    if(type === 'character'){
+      const baseName = getCharName(node);
+      if(!baseName) return;
+
+      const hasContinued = /\(CONT'D\)$/i.test(node.textContent.trim());
+
+      if(lastCharName && baseName === lastCharName){
+        // Same character — add CONT'D if not already present
+        if(!hasContinued){
+          // Preserve cursor position
+          const sel = window.getSelection();
+          let savedRange = null;
+          if(sel.rangeCount && node.contains(sel.getRangeAt(0).startContainer)){
+            savedRange = sel.getRangeAt(0).cloneRange();
+          }
+          node.textContent = baseName + " (CONT'D)";
+          if(savedRange){
+            try{ sel.removeAllRanges(); sel.addRange(savedRange); }catch{}
+          }
+        }
+        // Keep lastCharName as-is (same char continues)
+      } else {
+        // Different character — remove CONT'D if present
+        if(hasContinued){
+          const sel = window.getSelection();
+          let savedRange = null;
+          if(sel.rangeCount && node.contains(sel.getRangeAt(0).startContainer)){
+            savedRange = sel.getRangeAt(0).cloneRange();
+          }
+          node.textContent = baseName;
+          if(savedRange){
+            try{ sel.removeAllRanges(); sel.addRange(savedRange); }catch{}
+          }
+        }
+        lastCharName = baseName;
+      }
+    }
+    // Non-character lines don't reset lastCharName —
+    // CONT'D fires whenever the same character appears again, regardless of intervening lines
+  });
+}
 
 // ══════════════════════════════════════════════
 //  HELPERS
