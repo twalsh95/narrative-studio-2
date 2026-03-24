@@ -203,6 +203,25 @@
   /* Guided prompts toggle */
   .guide-toggle{font-size:12px;color:var(--primary);cursor:pointer;margin-bottom:6px;display:inline-flex;align-items:center;gap:4px;opacity:0.8;}
   .guide-toggle:hover{opacity:1;}
+  /* Document Library */
+  .doclibrary-list{display:flex;flex-direction:column;gap:10px;}
+  .doclibrary-item{background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:16px 20px;transition:all 0.2s;}
+  .doclibrary-item:hover{border-color:var(--border2);}
+  .doclibrary-item-header{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:8px;}
+  .doclibrary-item-title{font-family:'Belleza',serif;font-size:15px;color:var(--fg);}
+  .doclibrary-item-meta{font-size:11px;color:var(--fg3);margin-top:2px;}
+  .doclibrary-versions{display:flex;flex-direction:column;gap:4px;margin-top:8px;padding-top:8px;border-top:1px solid var(--border);}
+  .doclibrary-version{display:flex;align-items:center;justify-content:space-between;padding:5px 10px;background:var(--bg3);border-radius:var(--radius-sm);font-size:12px;color:var(--fg2);}
+  .doclibrary-version-label{display:flex;align-items:center;gap:8px;}
+  .version-badge{font-family:'JetBrains Mono',monospace;font-size:10px;background:var(--active-bg);color:var(--primary);padding:2px 7px;border-radius:10px;}
+  .version-current{background:var(--primary);color:white;}
+  /* PDF preview overlay */
+  .pdf-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:400;display:flex;align-items:center;justify-content:center;animation:fadeIn 0.15s;}
+  .pdf-frame{background:#f8f8f4;width:min(860px,95vw);max-height:92vh;border-radius:var(--radius);overflow:hidden;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,0.5);}
+  .pdf-frame-topbar{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;background:#2d6a4f;color:white;}
+  .pdf-frame-title{font-family:'Belleza',serif;font-size:16px;letter-spacing:0.04em;}
+  .pdf-frame-actions{display:flex;gap:8px;}
+  .pdf-frame-body{flex:1;overflow-y:auto;padding:0;}
   /* Outline tabs */
   .outline-tabs{display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:20px;overflow-x:auto;}
   .outline-tab{padding:9px 16px;font-size:13px;cursor:pointer;color:var(--fg3);border-bottom:2px solid transparent;transition:all 0.15s;white-space:nowrap;font-family:'Lora',serif;}
@@ -422,6 +441,7 @@ async function render(){
     else if(s==='scenes')     await renderScenes(content, projectId);
     else if(s==='world')      await renderWorld(content, projectId);
     else if(s==='outline')    await renderOutline(content, projectId);
+    else if(s==='library')    await renderDocumentLibrary(content, projectId);
     else if(s==='writing'){
       if(subId) await renderEditor(content, projectId, subId);
       else await renderWritingDesk(content, projectId);
@@ -587,13 +607,14 @@ async function deleteProjectCascade(projectId){
     fsBatchDelete('worlds','storyProjectId',projectId),
     fsBatchDelete('outlines','storyProjectId',projectId),
     fsBatchDelete('documents','storyProjectId',projectId),
+    fsBatchDelete('generatedDocs','storyProjectId',projectId),
   ]);
 }
 
 // ══════════════════════════════════════════════
 //  SIDEBAR
 // ══════════════════════════════════════════════
-const NAV_ITEMS=[{id:'overview',label:'Overview',icon:'◈'},{id:'characters',label:'Characters',icon:'◉'},{id:'locations',label:'Locations',icon:'⬡'},{id:'scenes',label:'Scenes',icon:'◧'},{id:'world',label:'World Building',icon:'◎'},{id:'outline',label:'Outline',icon:'≡'},{id:'writing',label:'Writing Desk',icon:'✦'}];
+const NAV_ITEMS=[{id:'overview',label:'Overview',icon:'◈'},{id:'characters',label:'Characters',icon:'◉'},{id:'locations',label:'Locations',icon:'⬡'},{id:'scenes',label:'Scenes',icon:'◧'},{id:'world',label:'World Building',icon:'◎'},{id:'outline',label:'Outline',icon:'≡'},{id:'library',label:'Document Library',icon:'📁'},{id:'writing',label:'Writing Desk',icon:'✦'}];
 
 async function renderSidebar(sb, projectId, active){
   sb.innerHTML='';
@@ -654,7 +675,10 @@ async function renderOverview(container, projectId){
       <label class="label">Project Description</label>
       <textarea class="textarea" id="proj-desc" rows="3" placeholder="What is this story about?">${esc(p.description||'')}</textarea>
     </div>
-    <div style="margin-top:10px;"><button class="btn btn-ghost btn-sm" onclick="saveProjDescFb('${projectId}')">Save Description</button></div>
+    <div style="margin-top:10px;display:flex;gap:8px;">
+      <button class="btn btn-ghost btn-sm" onclick="saveProjDescFb('${projectId}')">Save Description</button>
+      <button class="btn btn-ghost btn-sm" onclick="generateFullProjectPdf('${projectId}')">📄 Export Project as PDF</button>
+    </div>
   `;
   container.appendChild(wrap);
   const nameEl = wrap.querySelector('#proj-name-edit');
@@ -693,8 +717,11 @@ async function renderCharacters(container, projectId){
   const wrap = el('div',{class:'page'});
   const header = el('div',{class:'page-header'});
   header.innerHTML='<div><div class="page-title">Characters</div><div class="page-subtitle">'+chars.length+' character'+(chars.length!==1?'s':'')+'</div></div>';
-  const addBtn = el('button',{class:'btn btn-primary',onclick:()=>openCharacterDrawer(null,projectId)});addBtn.textContent='+ Add Character';
-  header.appendChild(addBtn); wrap.appendChild(header);
+  const hbtns=el('div',{style:'display:flex;gap:8px;'});
+  const addBtn=el('button',{class:'btn btn-primary',onclick:()=>openCharacterDrawer(null,projectId)});addBtn.textContent='+ Add Character';
+  const pdfBtn=el('button',{class:'btn btn-ghost btn-sm',onclick:()=>generateCharactersPdf(projectId)});pdfBtn.textContent='📄 Create Document';
+  hbtns.append(addBtn,pdfBtn);
+  header.appendChild(hbtns); wrap.appendChild(header);
   if(chars.length===0){wrap.appendChild(emptyState('◉','No Characters Yet','Create the people who inhabit your story.'));}
   else{
     const grid = el('div',{class:'items-grid'});
@@ -765,8 +792,11 @@ async function renderLocations(container, projectId){
   const wrap = el('div',{class:'page'});
   const header = el('div',{class:'page-header'});
   header.innerHTML='<div><div class="page-title">Locations</div><div class="page-subtitle">'+locs.length+' location'+(locs.length!==1?'s':'')+'</div></div>';
-  const addBtn = el('button',{class:'btn btn-primary',onclick:()=>openLocationDrawer(null,projectId)});addBtn.textContent='+ Add Location';
-  header.appendChild(addBtn); wrap.appendChild(header);
+  const hbtns=el('div',{style:'display:flex;gap:8px;'});
+  const addBtn=el('button',{class:'btn btn-primary',onclick:()=>openLocationDrawer(null,projectId)});addBtn.textContent='+ Add Location';
+  const pdfBtn=el('button',{class:'btn btn-ghost btn-sm',onclick:()=>generateLocationsPdf(projectId)});pdfBtn.textContent='📄 Create Document';
+  hbtns.append(addBtn,pdfBtn);
+  header.appendChild(hbtns); wrap.appendChild(header);
   if(locs.length===0){wrap.appendChild(emptyState('⬡','No Locations Yet','Define the places your story unfolds.'));}
   else{
     const grid = el('div',{class:'items-grid'});
@@ -826,8 +856,11 @@ async function renderScenes(container, projectId){
   const wrap = el('div',{class:'page'});
   const header = el('div',{class:'page-header'});
   header.innerHTML='<div><div class="page-title">Scenes</div><div class="page-subtitle">'+scenes.length+' scene'+(scenes.length!==1?'s':'')+'</div></div>';
-  const addBtn = el('button',{class:'btn btn-primary',onclick:()=>openSceneDrawer(null,projectId,chars,locs,scenes.length+1)});addBtn.textContent='+ Add Scene';
-  header.appendChild(addBtn); wrap.appendChild(header);
+  const hbtns=el('div',{style:'display:flex;gap:8px;'});
+  const addBtn=el('button',{class:'btn btn-primary',onclick:()=>openSceneDrawer(null,projectId,chars,locs,scenes.length+1)});addBtn.textContent='+ Add Scene';
+  const pdfBtn=el('button',{class:'btn btn-ghost btn-sm',onclick:()=>generateScenesPdf(projectId)});pdfBtn.textContent='📄 Create Document';
+  hbtns.append(addBtn,pdfBtn);
+  header.appendChild(hbtns); wrap.appendChild(header);
   if(scenes.length===0){wrap.appendChild(emptyState('◧','No Scenes Yet','Break your story into scenes and keep track of the action.'));}
   else{
     const list = el('div',{class:'scene-list'});
@@ -927,8 +960,12 @@ async function renderWorld(container, projectId){
 
   const header = el('div',{class:'page-header'});
   header.innerHTML='<div><div class="page-title">World Building</div><div class="page-subtitle">Define the rules, tone, and fabric of your world. Click the guide prompt for each section if you need a starting point.</div></div>';
+  const worldBtns = el('div',{style:'display:flex;gap:8px;'});
+  const pdfWorldBtn = el('button',{class:'btn btn-ghost btn-sm'});pdfWorldBtn.textContent='📄 Create Document';
+  pdfWorldBtn.onclick = ()=>generateWorldPdf(projectId);
   const saveBtn = el('button',{class:'btn btn-primary'});saveBtn.textContent='Save World';
-  header.appendChild(saveBtn);
+  worldBtns.append(pdfWorldBtn,saveBtn);
+  header.appendChild(worldBtns);
   wrap.appendChild(header);
 
   const grid = el('div',{class:'world-grid'});
@@ -1107,6 +1144,11 @@ async function renderOutline(container, projectId) {
     const opt=document.createElement('option');opt.value=k;opt.textContent=v.name;
     structSelect.appendChild(opt);
   });
+  const pdfOutlineBtn = el('button',{class:'btn btn-ghost btn-sm',onclick:()=>{
+    const ag=outlineGroups[_activeOutlineId[projectId]];
+    if(ag) generateOutlinePdf(projectId, ag.id, ag.name);
+  }});pdfOutlineBtn.textContent='📄 Create Document';
+  headerRight.appendChild(pdfOutlineBtn);
   const addFromTemplate = el('button',{class:'btn btn-primary btn-sm',onclick:async()=>{
     const key = structSelect.value;
     const tmpl = STRUCTURE_TEMPLATES[key];
@@ -1319,8 +1361,9 @@ async function renderWritingDesk(container, projectId){
       left.innerHTML='<h3>'+esc(d.title||'Untitled')+'</h3><span class="doc-item-badge '+(d.type==='screenplay'?'badge-screenplay':'badge-narrative')+'">'+d.type+'</span>';
       const right=el('div',{style:'display:flex;align-items:center;gap:10px;'});
       const meta=el('div',{style:'font-size:11px;color:var(--fg3);'},[relativeTime(d.updatedAt)]);
+      const pdfDBtn=el('button',{class:'btn btn-ghost btn-sm',onclick:e=>{e.stopPropagation();generateWritingDeskPdf(projectId,d);}});pdfDBtn.textContent='📄';pdfDBtn.title='Export as PDF';
       const del=el('button',{class:'btn btn-danger btn-sm',onclick:e=>{e.stopPropagation();confirmDelete('Delete "'+d.title+'"?',async()=>{await fsDelete('documents',d.id);renderWritingDesk(container,projectId);toast('Deleted');});}});del.textContent='✕';
-      right.append(meta,del); item.append(left,right); list.appendChild(item);
+      right.append(meta,pdfDBtn,del); item.append(left,right); list.appendChild(item);
     });
     wrap.appendChild(list);
   }
@@ -1368,7 +1411,9 @@ function renderNarrativeEditor(view, doc, projectId){
   listBtn.addEventListener('click',()=>{document.execCommand('insertUnorderedList'); editor.focus();});
   toolbar.appendChild(listBtn); toolbar.appendChild(el('div',{class:'editor-divider'}));
   const backBtn=el('button',{class:'btn btn-ghost btn-sm',onclick:()=>navigate('dashboard',projectId,'writing')}); backBtn.textContent='← Back';
+  const exportNarrBtn=el('button',{class:'btn btn-ghost btn-sm',onclick:()=>generateWritingDeskPdf(projectId,doc)});exportNarrBtn.textContent='📄 Export';
   toolbar.appendChild(backBtn);
+  toolbar.appendChild(exportNarrBtn);
 
   const body=el('div',{class:'editor-body'});
   const editor=el('div',{class:'editor-content',contenteditable:'true','data-placeholder':'Begin your story here...'});
@@ -1509,7 +1554,9 @@ function renderScreenplayEditor(view, doc, projectId) {
   });
   toolbar.append(typeBar,el('div',{class:'editor-divider'}));
   const backBtn=el('button',{class:'btn btn-ghost btn-sm',onclick:()=>{removeSuggestions();navigate('dashboard',projectId,'writing');}}); backBtn.textContent='← Back';
+  const exportSpBtn=el('button',{class:'btn btn-ghost btn-sm',onclick:()=>generateWritingDeskPdf(projectId,doc)});exportSpBtn.textContent='📄 Export';
   toolbar.appendChild(backBtn);
+  toolbar.appendChild(exportSpBtn);
   const body=el('div',{class:'screenplay-body'});
   const page=el('div',{class:'screenplay-page'});
   const editor=el('div',{class:'screenplay-content',contenteditable:'true'});
@@ -1711,6 +1758,384 @@ window.renderLocations = renderLocations;
 window.renderScenes = renderScenes;
 window.confirmDelete = confirmDelete;
 window.toast = toast;
+
+// ══════════════════════════════════════════════
+//  PDF ENGINE
+// ══════════════════════════════════════════════
+const PDF_COLORS = {
+  bg:'#f8f8f4', primary:'#2d6a4f', primary2:'#3d8c6e',
+  fg:'#1a2e22', fg2:'#3d5c48', fg3:'#7a9070',
+  border:'#d1d8d0', card:'#ffffff', accent:'#e8ebe7',
+};
+
+function pdfBaseStyles(){
+  return `<style>
+    @import url('https://fonts.googleapis.com/css2?family=Belleza&family=Lora:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap');
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{background:#f8f8f4;color:#1a2e22;font-family:'Lora',Georgia,serif;font-size:13px;line-height:1.7;}
+    .pdf-page{max-width:780px;margin:0 auto;padding:48px 56px;}
+    .pdf-header{border-bottom:3px solid #2d6a4f;padding-bottom:20px;margin-bottom:32px;}
+    .pdf-project-name{font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:#7a9070;margin-bottom:6px;font-family:'JetBrains Mono',monospace;}
+    .pdf-doc-title{font-family:'Belleza',serif;font-size:32px;color:#2d6a4f;letter-spacing:0.04em;line-height:1.2;}
+    .pdf-doc-subtitle{font-size:12px;color:#7a9070;margin-top:6px;}
+    .pdf-section{margin-bottom:32px;}
+    .pdf-section-title{font-family:'Belleza',serif;font-size:18px;color:#2d6a4f;border-bottom:1px solid #d1d8d0;padding-bottom:6px;margin-bottom:16px;}
+    .pdf-card{background:#ffffff;border:1px solid #d1d8d0;border-radius:8px;padding:16px 20px;margin-bottom:12px;}
+    .pdf-card-title{font-family:'Belleza',serif;font-size:15px;color:#1a2e22;margin-bottom:8px;}
+    .pdf-field{margin-bottom:10px;}
+    .pdf-field-label{font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:#7a9070;margin-bottom:3px;font-family:'JetBrains Mono',monospace;}
+    .pdf-field-value{font-size:13px;color:#3d5c48;line-height:1.6;}
+    .pdf-tag{display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;background:#e8ebe7;color:#2d6a4f;border:1px solid #d1d8d0;margin:2px 3px 2px 0;}
+    .pdf-meta-row{display:flex;gap:24px;margin-top:8px;}
+    .pdf-meta-item{font-size:11px;color:#7a9070;}
+    .pdf-footer{margin-top:40px;padding-top:16px;border-top:1px solid #d1d8d0;font-size:10px;color:#7a9070;display:flex;justify-content:space-between;font-family:'JetBrains Mono',monospace;}
+    .pdf-scene-num{font-family:'JetBrains Mono',monospace;font-size:10px;background:#e8ebe7;color:#2d6a4f;padding:2px 7px;border-radius:4px;margin-right:10px;flex-shrink:0;margin-top:3px;}
+    .pdf-scene-row{display:flex;align-items:flex-start;margin-bottom:10px;}
+    .pdf-scene-body{flex:1;}
+    .pdf-outline-item{padding:5px 0;border-bottom:1px solid #d1d8d0;}
+    .pdf-outline-item.level-1{font-family:'Belleza',serif;font-size:14px;color:#2d6a4f;padding-top:12px;border-bottom:none;}
+    .pdf-outline-item.level-2{padding-left:16px;font-size:12px;color:#3d5c48;}
+    .pdf-outline-item.level-3{padding-left:32px;font-size:12px;color:#7a9070;}
+    .pdf-outline-item.level-4{padding-left:48px;font-size:11px;color:#7a9070;}
+    .pdf-world-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+    .pdf-world-section{background:#ffffff;border:1px solid #d1d8d0;border-radius:8px;padding:14px 16px;}
+    .pdf-world-section h3{font-family:'Belleza',serif;font-size:13px;color:#2d6a4f;margin-bottom:8px;}
+    @media print{body{background:white;}.pdf-page{padding:32px 40px;}}
+  </style>`;
+}
+
+function pdfHeader(projectName, docTitle, subtitle){
+  const date = new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
+  return `<div class="pdf-header">
+    <div class="pdf-project-name">${escHtml(projectName)} — Narrative Studio</div>
+    <div class="pdf-doc-title">${docTitle}</div>
+    <div class="pdf-doc-subtitle">${escHtml(subtitle||'')} &nbsp;·&nbsp; Generated ${date}</div>
+  </div>`;
+}
+
+function pdfFooter(projectName){
+  const date = new Date().toLocaleDateString();
+  return `<div class="pdf-footer"><span>${escHtml(projectName)}</span><span>Narrative Studio &nbsp;·&nbsp; ${date}</span></div>`;
+}
+
+function buildCharactersPdf(project, chars){
+  let body = chars.length ? '' : '<p style="color:#7a9070;font-style:italic;">No characters have been added yet.</p>';
+  chars.forEach(c=>{
+    body += `<div class="pdf-card">
+      <div class="pdf-card-title">${escHtml(c.name)}</div>
+      <div class="pdf-meta-row">
+        ${c.age?`<span class="pdf-meta-item"><strong>Age:</strong> ${escHtml(c.age)}</span>`:''}
+        ${c.pronouns?`<span class="pdf-meta-item"><strong>Pronouns:</strong> ${escHtml(c.pronouns)}</span>`:''}
+        ${c.occupation?`<span class="pdf-meta-item"><strong>Occupation:</strong> ${escHtml(c.occupation)}</span>`:''}
+      </div>
+      ${c.traits?`<div class="pdf-field" style="margin-top:10px;"><div class="pdf-field-label">Traits & Summary</div><div class="pdf-field-value">${escHtml(c.traits)}</div></div>`:''}
+      ${c.backstory?`<div class="pdf-field"><div class="pdf-field-label">Backstory</div><div class="pdf-field-value">${escHtml(c.backstory)}</div></div>`:''}
+    </div>`;
+  });
+  return `<!DOCTYPE html><html><head><meta charset="UTF-8">${pdfBaseStyles()}</head><body><div class="pdf-page">${pdfHeader(project.name,'Characters',chars.length+' character'+(chars.length!==1?'s':''))}${body}${pdfFooter(project.name)}</div></body></html>`;
+}
+
+function buildLocationsPdf(project, locs){
+  let body = locs.length ? '' : '<p style="color:#7a9070;font-style:italic;">No locations have been added yet.</p>';
+  locs.forEach(l=>{
+    body += `<div class="pdf-card">
+      <div class="pdf-card-title">${escHtml(l.name)}</div>
+      ${l.storyRole?`<div style="margin-bottom:8px;"><span class="pdf-tag">${escHtml(l.storyRole)}</span></div>`:''}
+      ${l.description?`<div class="pdf-field"><div class="pdf-field-label">Description</div><div class="pdf-field-value">${escHtml(l.description)}</div></div>`:''}
+      ${l.atmosphere?`<div class="pdf-field"><div class="pdf-field-label">Atmosphere & Mood</div><div class="pdf-field-value">${escHtml(l.atmosphere)}</div></div>`:''}
+    </div>`;
+  });
+  return `<!DOCTYPE html><html><head><meta charset="UTF-8">${pdfBaseStyles()}</head><body><div class="pdf-page">${pdfHeader(project.name,'Locations',locs.length+' location'+(locs.length!==1?'s':''))}${body}${pdfFooter(project.name)}</div></body></html>`;
+}
+
+function buildScenesPdf(project, scenes, chars, locs){
+  const charMap={};chars.forEach(c=>charMap[c.id]=c.name);
+  const locMap={};locs.forEach(l=>locMap[l.id]=l.name);
+  let body = scenes.length ? '' : '<p style="color:#7a9070;font-style:italic;">No scenes have been added yet.</p>';
+  scenes.forEach(sc=>{
+    const locName=sc.locationId&&locMap[sc.locationId]?locMap[sc.locationId]:'';
+    const charNames=(sc.characterIds||[]).map(id=>charMap[id]).filter(Boolean);
+    body += `<div class="pdf-scene-row">
+      <span class="pdf-scene-num">#${sc.sequenceNumber}</span>
+      <div class="pdf-scene-body">
+        <div style="font-family:'Belleza',serif;font-size:14px;color:#1a2e22;margin-bottom:4px;">${escHtml(sc.title)}</div>
+        ${sc.description?`<div style="font-size:12px;color:#3d5c48;margin-bottom:6px;">${escHtml(sc.description)}</div>`:''}
+        <div style="display:flex;flex-wrap:wrap;gap:4px;">
+          ${locName?`<span class="pdf-tag" style="background:#e8f4ef;">⬡ ${escHtml(locName)}</span>`:''}
+          ${charNames.map(n=>`<span class="pdf-tag">◉ ${escHtml(n)}</span>`).join('')}
+        </div>
+      </div>
+    </div>`;
+  });
+  return `<!DOCTYPE html><html><head><meta charset="UTF-8">${pdfBaseStyles()}</head><body><div class="pdf-page">${pdfHeader(project.name,'Scenes',scenes.length+' scene'+(scenes.length!==1?'s':'')+' in sequence')}${body}${pdfFooter(project.name)}</div></body></html>`;
+}
+
+function buildWorldPdf(project, world){
+  const FIELDS=[
+    {key:'moodAndTone',label:'Mood & Tone'},{key:'lawsOfPhysics',label:'Laws of Physics / Magic'},
+    {key:'society',label:'Society & Culture'},{key:'history',label:'History & Mythology'},
+    {key:'technology',label:'Technology & Economy'},{key:'conflicts',label:'Conflicts & Themes'},
+    {key:'geography',label:'Geography & Place'},{key:'religion',label:'Religion & Belief'},
+    {key:'language',label:'Language & Dialect'},{key:'economy',label:'Power & Economy'},
+  ];
+  const filled=FIELDS.filter(f=>world&&world[f.key]);
+  let body = filled.length ? '<div class="pdf-world-grid">' : '<p style="color:#7a9070;font-style:italic;">No world building information has been added yet.</p>';
+  filled.forEach(f=>{ body+=`<div class="pdf-world-section"><h3>${escHtml(f.label)}</h3><div style="font-size:12px;color:#3d5c48;line-height:1.6;">${escHtml(world[f.key])}</div></div>`; });
+  if(filled.length) body+='</div>';
+  return `<!DOCTYPE html><html><head><meta charset="UTF-8">${pdfBaseStyles()}</head><body><div class="pdf-page">${pdfHeader(project.name,'World Building',filled.length+' of '+FIELDS.length+' sections completed')}${body}${pdfFooter(project.name)}</div></body></html>`;
+}
+
+function buildOutlinePdf(project, items, outlineName){
+  let body = items.length ? '' : '<p style="color:#7a9070;font-style:italic;">No outline items have been added yet.</p>';
+  items.forEach(o=>{ body+=`<div class="pdf-outline-item level-${o.level||1}">${escHtml(o.text)}</div>`; });
+  return `<!DOCTYPE html><html><head><meta charset="UTF-8">${pdfBaseStyles()}</head><body><div class="pdf-page">${pdfHeader(project.name,escHtml(outlineName||'Outline'),items.length+' items')}${body}${pdfFooter(project.name)}</div></body></html>`;
+}
+
+function buildProjectPdf(project,chars,locs,scenes,world,outlineItems,outlineName){
+  const charMap={};chars.forEach(c=>charMap[c.id]=c.name);
+  const locMap={};locs.forEach(l=>locMap[l.id]=l.name);
+  const worldFields=[
+    {key:'moodAndTone',label:'Mood & Tone'},{key:'lawsOfPhysics',label:'Laws of Physics / Magic'},
+    {key:'society',label:'Society & Culture'},{key:'history',label:'History & Mythology'},
+    {key:'technology',label:'Technology & Economy'},{key:'conflicts',label:'Conflicts & Themes'},
+    {key:'geography',label:'Geography & Place'},{key:'religion',label:'Religion & Belief'},
+    {key:'language',label:'Language & Dialect'},{key:'economy',label:'Power & Economy'},
+  ];
+  let body = '';
+  if(project.description) body+=`<div class="pdf-section"><div class="pdf-card"><div class="pdf-field-label">Project Description</div><div class="pdf-field-value">${escHtml(project.description)}</div></div></div>`;
+  body+=`<div class="pdf-section"><div class="pdf-section-title">Characters (${chars.length})</div>`;
+  if(!chars.length) body+='<p style="color:#7a9070;font-style:italic;font-size:12px;">No characters added yet.</p>';
+  chars.forEach(c=>{
+    body+=`<div class="pdf-card"><div class="pdf-card-title">${escHtml(c.name)}</div><div class="pdf-meta-row">${c.age?`<span class="pdf-meta-item"><strong>Age:</strong> ${escHtml(c.age)}</span>`:''}${c.pronouns?`<span class="pdf-meta-item"><strong>Pronouns:</strong> ${escHtml(c.pronouns)}</span>`:''}${c.occupation?`<span class="pdf-meta-item"><strong>Occupation:</strong> ${escHtml(c.occupation)}</span>`:''}</div>${c.traits?`<div class="pdf-field" style="margin-top:8px;"><div class="pdf-field-label">Traits</div><div class="pdf-field-value">${escHtml(c.traits)}</div></div>`:''}${c.backstory?`<div class="pdf-field"><div class="pdf-field-label">Backstory</div><div class="pdf-field-value">${escHtml(c.backstory)}</div></div>`:''}</div>`;
+  });
+  body+='</div>';
+  body+=`<div class="pdf-section"><div class="pdf-section-title">Locations (${locs.length})</div>`;
+  if(!locs.length) body+='<p style="color:#7a9070;font-style:italic;font-size:12px;">No locations added yet.</p>';
+  locs.forEach(l=>{
+    body+=`<div class="pdf-card"><div class="pdf-card-title">${escHtml(l.name)}</div>${l.storyRole?`<div style="margin-bottom:6px;"><span class="pdf-tag">${escHtml(l.storyRole)}</span></div>`:''}${l.description?`<div class="pdf-field"><div class="pdf-field-label">Description</div><div class="pdf-field-value">${escHtml(l.description)}</div></div>`:''}${l.atmosphere?`<div class="pdf-field"><div class="pdf-field-label">Atmosphere</div><div class="pdf-field-value">${escHtml(l.atmosphere)}</div></div>`:''}</div>`;
+  });
+  body+='</div>';
+  scenes.sort((a,b)=>(a.sequenceNumber||0)-(b.sequenceNumber||0));
+  body+=`<div class="pdf-section"><div class="pdf-section-title">Scenes (${scenes.length})</div>`;
+  if(!scenes.length) body+='<p style="color:#7a9070;font-style:italic;font-size:12px;">No scenes added yet.</p>';
+  scenes.forEach(sc=>{
+    const locName=sc.locationId&&locMap[sc.locationId]?locMap[sc.locationId]:'';
+    const charNames=(sc.characterIds||[]).map(id=>charMap[id]).filter(Boolean);
+    body+=`<div class="pdf-scene-row"><span class="pdf-scene-num">#${sc.sequenceNumber}</span><div class="pdf-scene-body"><div style="font-family:'Belleza',serif;font-size:13px;color:#1a2e22;margin-bottom:3px;">${escHtml(sc.title)}</div>${sc.description?`<div style="font-size:12px;color:#3d5c48;margin-bottom:5px;">${escHtml(sc.description)}</div>`:''}<div style="display:flex;flex-wrap:wrap;gap:3px;">${locName?`<span class="pdf-tag" style="background:#e8f4ef;">⬡ ${escHtml(locName)}</span>`:''}${charNames.map(n=>`<span class="pdf-tag">◉ ${escHtml(n)}</span>`).join('')}</div></div></div>`;
+  });
+  body+='</div>';
+  const filledFields=worldFields.filter(f=>world&&world[f.key]);
+  if(filledFields.length){
+    body+=`<div class="pdf-section"><div class="pdf-section-title">World Building</div><div class="pdf-world-grid">`;
+    filledFields.forEach(f=>{ body+=`<div class="pdf-world-section"><h3>${escHtml(f.label)}</h3><div style="font-size:12px;color:#3d5c48;line-height:1.6;">${escHtml(world[f.key])}</div></div>`; });
+    body+='</div></div>';
+  }
+  if(outlineItems.length){
+    body+=`<div class="pdf-section"><div class="pdf-section-title">${escHtml(outlineName||'Outline')}</div>`;
+    outlineItems.forEach(o=>{ body+=`<div class="pdf-outline-item level-${o.level||1}">${escHtml(o.text)}</div>`; });
+    body+='</div>';
+  }
+  return `<!DOCTYPE html><html><head><meta charset="UTF-8">${pdfBaseStyles()}</head><body><div class="pdf-page">${pdfHeader(project.name,'Project Overview — '+escHtml(project.name),'Complete project package')}${body}${pdfFooter(project.name)}</div></body></html>`;
+}
+
+function buildScreenplayPdf(project,doc){
+  const rawHtml=doc.content||'';
+  const parser=new DOMParser();
+  const parsed=parser.parseFromString('<div>'+rawHtml+'</div>','text/html');
+  const nodes=parsed.querySelector('div').children;
+  let body='';
+  Array.from(nodes).forEach(node=>{
+    const type=node.dataset&&node.dataset.type;
+    const text=node.textContent||'';
+    if(!text.trim()&&type!=='scene-heading')return;
+    switch(type){
+      case 'scene-heading': body+=`<p style="text-transform:uppercase;font-weight:bold;margin:1.5em 0 0.5em;">${escHtml(text.toUpperCase())}</p>`; break;
+      case 'action':        body+=`<p style="margin:0 0 1em;">${escHtml(text)}</p>`; break;
+      case 'character':     body+=`<p style="margin:1em 0 0;margin-left:200px;text-transform:uppercase;">${escHtml(text)}</p>`; break;
+      case 'dialogue':      body+=`<p style="margin:0 100px 0.5em 120px;">${escHtml(text)}</p>`; break;
+      case 'parenthetical': body+=`<p style="margin:0 160px 0.25em 150px;font-style:italic;">${escHtml(text)}</p>`; break;
+      case 'transition':    body+=`<p style="text-align:right;text-transform:uppercase;margin:1em 0;font-weight:bold;">${escHtml(text)}</p>`; break;
+      default:              body+=`<p style="margin:0 0 0.5em;">${escHtml(text)}</p>`;
+    }
+  });
+  const tp=doc.titlePage||{};
+  const titlePage=`<div style="min-height:90vh;display:flex;flex-direction:column;align-items:center;justify-content:center;page-break-after:always;text-align:center;"><div style="margin-bottom:60px;"><div style="font-size:22px;font-weight:bold;text-transform:uppercase;margin-bottom:12px;">${escHtml(tp.title||doc.title||'Untitled')}</div>${tp.writtenBy?`<div style="margin-top:20px;font-size:14px;">Written by</div><div style="font-size:16px;font-weight:bold;">${escHtml(tp.writtenBy)}</div>`:''}${tp.basedOn?`<div style="margin-top:16px;font-size:13px;color:#555;">${escHtml(tp.basedOn)}</div>`:''}</div>${tp.contact?`<div style="margin-top:40px;font-size:12px;color:#555;text-align:left;">${escHtml(tp.contact)}</div>`:''}</div>`;
+  return `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>*{box-sizing:border-box;margin:0;padding:0;}body{background:white;color:#111;font-family:'Courier New',Courier,monospace;font-size:12pt;line-height:1.7;}.sp-page{max-width:680px;margin:0 auto;padding:72px 72px 72px 96px;}@media print{.sp-page{padding:1in 1in 1in 1.5in;}}</style></head><body><div class="sp-page">${titlePage}${body}</div></body></html>`;
+}
+
+function buildNarrativePdf(project,doc){
+  const rawHtml=doc.content||'<p>Empty document.</p>';
+  return `<!DOCTYPE html><html><head><meta charset="UTF-8">${pdfBaseStyles()}<style>.narrative-body{max-width:640px;margin:0 auto;font-size:14px;line-height:1.9;}.narrative-body h1,.narrative-body h2,.narrative-body h3{font-family:'Belleza',serif;color:#2d6a4f;margin:1.4em 0 0.5em;}.narrative-body p{margin-bottom:0.8em;}.narrative-body ul,.narrative-body ol{padding-left:1.6em;margin-bottom:0.8em;}</style></head><body><div class="pdf-page">${pdfHeader(project.name,escHtml(doc.title||'Untitled'),'Narrative document')}<div class="narrative-body">${rawHtml}</div>${pdfFooter(project.name)}</div></body></html>`;
+}
+
+function showPdfOverlay(title,htmlContent,onDownload){
+  const existing=document.getElementById('pdf-overlay-wrap');
+  if(existing)existing.remove();
+  const overlay=document.createElement('div');overlay.className='pdf-overlay';overlay.id='pdf-overlay-wrap';
+  const frame=document.createElement('div');frame.className='pdf-frame';
+  const topbar=document.createElement('div');topbar.className='pdf-frame-topbar';
+  topbar.innerHTML=`<div class="pdf-frame-title">${escHtml(title)}</div>`;
+  const actions=document.createElement('div');actions.className='pdf-frame-actions';
+  const dlBtn=document.createElement('button');dlBtn.className='btn btn-primary btn-sm';dlBtn.textContent='⬇ Download PDF';dlBtn.onclick=onDownload;
+  const closeBtn=document.createElement('button');closeBtn.className='btn btn-ghost btn-sm';closeBtn.style.cssText='background:rgba(255,255,255,0.1);border-color:rgba(255,255,255,0.2);color:white;';closeBtn.textContent='✕ Close';closeBtn.onclick=()=>overlay.remove();
+  actions.append(dlBtn,closeBtn);topbar.appendChild(actions);
+  const body=document.createElement('div');body.className='pdf-frame-body';
+  const iframe=document.createElement('iframe');iframe.style.cssText='width:100%;height:100%;min-height:70vh;border:none;background:white;';iframe.srcdoc=htmlContent;
+  body.appendChild(iframe);frame.append(topbar,body);overlay.appendChild(frame);document.body.appendChild(overlay);
+  overlay.addEventListener('click',e=>{if(e.target===overlay)overlay.remove();});
+}
+
+function downloadPdf(htmlContent,filename){
+  const win=window.open('','_blank');
+  if(!win){toast('Please allow popups to download PDF','error');return;}
+  win.document.write(htmlContent);win.document.close();
+  win.onload=()=>setTimeout(()=>win.print(),300);
+}
+
+async function hashData(data){
+  const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(JSON.stringify(data)));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('').slice(0,16);
+}
+
+// ══════════════════════════════════════════════
+//  DOCUMENT LIBRARY
+// ══════════════════════════════════════════════
+const DOC_TYPES={
+  'project':{label:'Full Project PDF',icon:'◈'},
+  'characters':{label:'Characters',icon:'◉'},
+  'locations':{label:'Locations',icon:'⬡'},
+  'scenes':{label:'Scenes',icon:'◧'},
+  'world':{label:'World Building',icon:'◎'},
+  'outline':{label:'Outline',icon:'≡'},
+  'screenplay':{label:'Screenplay',icon:'✦'},
+  'narrative':{label:'Narrative Document',icon:'✦'},
+};
+
+async function renderDocumentLibrary(container,projectId){
+  container.innerHTML='<div style="padding:60px;text-align:center;color:var(--fg3);">Loading…</div>';
+  const [project,generatedDocs]=await Promise.all([fsGet('projects',projectId),fsQuery('generatedDocs',where('storyProjectId','==',projectId))]);
+  generatedDocs.sort((a,b)=>{
+    const at=a.updatedAt?.toDate?a.updatedAt.toDate():new Date(a.updatedAt||0);
+    const bt=b.updatedAt?.toDate?b.updatedAt.toDate():new Date(b.updatedAt||0);
+    return bt-at;
+  });
+  container.innerHTML='';
+  const wrap=el('div',{class:'page'});
+  const header=el('div',{class:'page-header'});
+  header.innerHTML='<div><div class="page-title">Document Library</div><div class="page-subtitle">Generated PDFs. New versions are only saved when data has changed.</div></div>';
+  const exportBtn=el('button',{class:'btn btn-primary',onclick:()=>generateFullProjectPdf(projectId,project)});
+  exportBtn.textContent='◈ Export Full Project';
+  header.appendChild(exportBtn);
+  wrap.appendChild(header);
+  if(!generatedDocs.length){
+    wrap.appendChild(emptyState('📁','No Documents Yet','Generate PDFs from any tool page, or click Export Full Project above.'));
+  } else {
+    const groups={};
+    generatedDocs.forEach(d=>{
+      const key=d.docType+'|'+(d.sourceId||'');
+      if(!groups[key])groups[key]={docType:d.docType,sourceId:d.sourceId,sourceTitle:d.sourceTitle,versions:[]};
+      groups[key].versions.push(d);
+    });
+    const list=el('div',{class:'doclibrary-list'});
+    Object.values(groups).forEach(group=>{
+      group.versions.sort((a,b)=>b.version-a.version);
+      const latest=group.versions[0];
+      const typeInfo=DOC_TYPES[group.docType]||{label:group.docType,icon:'◈'};
+      const item=el('div',{class:'doclibrary-item'});
+      const itemHeader=el('div',{class:'doclibrary-item-header'});
+      const titleBlock=el('div');
+      titleBlock.innerHTML=`<div class="doclibrary-item-title">${typeInfo.icon} ${escHtml(group.sourceTitle||typeInfo.label)}</div><div class="doclibrary-item-meta">${group.versions.length} version${group.versions.length!==1?'s':''} · Latest: ${relativeTime(latest.updatedAt)}</div>`;
+      const actions=el('div',{style:'display:flex;gap:6px;flex-shrink:0;'});
+      const previewBtn=el('button',{class:'btn btn-ghost btn-sm',onclick:()=>showPdfOverlay(group.sourceTitle||typeInfo.label,latest.htmlContent,()=>downloadPdf(latest.htmlContent,sanitizeFilename(group.sourceTitle||group.docType)+'.pdf'))});
+      previewBtn.textContent='👁 Preview';
+      const dlBtn=el('button',{class:'btn btn-primary btn-sm',onclick:()=>downloadPdf(latest.htmlContent,sanitizeFilename(group.sourceTitle||group.docType)+'.pdf')});
+      dlBtn.textContent='⬇ Download';
+      actions.append(previewBtn,dlBtn);itemHeader.append(titleBlock,actions);item.appendChild(itemHeader);
+      if(group.versions.length>1){
+        const versions=el('div',{class:'doclibrary-versions'});
+        group.versions.forEach((ver,i)=>{
+          const vrow=el('div',{class:'doclibrary-version'});
+          const vlabel=el('div',{class:'doclibrary-version-label'});
+          const badge=el('span',{class:'version-badge'+(i===0?' version-current':'')});badge.textContent='v'+ver.version;
+          vlabel.append(badge,document.createTextNode(' '+relativeTime(ver.updatedAt)));
+          const vdl=el('button',{class:'btn btn-ghost btn-sm',onclick:()=>downloadPdf(ver.htmlContent,sanitizeFilename(group.sourceTitle||group.docType)+'-v'+ver.version+'.pdf')});
+          vdl.textContent='⬇';vrow.append(vlabel,vdl);versions.appendChild(vrow);
+        });
+        item.appendChild(versions);
+      }
+      list.appendChild(item);
+    });
+    wrap.appendChild(list);
+  }
+  container.appendChild(wrap);
+}
+
+function sanitizeFilename(s){return(s||'document').replace(/[^a-zA-Z0-9\s\-_]/g,'').replace(/\s+/g,'-').toLowerCase();}
+
+async function generateAndStorePdf(docType,projectId,project,sourceId,sourceTitle,htmlContent){
+  const contentHash=await hashData(htmlContent||docType+projectId+sourceId);
+  const existing=await fsQuery('generatedDocs',where('storyProjectId','==',projectId));
+  const matching=existing.filter(d=>d.docType===docType&&(d.sourceId||'')===(sourceId||''));
+  matching.sort((a,b)=>b.version-a.version);
+  if(matching.length>0&&matching[0].contentHash===contentHash){
+    toast('No changes since last version — showing existing document');
+    showPdfOverlay(sourceTitle||DOC_TYPES[docType]?.label||docType,matching[0].htmlContent,()=>downloadPdf(matching[0].htmlContent,sanitizeFilename(sourceTitle||docType)+'.pdf'));
+    return;
+  }
+  const newVersion=matching.length>0?matching[0].version+1:1;
+  showSaving();
+  await fsCreate('generatedDocs',{storyProjectId:projectId,docType,sourceId:sourceId||'',sourceTitle:sourceTitle||DOC_TYPES[docType]?.label||docType,version:newVersion,contentHash,htmlContent});
+  showSaved();
+  toast('Version '+newVersion+' saved to Document Library');
+  showPdfOverlay(sourceTitle||DOC_TYPES[docType]?.label||docType,htmlContent,()=>downloadPdf(htmlContent,sanitizeFilename(sourceTitle||docType)+'.pdf'));
+}
+
+async function generateCharactersPdf(projectId){
+  const[project,chars]=await Promise.all([fsGet('projects',projectId),fsQuery('characters',where('storyProjectId','==',projectId))]);
+  await generateAndStorePdf('characters',projectId,project,'characters','Characters',buildCharactersPdf(project,chars));
+}
+async function generateLocationsPdf(projectId){
+  const[project,locs]=await Promise.all([fsGet('projects',projectId),fsQuery('locations',where('storyProjectId','==',projectId))]);
+  await generateAndStorePdf('locations',projectId,project,'locations','Locations',buildLocationsPdf(project,locs));
+}
+async function generateScenesPdf(projectId){
+  const[project,scenes,chars,locs]=await Promise.all([fsGet('projects',projectId),fsQuery('scenes',where('storyProjectId','==',projectId)),fsQuery('characters',where('storyProjectId','==',projectId)),fsQuery('locations',where('storyProjectId','==',projectId))]);
+  scenes.sort((a,b)=>(a.sequenceNumber||0)-(b.sequenceNumber||0));
+  await generateAndStorePdf('scenes',projectId,project,'scenes','Scenes',buildScenesPdf(project,scenes,chars,locs));
+}
+async function generateWorldPdf(projectId){
+  const[project,worlds]=await Promise.all([fsGet('projects',projectId),fsQuery('worlds',where('storyProjectId','==',projectId))]);
+  await generateAndStorePdf('world',projectId,project,'world','World Building',buildWorldPdf(project,worlds[0]||{}));
+}
+async function generateOutlinePdf(projectId,outlineId,outlineName){
+  const[project,allItems]=await Promise.all([fsGet('projects',projectId),fsQuery('outlines',where('storyProjectId','==',projectId))]);
+  const items=allItems.filter(i=>(i.outlineId||'default')===outlineId).sort((a,b)=>(a.order||0)-(b.order||0));
+  await generateAndStorePdf('outline',projectId,project,'outline-'+outlineId,outlineName,buildOutlinePdf(project,items,outlineName));
+}
+async function generateFullProjectPdf(projectId,project){
+  if(!project)project=await fsGet('projects',projectId);
+  showSaving();
+  const[chars,locs,scenes,worlds,allOutlines]=await Promise.all([
+    fsQuery('characters',where('storyProjectId','==',projectId)),
+    fsQuery('locations',where('storyProjectId','==',projectId)),
+    fsQuery('scenes',where('storyProjectId','==',projectId)),
+    fsQuery('worlds',where('storyProjectId','==',projectId)),
+    fsQuery('outlines',where('storyProjectId','==',projectId)),
+  ]);
+  const world=worlds[0]||{};
+  const firstGroupId=allOutlines.length?(allOutlines[0].outlineId||'default'):'default';
+  const outlineItems=allOutlines.filter(i=>(i.outlineId||'default')===firstGroupId).sort((a,b)=>(a.order||0)-(b.order||0));
+  const outlineName=outlineItems.length?(outlineItems[0].outlineName||'Outline'):'Outline';
+  scenes.sort((a,b)=>(a.sequenceNumber||0)-(b.sequenceNumber||0));
+  const html=buildProjectPdf(project,chars,locs,scenes,world,outlineItems,outlineName);
+  await generateAndStorePdf('project',projectId,project,'project','Full Project — '+project.name,html);
+}
+async function generateWritingDeskPdf(projectId,doc){
+  const project=await fsGet('projects',projectId);
+  const html=doc.type==='screenplay'?buildScreenplayPdf(project,doc):buildNarrativePdf(project,doc);
+  await generateAndStorePdf(doc.type==='screenplay'?'screenplay':'narrative',projectId,project,'doc-'+doc.id,doc.title||'Untitled',html);
+}
+
 
 // ══════════════════════════════════════════════
 //  VEGAS NOIR SEED — only runs for the owner UID
