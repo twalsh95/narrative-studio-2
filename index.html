@@ -283,20 +283,6 @@
 <div id="toast-container"></div>
 
 <script type="module">
-// ── Visible error handler (catches module load failures) ──
-window.onerror = function(msg, src, line, col, err) {
-  const d = document.createElement('div');
-  d.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#c0392b;color:white;padding:16px 20px;font-family:monospace;font-size:13px;z-index:9999;white-space:pre-wrap;';
-  d.textContent = 'JS Error: ' + msg + '\nLine: ' + line + '\nSource: ' + src;
-  document.body.appendChild(d);
-};
-window.addEventListener('unhandledrejection', function(e) {
-  const d = document.createElement('div');
-  d.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#c0392b;color:white;padding:16px 20px;font-family:monospace;font-size:13px;z-index:9999;white-space:pre-wrap;';
-  d.textContent = 'Promise Error: ' + (e.reason?.message || e.reason || 'Unknown');
-  document.body.appendChild(d);
-});
-
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js';
 import {
   getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
