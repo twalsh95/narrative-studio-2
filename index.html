@@ -9,7 +9,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Belleza&family=Lora:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
+ 
   /* ── DARK MODE (default) ── */
   :root, [data-theme="dark"] {
     --bg:#181f1a; --bg2:#1c2620; --bg3:#223028; --border:#2a3d2d; --border2:#3a5540;
@@ -26,7 +26,7 @@
     --btn-primary-shadow:rgba(82,183,136,0.3);
     --sp-char-color:#74c99e;
   }
-
+ 
   /* ── LIGHT MODE ── */
   [data-theme="light"] {
     --bg:#f2f3f1; --bg2:#e8ebe7; --bg3:#dde3da; --border:#d1d8d0; --border2:#b8c4b6;
@@ -43,12 +43,12 @@
     --btn-primary-shadow:rgba(45,106,79,0.25);
     --sp-char-color:#2d6a4f;
   }
-
+ 
   html,body{height:100%;background:var(--bg);color:var(--fg);font-family:'Lora',Georgia,serif;font-size:15px;line-height:1.6;transition:background 0.2s,color 0.2s;}
   #app{height:100%;display:flex;flex-direction:column;}
   h1,h2,h3{font-family:'Belleza',serif;letter-spacing:0.03em;}
   ::-webkit-scrollbar{width:6px;height:6px;} ::-webkit-scrollbar-track{background:transparent;} ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px;}
-
+ 
   /* ── Buttons ── */
   .btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:var(--radius-sm);border:none;cursor:pointer;font-family:'Lora',serif;font-size:13px;transition:all 0.18s ease;white-space:nowrap;}
   .btn-primary{background:var(--primary);color:white;} .btn-primary:hover{background:var(--primary-d);transform:translateY(-1px);box-shadow:0 4px 12px var(--btn-primary-shadow);}
@@ -56,14 +56,14 @@
   .btn-danger{background:transparent;color:var(--red);border:1px solid rgba(224,92,111,0.3);} .btn-danger:hover{background:rgba(224,92,111,0.1);}
   .btn-icon{padding:7px;border-radius:var(--radius-sm);background:transparent;border:none;cursor:pointer;color:var(--fg3);transition:all 0.15s;font-size:14px;} .btn-icon:hover{background:var(--bg3);color:var(--fg);}
   .btn-sm{padding:5px 10px;font-size:12px;}
-
+ 
   /* ── Inputs ── */
   .input,.textarea,.select{width:100%;padding:9px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--fg);font-family:'Lora',serif;font-size:14px;outline:none;transition:border-color 0.2s;}
   .input:focus,.textarea:focus,.select:focus{border-color:var(--primary);box-shadow:0 0 0 2px var(--input-focus-shadow);}
   .textarea{resize:vertical;min-height:80px;line-height:1.6;} .select{appearance:none;cursor:pointer;}
   .input::placeholder,.textarea::placeholder{color:var(--fg3);}
   .label{font-size:12px;color:var(--fg3);margin-bottom:5px;display:block;letter-spacing:0.06em;text-transform:uppercase;}
-
+ 
   /* ── Topbar ── */
   #topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 24px;border-bottom:1px solid var(--border);background:var(--topbar-bg);backdrop-filter:blur(12px);position:sticky;top:0;z-index:100;}
   .topbar-logo{font-family:'Belleza',serif;font-size:22px;color:var(--primary);letter-spacing:0.08em;display:flex;align-items:center;gap:10px;cursor:pointer;}
@@ -72,7 +72,7 @@
   .user-avatar{width:30px;height:30px;border-radius:50%;background:var(--primary);display:flex;align-items:center;justify-content:center;font-family:'Belleza',serif;font-size:14px;color:white;}
   .breadcrumb{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--fg3);}
   .breadcrumb span{cursor:pointer;transition:color 0.15s;} .breadcrumb span:hover{color:var(--primary);} .breadcrumb .sep{opacity:0.4;}
-
+ 
   /* ── Theme toggle ── */
   .theme-toggle{display:flex;align-items:center;gap:7px;cursor:pointer;padding:4px 10px;border-radius:20px;background:var(--bg3);border:1px solid var(--border);transition:all 0.15s;}
   .theme-toggle:hover{border-color:var(--border2);}
@@ -81,7 +81,7 @@
   .toggle-knob{width:12px;height:12px;border-radius:50%;background:white;position:absolute;top:3px;left:3px;transition:transform 0.2s;}
   .toggle-track.on .toggle-knob{transform:translateX(16px);}
   .toggle-label{font-size:11px;color:var(--fg3);font-family:'JetBrains Mono',monospace;}
-
+ 
   /* ── Layout ── */
   #main{flex:1;display:flex;overflow:hidden;}
   #sidebar{width:220px;flex-shrink:0;border-right:1px solid var(--border);background:var(--bg2);display:flex;flex-direction:column;overflow-y:auto;}
@@ -203,6 +203,35 @@
   /* Guided prompts toggle */
   .guide-toggle{font-size:12px;color:var(--primary);cursor:pointer;margin-bottom:6px;display:inline-flex;align-items:center;gap:4px;opacity:0.8;}
   .guide-toggle:hover{opacity:1;}
+  /* Phase 4 — Props */
+  .props-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;}
+  /* Phase 4 — Linking */
+  .link-btn{display:inline-flex;align-items:center;gap:3px;padding:1px 6px;border-radius:4px;font-size:11px;font-family:'JetBrains Mono',monospace;cursor:pointer;border:1px solid;text-decoration:none;transition:opacity 0.15s;}
+  .link-btn:hover{opacity:0.75;}
+  .link-char{background:rgba(82,183,136,0.12);color:var(--primary);border-color:rgba(82,183,136,0.25);}
+  .link-loc{background:rgba(94,202,200,0.1);color:var(--teal);border-color:rgba(94,202,200,0.25);}
+  .link-scene{background:rgba(104,147,239,0.1);color:var(--accent);border-color:rgba(104,147,239,0.25);}
+  .link-prop{background:rgba(229,184,110,0.1);color:var(--gold);border-color:rgba(229,184,110,0.25);}
+  .link-popover{position:absolute;background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius-sm);padding:6px 4px;z-index:60;box-shadow:var(--shadow);min-width:160px;animation:fadeIn 0.1s;}
+  .link-popover-title{font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:var(--fg3);padding:4px 10px 6px;font-family:'JetBrains Mono',monospace;}
+  .link-popover-item{padding:6px 10px;font-size:12px;cursor:pointer;border-radius:4px;color:var(--fg2);display:flex;align-items:center;gap:7px;transition:background 0.1s;}
+  .link-popover-item:hover{background:var(--active-bg);color:var(--primary);}
+  .link-popover-sep{height:1px;background:var(--border);margin:4px 0;}
+  /* Phase 4 — Beat Board */
+  .beat-board{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;padding:4px 2px;}
+  .beat-card{background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;cursor:grab;transition:all 0.2s;position:relative;}
+  .beat-card:hover{border-color:var(--border2);box-shadow:0 2px 12px rgba(0,0,0,0.2);}
+  .beat-card.dragging{opacity:0.4;cursor:grabbing;}
+  .beat-card.drag-over{border-color:var(--primary);background:var(--active-bg);}
+  .beat-card-num{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--fg3);margin-bottom:6px;}
+  .beat-card-title{font-family:'Belleza',serif;font-size:14px;color:var(--fg);margin-bottom:6px;line-height:1.3;}
+  .beat-card-desc{font-size:11px;color:var(--fg3);line-height:1.5;margin-bottom:8px;}
+  .beat-card-tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;}
+  .beat-card-actions{position:absolute;top:8px;right:8px;display:flex;gap:3px;opacity:0;transition:opacity 0.15s;}
+  .beat-card:hover .beat-card-actions{opacity:1;}
+  .beat-add-card{background:transparent;border:1px dashed var(--border2);border-radius:var(--radius);padding:14px 16px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;color:var(--fg3);font-size:13px;transition:all 0.2s;min-height:80px;}
+  .beat-add-card:hover{border-color:var(--primary);color:var(--primary);background:var(--active-bg);}
+ 
   /* Document Library */
   .doclibrary-list{display:flex;flex-direction:column;gap:10px;}
   .doclibrary-item{background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:16px 20px;transition:all 0.2s;}
@@ -233,44 +262,6 @@
   .outline-item{cursor:grab;user-select:none;}
   .outline-item.dragging{opacity:0.4;cursor:grabbing;}
   .outline-item.drag-over{border-color:var(--primary);background:var(--active-bg);}
-
-  /* ── CLASSROOM / TEACHER STYLES ── */
-  .teacher-banner{position:sticky;top:0;z-index:90;background:linear-gradient(135deg,rgba(104,147,239,0.18),rgba(94,202,200,0.12));border-bottom:2px solid var(--accent);padding:10px 28px;display:flex;align-items:center;justify-content:space-between;gap:16px;backdrop-filter:blur(8px);}
-  .teacher-banner-left{display:flex;align-items:center;gap:10px;}
-  .teacher-banner-badge{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;background:var(--accent);color:white;padding:3px 9px;border-radius:10px;}
-  .teacher-banner-name{font-family:'Belleza',serif;font-size:15px;color:var(--fg);}
-  .teacher-banner-sub{font-size:12px;color:var(--fg3);}
-  .home-tabs{display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:32px;}
-  .home-tab{padding:11px 22px;font-size:14px;cursor:pointer;color:var(--fg3);border-bottom:3px solid transparent;margin-bottom:-2px;transition:all 0.15s;font-family:'Lora',serif;}
-  .home-tab:hover{color:var(--fg2);}
-  .home-tab.active{color:var(--primary);border-bottom-color:var(--primary);}
-  .roster-table{width:100%;border-collapse:collapse;margin-top:8px;}
-  .roster-table th{text-align:left;font-size:11px;letter-spacing:0.07em;text-transform:uppercase;color:var(--fg3);font-family:'JetBrains Mono',monospace;font-weight:500;padding:10px 14px;border-bottom:1px solid var(--border);}
-  .roster-table td{padding:14px 14px;border-bottom:1px solid var(--border);font-size:13px;color:var(--fg2);vertical-align:middle;}
-  .roster-table tr:last-child td{border-bottom:none;}
-  .roster-table tr:hover td{background:var(--bg3);}
-  .roster-status{display:inline-flex;align-items:center;gap:5px;font-size:11px;padding:3px 9px;border-radius:10px;}
-  .roster-status.pending{background:rgba(229,184,110,0.15);color:var(--gold);border:1px solid rgba(229,184,110,0.25);}
-  .roster-status.active{background:rgba(111,207,151,0.12);color:var(--green);border:1px solid rgba(111,207,151,0.2);}
-  .class-code-display{display:inline-flex;align-items:center;gap:10px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px 16px;font-family:'JetBrains Mono',monospace;font-size:20px;letter-spacing:0.12em;color:var(--primary);}
-  .feedback-fab{position:fixed;bottom:28px;right:28px;z-index:80;background:var(--accent);color:white;border:none;border-radius:50px;padding:12px 20px;font-family:'Belleza',serif;font-size:14px;cursor:pointer;box-shadow:0 4px 20px rgba(104,147,239,0.4);transition:all 0.2s;display:flex;align-items:center;gap:8px;}
-  .feedback-fab:hover{transform:translateY(-2px);box-shadow:0 6px 28px rgba(104,147,239,0.5);}
-  .comment-thread{display:flex;flex-direction:column;gap:12px;}
-  .comment-bubble{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px;}
-  .comment-bubble-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
-  .comment-bubble-author{font-size:11px;color:var(--accent);font-family:'JetBrains Mono',monospace;font-weight:500;}
-  .comment-bubble-time{font-size:10px;color:var(--fg3);}
-  .comment-bubble-text{font-size:13px;color:var(--fg2);line-height:1.5;}
-  .comment-empty{text-align:center;padding:32px;color:var(--fg3);font-size:13px;font-style:italic;}
-  .feedback-panel{position:fixed;right:0;top:0;bottom:0;width:340px;background:var(--bg2);border-left:1px solid var(--border);display:flex;flex-direction:column;z-index:85;box-shadow:-4px 0 20px rgba(0,0,0,0.3);animation:slideIn 0.2s ease;}
-  .feedback-panel-header{padding:18px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
-  .feedback-panel-title{font-family:'Belleza',serif;font-size:18px;}
-  .feedback-panel-body{flex:1;overflow-y:auto;padding:16px;}
-  .feedback-panel-footer{padding:14px 16px;border-top:1px solid var(--border);}
-  .student-project-card{background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:20px;cursor:pointer;transition:all 0.2s;position:relative;overflow:hidden;}
-  .student-project-card:hover{border-color:var(--border2);box-shadow:var(--shadow);transform:translateY(-2px);}
-  .teacher-settings-section{background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin-bottom:20px;}
-  .teacher-settings-section h3{font-family:'Belleza',serif;font-size:17px;margin-bottom:16px;color:var(--primary);}
 </style>
 </head>
 <body>
@@ -290,7 +281,7 @@
   <div id="auth-container"></div>
 </div>
 <div id="toast-container"></div>
-
+ 
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
 import {
@@ -301,7 +292,7 @@ import {
   getFirestore, collection, doc, addDoc, setDoc, getDoc, getDocs,
   updateDoc, deleteDoc, query, where, orderBy, serverTimestamp, writeBatch
 } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
-
+ 
 // ══════════════════════════════════════════════
 //  FIREBASE INIT
 // ══════════════════════════════════════════════
@@ -313,23 +304,23 @@ const firebaseConfig = {
   messagingSenderId: "465446631091",
   appId: "1:465446631091:web:fe86a6f49d8e8e947d22c6"
 };
-
+ 
 const firebaseApp = initializeApp(firebaseConfig);
 const auth = getAuth(firebaseApp);
 const db = getFirestore(firebaseApp);
-
+ 
 // ══════════════════════════════════════════════
 //  THEME SYSTEM
 // ══════════════════════════════════════════════
 let currentTheme = 'dark';
-
+ 
 function applyTheme(theme) {
   currentTheme = theme;
   document.documentElement.setAttribute('data-theme', theme);
   document.querySelectorAll('.toggle-track').forEach(t => t.classList.toggle('on', theme === 'light'));
   document.querySelectorAll('.toggle-label').forEach(t => t.textContent = theme === 'light' ? 'Light' : 'Dark');
 }
-
+ 
 function toggleTheme() {
   const next = currentTheme === 'dark' ? 'light' : 'dark';
   applyTheme(next);
@@ -339,14 +330,14 @@ function toggleTheme() {
     });
   }
 }
-
+ 
 async function loadUserTheme() {
   try {
     const prefs = await fsGet('userPrefs', 'prefs');
     applyTheme(prefs && prefs.theme ? prefs.theme : 'dark');
   } catch { applyTheme('dark'); }
 }
-
+ 
 function themeToggleEl() {
   const wrap = document.createElement('div');
   wrap.className = 'theme-toggle';
@@ -354,7 +345,7 @@ function themeToggleEl() {
   wrap.innerHTML = `<div class="toggle-track${currentTheme==='light'?' on':''}"><div class="toggle-knob"></div></div><span class="toggle-label">${currentTheme==='light'?'Light':'Dark'}</span>`;
   return wrap;
 }
-
+ 
 // ══════════════════════════════════════════════
 //  UTILS
 // ══════════════════════════════════════════════
@@ -399,15 +390,15 @@ function setSavingIndicator(text,color){
   const el=document.getElementById('saving-indicator');
   if(el){el.textContent=text; el.style.color=color;}
 }
-
+ 
 // ══════════════════════════════════════════════
 //  FIRESTORE HELPERS
 // ══════════════════════════════════════════════
 let currentUser = null;
-
+ 
 function userCol(colName){ return collection(db,'users',currentUser.uid,colName); }
 function userDoc(colName,id){ return doc(db,'users',currentUser.uid,colName,id); }
-
+ 
 async function fsCreate(colName, data){
   const ref = await addDoc(userCol(colName), {...data, createdAt:serverTimestamp(), updatedAt:serverTimestamp()});
   return ref.id;
@@ -434,71 +425,16 @@ async function fsBatchDelete(colName, fieldName, value){
   items.forEach(item => batch.delete(userDoc(colName,item.id)));
   await batch.commit();
 }
-
-// ── Cross-user helpers (teacher reads student data) ──
-function studentCol(uid, colName){ return collection(db,'users',uid,colName); }
-function studentDocRef(uid, colName, id){ return doc(db,'users',uid,colName,id); }
-
-async function fsGetStudent(uid, colName, id){
-  const snap = await getDoc(studentDocRef(uid,colName,id));
-  return snap.exists() ? {id:snap.id,...snap.data()} : null;
-}
-async function fsQueryStudent(uid, colName, ...constraints){
-  const q = query(studentCol(uid,colName), ...constraints);
-  const snap = await getDocs(q);
-  return snap.docs.map(d=>({id:d.id,...d.data()}));
-}
-
-// ── Global userProfiles collection (top-level, not per-user) ──
-async function getProfile(uid){
-  const snap = await getDoc(doc(db,'userProfiles',uid));
-  return snap.exists() ? {id:snap.id,...snap.data()} : null;
-}
-async function setProfile(uid, data){
-  await setDoc(doc(db,'userProfiles',uid), data, {merge:true});
-}
-async function getAllStudentProfiles(){
-  const q = query(collection(db,'userProfiles'), where('role','==','student'));
-  const snap = await getDocs(q);
-  return snap.docs.map(d=>({id:d.id,...d.data()}));
-}
-// Teacher comments stored at top-level for cross-user access
-async function getTeacherComments(studentUid, projectId){
-  const q = query(collection(db,'teacherComments'), where('studentUid','==',studentUid), where('projectId','==',projectId), orderBy('createdAt','asc'));
-  const snap = await getDocs(q);
-  return snap.docs.map(d=>({id:d.id,...d.data()}));
-}
-async function addTeacherComment(studentUid, projectId, text){
-  await addDoc(collection(db,'teacherComments'),{
-    studentUid, projectId, text,
-    teacherUid: currentUser.uid,
-    teacherName: currentUser.displayName || currentUser.email,
-    createdAt: serverTimestamp()
-  });
-}
-async function deleteTeacherComment(commentId){
-  await deleteDoc(doc(db,'teacherComments',commentId));
-}
-
+ 
 // ══════════════════════════════════════════════
 //  ROUTER
 // ══════════════════════════════════════════════
 let currentRoute = {page:'home', projectId:null, sub:null, subId:null};
-
-// Classroom state — null when not in student-view mode
-let viewingStudent = null; // {uid, displayName, email}
-
 function navigate(page, projectId, sub, subId){
   currentRoute = {page:page||'home', projectId:projectId||null, sub:sub||null, subId:subId||null};
   render();
 }
-function exitStudentView(){
-  viewingStudent = null;
-  // Remove any open feedback panels
-  document.getElementById('feedback-panel-wrap')?.remove();
-  navigate('home');
-}
-
+ 
 // ══════════════════════════════════════════════
 //  RENDER ENGINE
 // ══════════════════════════════════════════════
@@ -508,63 +444,42 @@ async function render(){
   const content = document.getElementById('content');
   const bc = document.getElementById('breadcrumb-area');
   const tr = document.getElementById('topbar-right');
-
+ 
   // Rebuild topbar right (preserve saving indicator)
   tr.innerHTML = '';
   const savingSpan = document.createElement('span');
   savingSpan.id = 'saving-indicator';
   savingSpan.className = 'saving-indicator';
   tr.appendChild(savingSpan);
-
-  // Remove any lingering feedback panel when navigating
-  document.getElementById('feedback-panel-wrap')?.remove();
-
+ 
   if(page==='home'){
     sidebar.style.display='none';
     bc.innerHTML='';
     renderHomeButtons(tr);
-    if(viewingStudent){
-      // Teacher is browsing a student's home screen
-      renderTeacherBanner(content);
-      await renderStudentHome(content, viewingStudent.uid);
-    } else {
-      await renderHome(content);
-    }
+    await renderHome(content);
   } else if(page==='dashboard'){
     sidebar.style.display='flex';
     sidebar.style.flexDirection='column';
-
-    if(viewingStudent){
-      // Render student sidebar (read-only)
-      await renderStudentSidebar(sidebar, viewingStudent.uid, projectId, sub||'overview');
-      renderTeacherBannerInline(bc);
-    } else {
-      await renderSidebar(sidebar, projectId, sub||'overview');
-      renderBreadcrumb(bc, projectId, sub);
-      renderDashboardButtons(tr);
-    }
-
+    await renderSidebar(sidebar, projectId, sub||'overview');
+    renderBreadcrumb(bc, projectId, sub);
+    renderDashboardButtons(tr);
     const s = sub||'overview';
-    const uid = viewingStudent ? viewingStudent.uid : null;
-    if(s==='overview')        await renderOverview(content, projectId, uid);
-    else if(s==='characters') await renderCharacters(content, projectId, uid);
-    else if(s==='locations')  await renderLocations(content, projectId, uid);
-    else if(s==='scenes')     await renderScenes(content, projectId, uid);
-    else if(s==='world')      await renderWorld(content, projectId, uid);
-    else if(s==='outline')    await renderOutline(content, projectId, uid);
-    else if(s==='library')    await renderDocumentLibrary(content, projectId, uid);
+    if(s==='overview')        await renderOverview(content, projectId);
+    else if(s==='characters') await renderCharacters(content, projectId);
+    else if(s==='locations')  await renderLocations(content, projectId);
+    else if(s==='scenes')     await renderScenes(content, projectId);
+    else if(s==='world')      await renderWorld(content, projectId);
+    else if(s==='outline')    await renderOutline(content, projectId);
+    else if(s==='props')      await renderProps(content, projectId);
+    else if(s==='beatboard')  await renderBeatBoard(content, projectId);
+    else if(s==='library')    await renderDocumentLibrary(content, projectId);
     else if(s==='writing'){
-      if(subId) await renderEditor(content, projectId, subId, uid);
-      else await renderWritingDesk(content, projectId, uid);
-    }
-
-    // Show feedback FAB for teacher in student view
-    if(viewingStudent && s!=='writing'){
-      showFeedbackFab(viewingStudent.uid, projectId);
+      if(subId) await renderEditor(content, projectId, subId);
+      else await renderWritingDesk(content, projectId);
     }
   }
 }
-
+ 
 function renderHomeButtons(tr){
   const userDiv = el('div',{class:'user-badge'});
   const avatar = el('div',{class:'user-avatar'},[currentUser.displayName?currentUser.displayName[0].toUpperCase():'U']);
@@ -573,188 +488,23 @@ function renderHomeButtons(tr){
   userDiv.append(avatar,name);
   tr.insertBefore(themeToggleEl(),tr.firstChild);
   tr.insertBefore(signOutBtn,tr.firstChild);
-  if(isTeacher()){
-    const teacherBadge = el('span',{style:'font-family:"JetBrains Mono",monospace;font-size:10px;letter-spacing:0.08em;text-transform:uppercase;background:rgba(104,147,239,0.18);color:var(--accent);border:1px solid rgba(104,147,239,0.3);padding:3px 10px;border-radius:10px;'},'Teacher');
-    tr.insertBefore(teacherBadge,tr.firstChild);
-  }
   tr.insertBefore(userDiv,tr.firstChild);
 }
-
-// ── Teacher banner shown while viewing a student ──
-function renderTeacherBanner(container){
-  const existing = document.getElementById('teacher-banner');
-  if(existing) existing.remove();
-  if(!viewingStudent) return;
-  const banner = el('div',{class:'teacher-banner',id:'teacher-banner'});
-  const left = el('div',{class:'teacher-banner-left'});
-  left.innerHTML=`<span class="teacher-banner-badge">👁 Viewing</span><div><div class="teacher-banner-name">${esc(viewingStudent.displayName||viewingStudent.email)}</div><div class="teacher-banner-sub">Read-only · You can browse and leave feedback, but not edit.</div></div>`;
-  const exitBtn = el('button',{class:'btn btn-ghost btn-sm',onclick:()=>exitStudentView()},'← Exit Student View');
-  banner.append(left,exitBtn);
-  container.parentNode.insertBefore(banner, container);
-}
-
-function renderTeacherBannerInline(bcEl){
-  bcEl.innerHTML='';
-  if(!viewingStudent) return;
-  const banner = el('div',{style:'display:flex;align-items:center;gap:10px;'});
-  banner.innerHTML=`<span style="font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:0.08em;background:rgba(104,147,239,0.18);color:var(--accent);padding:2px 8px;border-radius:8px;">👁 ${esc(viewingStudent.displayName||viewingStudent.email)}</span>`;
-  const exitBtn = el('button',{class:'btn btn-ghost btn-sm',onclick:()=>exitStudentView()},'← Exit');
-  banner.appendChild(exitBtn);
-  bcEl.appendChild(banner);
-}
-
-// ── Render a student's home (teacher view) ──
-async function renderStudentHome(container, studentUid){
-  // Insert banner above content
-  const existing = document.getElementById('teacher-banner');
-  if(!existing){
-    const banner = el('div',{class:'teacher-banner',id:'teacher-banner'});
-    const left = el('div',{class:'teacher-banner-left'});
-    left.innerHTML=`<span class="teacher-banner-badge">👁 Viewing</span><div><div class="teacher-banner-name">${esc(viewingStudent.displayName||viewingStudent.email)}</div><div class="teacher-banner-sub">Read-only · You can browse and leave feedback, but not edit.</div></div>`;
-    const exitBtn = el('button',{class:'btn btn-ghost btn-sm',onclick:()=>exitStudentView()},'← Exit Student View');
-    banner.append(left,exitBtn);
-    container.before(banner);
-  }
-
-  container.innerHTML='<div style="padding:60px;text-align:center;color:var(--fg3);">Loading student workspace…</div>';
-  const projects = await fsQueryStudent(studentUid, 'projects', orderBy('updatedAt','desc'));
-  container.innerHTML='';
-  const wrap = el('div',{id:'home-wrap'});
-  const hero = el('div',{class:'home-hero'});
-  hero.innerHTML=`<h1 style="font-size:32px;">${esc(viewingStudent.displayName||'Student')}'s Projects</h1><p style="margin-bottom:0;">${projects.length} project${projects.length!==1?'s':''}</p>`;
-  wrap.appendChild(hero);
-
-  if(!projects.length){
-    wrap.appendChild(emptyState('✦','No Projects Yet','This student hasn't created any projects.'));
-  } else {
-    const grid = el('div',{class:'projects-grid'});
-    projects.forEach(p=>{
-      const card = el('div',{class:'student-project-card',onclick:()=>navigate('dashboard',p.id,'overview')});
-      card.appendChild(el('div',{class:'project-card-color',style:'background:'+colorStyle(p.colorLabel)}));
-      card.appendChild(el('h3',{style:'font-family:"Belleza",serif;font-size:18px;margin-bottom:6px;'},[p.name||'Untitled']));
-      card.appendChild(el('p',{style:'font-size:13px;color:var(--fg3);line-height:1.5;margin-bottom:16px;'},[p.description||'No description.']));
-      const meta = el('div',{style:'font-size:11px;color:var(--fg3);display:flex;align-items:center;justify-content:space-between;'});
-      meta.innerHTML=`<span>${relativeTime(p.updatedAt)}</span><span class="tag" style="font-size:10px;">💬 Feedback</span>`;
-      card.appendChild(meta);
-      grid.appendChild(card);
-    });
-    wrap.appendChild(grid);
-  }
-  container.appendChild(wrap);
-}
-
-// ── Student-view sidebar (read-only nav) ──
-async function renderStudentSidebar(sb, studentUid, projectId, active){
-  sb.innerHTML='';
-  const p = await fsGetStudent(studentUid,'projects',projectId);
-  if(p){
-    const info = el('div',{class:'sidebar-project'});
-    info.innerHTML='<div class="sidebar-project-name">'+esc(p.name)+'</div><div class="sidebar-project-tag" style="color:var(--accent);">👁 Read-only</div>';
-    sb.appendChild(info);
-    sb.appendChild(el('div',{class:'sidebar-divider'}));
-  }
-  const nav = el('div',{class:'nav-section'});
-  NAV_ITEMS.forEach(item=>{
-    const isActive = item.id===active || (item.id==='writing'&&active==='writing');
-    const navItem = el('div',{class:'nav-item'+(isActive?' active':''),onclick:()=>navigate('dashboard',projectId,item.id)});
-    navItem.innerHTML='<span style="font-size:14px">'+item.icon+'</span><span>'+item.label+'</span>';
-    nav.appendChild(navItem);
-  });
-  sb.appendChild(nav);
-  // Back button instead of delete
-  const bottom = el('div',{class:'sidebar-bottom'});
-  const backBtn = el('button',{class:'btn btn-ghost btn-sm',style:'width:100%;justify-content:center;',onclick:()=>{navigate('home');}});
-  backBtn.textContent='← All Projects';
-  bottom.appendChild(backBtn);
-  sb.appendChild(bottom);
-}
-
-// ── Feedback FAB ──
-function showFeedbackFab(studentUid, projectId){
-  document.getElementById('feedback-fab')?.remove();
-  if(!projectId) return;
-  const fab = el('button',{class:'feedback-fab',id:'feedback-fab',onclick:()=>openFeedbackPanel(studentUid,projectId)});
-  fab.innerHTML='💬 Leave Feedback';
-  document.body.appendChild(fab);
-}
-
-async function openFeedbackPanel(studentUid, projectId){
-  document.getElementById('feedback-panel-wrap')?.remove();
-  const wrap = el('div',{id:'feedback-panel-wrap'});
-  const panel = el('div',{class:'feedback-panel'});
-
-  // Header
-  const header = el('div',{class:'feedback-panel-header'});
-  header.innerHTML=`<div class="feedback-panel-title">💬 Feedback</div>`;
-  const closeBtn = el('button',{class:'btn-icon',onclick:()=>wrap.remove()});closeBtn.textContent='✕';
-  header.appendChild(closeBtn);
-
-  // Body — comment thread
-  const body = el('div',{class:'feedback-panel-body',id:'feedback-thread-body'});
-  body.innerHTML='<div style="color:var(--fg3);font-size:12px;text-align:center;padding:20px;">Loading…</div>';
-
-  // Footer — compose
-  const footer = el('div',{class:'feedback-panel-footer'});
-  const textarea = el('textarea',{class:'textarea',id:'feedback-compose',placeholder:'Leave feedback for this project…',style:'height:72px;font-size:13px;resize:none;'});
-  const sendBtn = el('button',{class:'btn btn-primary btn-sm',style:'width:100%;margin-top:8px;justify-content:center;',onclick:async()=>{
-    const text = document.getElementById('feedback-compose')?.value?.trim();
-    if(!text) return;
-    sendBtn.disabled=true; sendBtn.textContent='Sending…';
-    await addTeacherComment(studentUid, projectId, text);
-    document.getElementById('feedback-compose').value='';
-    sendBtn.disabled=false; sendBtn.textContent='Send Feedback';
-    await loadCommentThread(body, studentUid, projectId);
-    toast('Feedback sent');
-  }});
-  sendBtn.textContent='Send Feedback';
-  footer.append(textarea, sendBtn);
-
-  panel.append(header, body, footer);
-  wrap.appendChild(panel);
-  document.body.appendChild(wrap);
-
-  await loadCommentThread(body, studentUid, projectId);
-}
-
-async function loadCommentThread(bodyEl, studentUid, projectId){
-  bodyEl.innerHTML='';
-  const comments = await getTeacherComments(studentUid, projectId);
-  if(!comments.length){
-    bodyEl.innerHTML='<div class="comment-empty">No feedback yet.<br>Be the first to leave a note.</div>';
-    return;
-  }
-  const thread = el('div',{class:'comment-thread'});
-  comments.forEach(c=>{
-    const bubble = el('div',{class:'comment-bubble'});
-    const header = el('div',{class:'comment-bubble-header'});
-    header.innerHTML=`<span class="comment-bubble-author">${esc(c.teacherName||'Teacher')}</span><span class="comment-bubble-time">${relativeTime(c.createdAt)}</span>`;
-    const text = el('div',{class:'comment-bubble-text'},[c.text]);
-    bubble.append(header,text);
-    // Allow teacher to delete their own comment
-    if(c.teacherUid===currentUser.uid){
-      const del = el('button',{class:'btn-icon btn-sm',style:'font-size:11px;margin-top:4px;color:var(--fg3);',onclick:async()=>{await deleteTeacherComment(c.id);await loadCommentThread(bodyEl,studentUid,projectId);}});
-      del.textContent='✕ Remove';
-      bubble.appendChild(del);
-    }
-    thread.appendChild(bubble);
-  });
-  bodyEl.appendChild(thread);
-}
-
+ 
 function renderDashboardButtons(tr){
   const home = el('button',{class:'btn btn-ghost btn-sm',onclick:()=>navigate('home')},'All Projects');
   tr.insertBefore(themeToggleEl(),tr.firstChild);
   tr.insertBefore(home,tr.firstChild);
 }
-
+ 
 function renderBreadcrumb(bc, projectId, sub){
   bc.innerHTML='';
   // We'll update this after project loads — set a placeholder
   bc.innerHTML='<div class="breadcrumb"><span onclick="navigate(\'home\')">Projects</span>'+(sub&&sub!=='overview'?'<span class="sep">/</span><span style="color:var(--primary)">'+capitalize(sub)+'</span>':'')+'</div>';
 }
-
+ 
 function capitalize(s){return s?s.charAt(0).toUpperCase()+s.slice(1):'';}
-
+ 
 // ══════════════════════════════════════════════
 //  AUTH
 // ══════════════════════════════════════════════
@@ -763,10 +513,10 @@ function renderAuth(){
   document.getElementById('main').style.display='none';
   const container = document.getElementById('auth-container');
   container.innerHTML='';
-
+ 
   let activeTab = 'signin';
   let errorMsg = '';
-
+ 
   function buildAuth(){
     container.innerHTML='';
     const wrap = el('div',{class:'auth-wrap'});
@@ -786,14 +536,14 @@ function renderAuth(){
     `;
     wrap.appendChild(card);
     container.appendChild(wrap);
-
+ 
     card.querySelector('#tab-signin').onclick=()=>{activeTab='signin';errorMsg='';buildAuth();};
     card.querySelector('#tab-signup').onclick=()=>{activeTab='signup';errorMsg='';buildAuth();};
     card.querySelector('#auth-submit').onclick=()=>handleAuth();
     card.addEventListener('keydown',e=>{if(e.key==='Enter')handleAuth();});
     setTimeout(()=>{const em=document.getElementById('auth-email');if(em)em.focus();},50);
   }
-
+ 
   async function handleAuth(){
     const email=v('auth-email'), pass=v('auth-pass'), name=v('auth-name');
     if(!email||!pass){errorMsg='Please enter your email and password.';buildAuth();return;}
@@ -812,10 +562,10 @@ function renderAuth(){
       buildAuth();
     }
   }
-
+ 
   buildAuth();
 }
-
+ 
 function friendlyAuthError(code){
   const map = {
     'auth/email-already-in-use':'That email is already registered. Try signing in.',
@@ -828,63 +578,36 @@ function friendlyAuthError(code){
   };
   return map[code]||'Something went wrong. Please try again.';
 }
-
+ 
 async function handleSignOut(){
   await signOut(auth);
 }
-
+ 
 // ══════════════════════════════════════════════
 //  HOME PAGE
 // ══════════════════════════════════════════════
-let homeTab = 'projects'; // 'projects' | 'roster'
-
 async function renderHome(container){
   container.innerHTML='<div style="padding:60px;text-align:center;color:var(--fg3);">Loading your projects…</div>';
   const projects = await fsQuery('projects', orderBy('updatedAt','desc'));
   container.innerHTML='';
   const wrap = el('div',{id:'home-wrap'});
-
   const hero = el('div',{class:'home-hero'});
   hero.innerHTML='<h1>Narrative Studio</h1><p>Welcome back, '+(currentUser.displayName||'writer')+'.</p>';
-  if(!viewingStudent){
-    const newBtn = el('button',{class:'btn btn-primary',style:'font-size:15px;padding:12px 28px;',onclick:()=>createAndOpenProject()});
-    newBtn.textContent='+ New Story';
-    hero.appendChild(newBtn);
-    // Students get a "Join Class" button
-    if(!isTeacher()){
-      const joinBtn = el('button',{class:'btn btn-ghost',style:'font-size:14px;padding:10px 22px;',onclick:()=>openJoinClassModal()});
-      joinBtn.textContent='🎓 Join a Class';
-      hero.appendChild(joinBtn);
-    }
-  }
+  const newBtn = el('button',{class:'btn btn-primary',style:'font-size:15px;padding:12px 28px;',onclick:()=>createAndOpenProject()});
+  newBtn.textContent='+ New Story';
+  hero.appendChild(newBtn);
   wrap.appendChild(hero);
-
-  // Teacher gets tabs
-  if(isTeacher()){
-    const tabs = el('div',{class:'home-tabs'});
-    const t1 = el('div',{class:'home-tab'+(homeTab==='projects'?' active':''),onclick:()=>{homeTab='projects';renderHome(container);}}, 'My Projects');
-    const t2 = el('div',{class:'home-tab'+(homeTab==='roster'?' active':''),onclick:()=>{homeTab='roster';renderHome(container);}}, '🎓 Class Roster');
-    tabs.append(t1,t2);
-    wrap.appendChild(tabs);
-  }
-
-  if(!isTeacher() || homeTab==='projects'){
-    // Normal project grid
-    if(projects.length===0){
-      wrap.appendChild(emptyState('✦','No Stories Yet','Begin your first project and build a world that lasts.'));
-    } else {
-      const grid = el('div',{class:'projects-grid'});
-      projects.forEach(p=>grid.appendChild(projectCard(p)));
-      wrap.appendChild(grid);
-    }
+ 
+  if(projects.length===0){
+    wrap.appendChild(emptyState('✦','No Stories Yet','Begin your first project and build a world that lasts.'));
   } else {
-    // Teacher roster tab
-    await renderClassRoster(wrap);
+    const grid = el('div',{class:'projects-grid'});
+    projects.forEach(p=>grid.appendChild(projectCard(p)));
+    wrap.appendChild(grid);
   }
-
   container.appendChild(wrap);
 }
-
+ 
 function projectCard(p){
   const card = el('div',{class:'project-card',onclick:()=>navigate('dashboard',p.id)});
   card.appendChild(el('div',{class:'project-card-color',style:'background:'+colorStyle(p.colorLabel)}));
@@ -900,219 +623,12 @@ function projectCard(p){
   card.appendChild(footer);
   return card;
 }
-
-// ══════════════════════════════════════════════
-//  CLASSROOM SYSTEM
-// ══════════════════════════════════════════════
-
-// Teacher UID — same as OWNER_UID used for Vegas Noir seed
-const TEACHER_UID = 'vCXND7JhhscwvGoWS4kztBBDmbk2';
-// Default class code — teacher can change from roster panel
-const DEFAULT_CLASS_CODE = 'WRITE2025';
-
-function isTeacher(){ return currentUser && currentUser.uid === TEACHER_UID; }
-
-// Called on signup and on every login to ensure profile exists
-async function ensureUserProfile(){
-  const uid = currentUser.uid;
-  const existing = await getProfile(uid);
-  if(!existing){
-    await setProfile(uid, {
-      uid,
-      email: currentUser.email,
-      displayName: currentUser.displayName || currentUser.email,
-      role: uid === TEACHER_UID ? 'teacher' : 'student',
-      joinedAt: serverTimestamp()
-    });
-  } else if(!existing.displayName && currentUser.displayName){
-    await setProfile(uid, { displayName: currentUser.displayName });
-  }
-}
-
-// Student calls this to join class via code
-async function joinWithClassCode(code){
-  const snap = await getDocs(query(collection(db,'classSettings'), where('code','==',code.trim().toUpperCase())));
-  if(snap.empty){
-    return {ok:false, error:'Class code not found. Check with your teacher.'};
-  }
-  await setProfile(currentUser.uid,{
-    role:'student',
-    classCode: code.trim().toUpperCase(),
-    enrolledAt: serverTimestamp()
-  });
-  return {ok:true};
-}
-
-// Teacher functions
-async function getClassSettings(){
-  const snap = await getDoc(doc(db,'classSettings','main'));
-  return snap.exists() ? snap.data() : {code: DEFAULT_CLASS_CODE};
-}
-async function saveClassCode(code){
-  await setDoc(doc(db,'classSettings','main'),{code:code.trim().toUpperCase()},{merge:true});
-}
-async function addStudentByEmail(email){
-  // Find a userProfile with this email
-  const q = query(collection(db,'userProfiles'), where('email','==',email.trim().toLowerCase()));
-  const snap = await getDocs(q);
-  if(snap.empty) return {ok:false, error:'No account found with that email. The student must sign up first.'};
-  const profile = snap.docs[0];
-  await setProfile(profile.id,{role:'student',addedByTeacher:true});
-  return {ok:true, name: profile.data().displayName||email};
-}
-async function removeStudent(uid){
-  await setProfile(uid,{role:'removed'});
-}
-
-async function renderClassRoster(wrap){
-  const [students, settings] = await Promise.all([
-    getAllStudentProfiles(),
-    getClassSettings()
-  ]);
-
-  // ── Header row ──
-  const headerRow = el('div',{style:'display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;gap:16px;'});
-  const title = el('div');
-  title.innerHTML=`<div class="page-title" style="font-size:22px;">Class Roster</div><div class="page-subtitle">${students.length} student${students.length!==1?'s':''} enrolled</div>`;
-
-  const hBtns = el('div',{style:'display:flex;gap:8px;'});
-  const addBtn = el('button',{class:'btn btn-primary btn-sm',onclick:()=>openAddStudentModal()},'+ Add by Email');
-  const settingsBtn = el('button',{class:'btn btn-ghost btn-sm',onclick:()=>openClassSettings(settings)},'⚙ Class Settings');
-  hBtns.append(addBtn,settingsBtn);
-  headerRow.append(title,hBtns);
-  wrap.appendChild(headerRow);
-
-  // ── Class code display ──
-  const codeSection = el('div',{style:'background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:20px 24px;margin-bottom:24px;display:flex;align-items:center;justify-content:space-between;gap:20px;'});
-  codeSection.innerHTML=`
-    <div>
-      <div class="label">Student Join Code</div>
-      <div class="class-code-display" id="class-code-val">${esc(settings.code||DEFAULT_CLASS_CODE)}</div>
-    </div>
-    <div style="font-size:12px;color:var(--fg3);max-width:280px;line-height:1.5;">Share this code with students. They enter it from their account settings to join your class roster.</div>
-  `;
-  wrap.appendChild(codeSection);
-
-  // ── Roster table ──
-  if(!students.length){
-    wrap.appendChild(emptyState('🎓','No Students Yet','Add students by email or share the class code above.'));
-    return;
-  }
-
-  const tableWrap = el('div',{style:'background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;'});
-  const table = document.createElement('table');
-  table.className='roster-table';
-  table.innerHTML=`<thead><tr><th>Student</th><th>Email</th><th>Projects</th><th>Status</th><th>Actions</th></tr></thead>`;
-  const tbody = document.createElement('tbody');
-
-  for(const student of students){
-    const projects = await fsQueryStudent(student.uid||student.id,'projects');
-    const tr2 = document.createElement('tr');
-    const initials = (student.displayName||student.email||'?')[0].toUpperCase();
-    tr2.innerHTML=`
-      <td><div style="display:flex;align-items:center;gap:10px;"><div style="width:30px;height:30px;border-radius:50%;background:var(--primary);display:flex;align-items:center;justify-content:center;font-family:'Belleza',serif;font-size:14px;color:white;flex-shrink:0;">${initials}</div><div style="font-weight:500;color:var(--fg);">${esc(student.displayName||'—')}</div></div></td>
-      <td style="color:var(--fg3);">${esc(student.email||'—')}</td>
-      <td><span style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--primary);">${projects.length}</span></td>
-      <td><span class="roster-status active">● Enrolled</span></td>
-    `;
-    const actionTd = document.createElement('td');
-    const viewBtn = el('button',{class:'btn btn-ghost btn-sm',style:'margin-right:6px;',onclick:()=>{
-      viewingStudent={uid:student.uid||student.id,displayName:student.displayName,email:student.email};
-      navigate('home');
-    }});
-    viewBtn.textContent='👁 View Workspace';
-    const removeBtn = el('button',{class:'btn btn-danger btn-sm',onclick:()=>confirmDelete('Remove '+esc(student.displayName||student.email)+' from your roster?',async()=>{await removeStudent(student.uid||student.id);renderHome(document.getElementById('content'));toast('Student removed from roster');})});
-    removeBtn.textContent='✕';
-    actionTd.append(viewBtn,removeBtn);
-    tr2.appendChild(actionTd);
-    tbody.appendChild(tr2);
-  }
-  table.appendChild(tbody);
-  tableWrap.appendChild(table);
-  wrap.appendChild(tableWrap);
-}
-
-function openAddStudentModal(){
-  const overlay=el('div',{class:'modal-overlay',onclick:e=>{if(e.target===overlay)overlay.remove();}});
-  const modal=el('div',{class:'modal'});
-  modal.innerHTML=`
-    <div class="modal-title">Add Student by Email</div>
-    <div class="field" style="margin-bottom:8px;"><label class="label">Student Email Address</label><input class="input" id="add-student-email" type="email" placeholder="student@school.edu"></div>
-    <div id="add-student-error" style="color:var(--red);font-size:13px;min-height:18px;margin-bottom:12px;"></div>
-  `;
-  const footer=el('div',{class:'modal-footer'});
-  const cancelBtn=el('button',{class:'btn btn-ghost',onclick:()=>overlay.remove()});cancelBtn.textContent='Cancel';
-  const addBtn=el('button',{class:'btn btn-primary',onclick:async()=>{
-    const email=document.getElementById('add-student-email')?.value?.trim();
-    if(!email){document.getElementById('add-student-error').textContent='Please enter an email.';return;}
-    addBtn.disabled=true;addBtn.textContent='Searching…';
-    const result=await addStudentByEmail(email);
-    if(!result.ok){document.getElementById('add-student-error').textContent=result.error;addBtn.disabled=false;addBtn.textContent='Add Student';return;}
-    overlay.remove();
-    toast('Added '+result.name+' to your roster');
-    renderHome(document.getElementById('content'));
-  }});
-  addBtn.textContent='Add Student';
-  footer.append(cancelBtn,addBtn);modal.appendChild(footer);overlay.appendChild(modal);document.body.appendChild(overlay);
-  setTimeout(()=>document.getElementById('add-student-email')?.focus(),50);
-}
-
-function openClassSettings(settings){
-  const overlay=el('div',{class:'modal-overlay',onclick:e=>{if(e.target===overlay)overlay.remove();}});
-  const modal=el('div',{class:'modal'});
-  modal.innerHTML=`
-    <div class="modal-title">⚙ Class Settings</div>
-    <div class="teacher-settings-section">
-      <h3>Class Join Code</h3>
-      <div class="field" style="margin-bottom:8px;"><label class="label">Code (students enter this to join)</label><input class="input" id="settings-code" value="${esc(settings.code||DEFAULT_CLASS_CODE)}" style="font-family:'JetBrains Mono',monospace;font-size:18px;letter-spacing:0.1em;text-transform:uppercase;"></div>
-      <div style="font-size:12px;color:var(--fg3);">Keep it simple — something your class can remember. Changing it doesn't remove existing students.</div>
-    </div>
-  `;
-  const footer=el('div',{class:'modal-footer'});
-  const cancelBtn=el('button',{class:'btn btn-ghost',onclick:()=>overlay.remove()});cancelBtn.textContent='Cancel';
-  const saveBtn=el('button',{class:'btn btn-primary',onclick:async()=>{
-    const code=(document.getElementById('settings-code')?.value||'').trim().toUpperCase();
-    if(!code||code.length<4){toast('Code must be at least 4 characters','error');return;}
-    await saveClassCode(code);
-    overlay.remove();
-    toast('Class code updated to '+code);
-    renderHome(document.getElementById('content'));
-  }});
-  saveBtn.textContent='Save Settings';
-  footer.append(cancelBtn,saveBtn);modal.appendChild(footer);overlay.appendChild(modal);document.body.appendChild(overlay);
-}
-
-// ── Student: join class with code ──
-function openJoinClassModal(){
-  const overlay=el('div',{class:'modal-overlay',onclick:e=>{if(e.target===overlay)overlay.remove();}});
-  const modal=el('div',{class:'modal'});
-  modal.innerHTML=`
-    <div class="modal-title">🎓 Join a Class</div>
-    <p style="font-size:13px;color:var(--fg3);margin-bottom:18px;">Enter the class code your teacher gave you to connect your account to their roster.</p>
-    <div class="field" style="margin-bottom:8px;"><label class="label">Class Code</label><input class="input" id="join-class-code" placeholder="e.g. WRITE2025" style="font-family:'JetBrains Mono',monospace;font-size:18px;letter-spacing:0.08em;text-transform:uppercase;"></div>
-    <div id="join-class-error" style="color:var(--red);font-size:13px;min-height:18px;margin-bottom:12px;"></div>
-  `;
-  const footer=el('div',{class:'modal-footer'});
-  const cancelBtn=el('button',{class:'btn btn-ghost',onclick:()=>overlay.remove()});cancelBtn.textContent='Cancel';
-  const joinBtn=el('button',{class:'btn btn-primary',onclick:async()=>{
-    const code=document.getElementById('join-class-code')?.value?.trim();
-    if(!code){document.getElementById('join-class-error').textContent='Please enter a code.';return;}
-    joinBtn.disabled=true;joinBtn.textContent='Joining…';
-    const result=await joinWithClassCode(code);
-    if(!result.ok){document.getElementById('join-class-error').textContent=result.error;joinBtn.disabled=false;joinBtn.textContent='Join Class';return;}
-    overlay.remove();
-    toast('You've joined the class! Your teacher can now see your workspace.');
-  }});
-  joinBtn.textContent='Join Class';
-  footer.append(cancelBtn,joinBtn);modal.appendChild(footer);overlay.appendChild(modal);document.body.appendChild(overlay);
-  setTimeout(()=>document.getElementById('join-class-code')?.focus(),50);
-}
-
+ 
 async function createAndOpenProject(){
   const id = await fsCreate('projects',{name:'Untitled Story',description:'',tags:[],colorLabel:'purple'});
   navigate('dashboard',id,'overview');
 }
-
+ 
 async function deleteProjectCascade(projectId){
   await Promise.all([
     fsDelete('projects',projectId),
@@ -1123,14 +639,16 @@ async function deleteProjectCascade(projectId){
     fsBatchDelete('outlines','storyProjectId',projectId),
     fsBatchDelete('documents','storyProjectId',projectId),
     fsBatchDelete('generatedDocs','storyProjectId',projectId),
+    fsBatchDelete('props','storyProjectId',projectId),
+    fsBatchDelete('beats','storyProjectId',projectId),
   ]);
 }
-
+ 
 // ══════════════════════════════════════════════
 //  SIDEBAR
 // ══════════════════════════════════════════════
-const NAV_ITEMS=[{id:'overview',label:'Overview',icon:'◈'},{id:'characters',label:'Characters',icon:'◉'},{id:'locations',label:'Locations',icon:'⬡'},{id:'scenes',label:'Scenes',icon:'◧'},{id:'world',label:'World Building',icon:'◎'},{id:'outline',label:'Outline',icon:'≡'},{id:'library',label:'Document Library',icon:'📁'},{id:'writing',label:'Writing Desk',icon:'✦'}];
-
+const NAV_ITEMS=[{id:'overview',label:'Overview',icon:'◈'},{id:'characters',label:'Characters',icon:'◉'},{id:'locations',label:'Locations',icon:'⬡'},{id:'scenes',label:'Scenes',icon:'◧'},{id:'props',label:'Props',icon:'◇'},{id:'world',label:'World Building',icon:'◎'},{id:'outline',label:'Outline',icon:'≡'},{id:'beatboard',label:'Beat Board',icon:'▦'},{id:'library',label:'Document Library',icon:'📁'},{id:'writing',label:'Writing Desk',icon:'✦'}];
+ 
 async function renderSidebar(sb, projectId, active){
   sb.innerHTML='';
   const p = await fsGet('projects',projectId);
@@ -1154,80 +672,60 @@ async function renderSidebar(sb, projectId, active){
   bottom.appendChild(delBtn);
   sb.appendChild(bottom);
 }
-
+ 
 // ══════════════════════════════════════════════
 //  OVERVIEW
 // ══════════════════════════════════════════════
-async function renderOverview(container, projectId, studentUid){
+async function renderOverview(container, projectId){
   container.innerHTML='<div style="padding:60px;text-align:center;color:var(--fg3);">Loading…</div>';
-  const get = studentUid ? (col,id)=>fsGetStudent(studentUid,col,id) : fsGet;
-  const qry = studentUid ? (col,...c)=>fsQueryStudent(studentUid,col,...c) : fsQuery;
-
   const [p, chars, locs, scenes, docs] = await Promise.all([
-    get('projects',projectId),
-    qry('characters',where('storyProjectId','==',projectId)),
-    qry('locations',where('storyProjectId','==',projectId)),
-    qry('scenes',where('storyProjectId','==',projectId)),
-    qry('documents',where('storyProjectId','==',projectId)),
+    fsGet('projects',projectId),
+    fsQuery('characters',where('storyProjectId','==',projectId)),
+    fsQuery('locations',where('storyProjectId','==',projectId)),
+    fsQuery('scenes',where('storyProjectId','==',projectId)),
+    fsQuery('documents',where('storyProjectId','==',projectId)),
   ]);
   if(!p){navigate('home');return;}
   container.innerHTML='';
   const wrap = el('div',{class:'page'});
-
-  if(studentUid){
-    // Read-only view for teacher
-    wrap.innerHTML=`
-      <div class="page-header">
-        <div><div class="page-title">${esc(p.name)}</div><div class="page-subtitle">Last updated ${relativeTime(p.updatedAt)}</div></div>
+  wrap.innerHTML=`
+    <div class="page-header">
+      <div>
+        <div class="page-title" contenteditable="true" id="proj-name-edit" style="outline:none;border-bottom:1px solid transparent;padding:2px 4px;border-radius:4px;">${esc(p.name)}</div>
+        <div class="page-subtitle">Last updated ${relativeTime(p.updatedAt)}</div>
       </div>
-      <div class="overview-grid">
-        <div class="stat-card" onclick="navigate('dashboard','${projectId}','characters')"><div class="stat-num">${chars.length}</div><div class="stat-label">Characters</div></div>
-        <div class="stat-card" onclick="navigate('dashboard','${projectId}','locations')"><div class="stat-num">${locs.length}</div><div class="stat-label">Locations</div></div>
-        <div class="stat-card" onclick="navigate('dashboard','${projectId}','scenes')"><div class="stat-num">${scenes.length}</div><div class="stat-label">Scenes</div></div>
-        <div class="stat-card" onclick="navigate('dashboard','${projectId}','writing')"><div class="stat-num">${docs.length}</div><div class="stat-label">Documents</div></div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <div class="color-picker">${Object.keys(COLOR_MAP).map(k=>`<div class="color-swatch${p.colorLabel===k?' selected':''}" style="background:${COLOR_MAP[k]}" onclick="setProjectColorFb('${projectId}','${k}')" title="${k}"></div>`).join('')}</div>
       </div>
-      ${p.description?`<div class="field" style="max-width:600px;"><label class="label">Project Description</label><div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px;font-size:14px;color:var(--fg2);line-height:1.6;">${esc(p.description)}</div></div>`:''}
-    `;
-  } else {
-    wrap.innerHTML=`
-      <div class="page-header">
-        <div>
-          <div class="page-title" contenteditable="true" id="proj-name-edit" style="outline:none;border-bottom:1px solid transparent;padding:2px 4px;border-radius:4px;">${esc(p.name)}</div>
-          <div class="page-subtitle">Last updated ${relativeTime(p.updatedAt)}</div>
-        </div>
-        <div style="display:flex;gap:8px;align-items:center;">
-          <div class="color-picker">${Object.keys(COLOR_MAP).map(k=>`<div class="color-swatch${p.colorLabel===k?' selected':''}" style="background:${COLOR_MAP[k]}" onclick="setProjectColorFb('${projectId}','${k}')" title="${k}"></div>`).join('')}</div>
-        </div>
-      </div>
-      <div class="overview-grid">
-        <div class="stat-card" onclick="navigate('dashboard','${projectId}','characters')"><div class="stat-num">${chars.length}</div><div class="stat-label">Characters</div></div>
-        <div class="stat-card" onclick="navigate('dashboard','${projectId}','locations')"><div class="stat-num">${locs.length}</div><div class="stat-label">Locations</div></div>
-        <div class="stat-card" onclick="navigate('dashboard','${projectId}','scenes')"><div class="stat-num">${scenes.length}</div><div class="stat-label">Scenes</div></div>
-        <div class="stat-card" onclick="navigate('dashboard','${projectId}','writing')"><div class="stat-num">${docs.length}</div><div class="stat-label">Documents</div></div>
-      </div>
-      <div class="field" style="max-width:600px;">
-        <label class="label">Project Description</label>
-        <textarea class="textarea" id="proj-desc" rows="3" placeholder="What is this story about?">${esc(p.description||'')}</textarea>
-      </div>
-      <div style="margin-top:10px;display:flex;gap:8px;">
-        <button class="btn btn-ghost btn-sm" onclick="saveProjDescFb('${projectId}')">Save Description</button>
-        <button class="btn btn-ghost btn-sm" onclick="generateFullProjectPdf('${projectId}')">📄 Export Project as PDF</button>
-      </div>
-    `;
-    const nameEl = wrap.querySelector('#proj-name-edit');
-    nameEl.addEventListener('focus',()=>nameEl.style.borderBottomColor='var(--border)');
-    nameEl.addEventListener('blur',async()=>{
-      nameEl.style.borderBottomColor='transparent';
-      const newName = nameEl.textContent.trim()||'Untitled';
-      showSaving();
-      await fsUpdate('projects',projectId,{name:newName});
-      showSaved();
-      renderSidebar(document.getElementById('sidebar'),projectId,currentRoute.sub||'overview');
-    });
-  }
+    </div>
+    <div class="overview-grid">
+      <div class="stat-card" onclick="navigate('dashboard','${projectId}','characters')"><div class="stat-num">${chars.length}</div><div class="stat-label">Characters</div></div>
+      <div class="stat-card" onclick="navigate('dashboard','${projectId}','locations')"><div class="stat-num">${locs.length}</div><div class="stat-label">Locations</div></div>
+      <div class="stat-card" onclick="navigate('dashboard','${projectId}','scenes')"><div class="stat-num">${scenes.length}</div><div class="stat-label">Scenes</div></div>
+      <div class="stat-card" onclick="navigate('dashboard','${projectId}','writing')"><div class="stat-num">${docs.length}</div><div class="stat-label">Documents</div></div>
+    </div>
+    <div class="field" style="max-width:600px;">
+      <label class="label">Project Description</label>
+      <textarea class="textarea" id="proj-desc" rows="3" placeholder="What is this story about?">${esc(p.description||'')}</textarea>
+    </div>
+    <div style="margin-top:10px;display:flex;gap:8px;">
+      <button class="btn btn-ghost btn-sm" onclick="saveProjDescFb('${projectId}')">Save Description</button>
+      <button class="btn btn-ghost btn-sm" onclick="generateFullProjectPdf('${projectId}')">📄 Export Project as PDF</button>
+    </div>
+  `;
   container.appendChild(wrap);
+  const nameEl = wrap.querySelector('#proj-name-edit');
+  nameEl.addEventListener('focus',()=>nameEl.style.borderBottomColor='var(--border)');
+  nameEl.addEventListener('blur',async()=>{
+    nameEl.style.borderBottomColor='transparent';
+    const newName = nameEl.textContent.trim()||'Untitled';
+    showSaving();
+    await fsUpdate('projects',projectId,{name:newName});
+    showSaved();
+    renderSidebar(document.getElementById('sidebar'),projectId,currentRoute.sub||'overview');
+  });
 }
-
+ 
 window.setProjectColorFb = async function(id,color){
   showSaving();
   await fsUpdate('projects',id,{colorLabel:color});
@@ -1241,45 +739,38 @@ window.saveProjDescFb = async function(id){
   showSaved();
   toast('Saved');
 };
-
+ 
 // ══════════════════════════════════════════════
 //  CHARACTERS
 // ══════════════════════════════════════════════
-async function renderCharacters(container, projectId, studentUid){
+async function renderCharacters(container, projectId){
   container.innerHTML='<div style="padding:60px;text-align:center;color:var(--fg3);">Loading…</div>';
-  const qry = studentUid ? (col,...c)=>fsQueryStudent(studentUid,col,...c) : fsQuery;
-  const chars = await qry('characters',where('storyProjectId','==',projectId));
+  const chars = await fsQuery('characters',where('storyProjectId','==',projectId));
   container.innerHTML='';
   const wrap = el('div',{class:'page'});
   const header = el('div',{class:'page-header'});
   header.innerHTML='<div><div class="page-title">Characters</div><div class="page-subtitle">'+chars.length+' character'+(chars.length!==1?'s':'')+'</div></div>';
-  if(!studentUid){
-    const hbtns=el('div',{style:'display:flex;gap:8px;'});
-    const addBtn=el('button',{class:'btn btn-primary',onclick:()=>openCharacterDrawer(null,projectId)});addBtn.textContent='+ Add Character';
-    const pdfBtn=el('button',{class:'btn btn-ghost btn-sm',onclick:()=>generateCharactersPdf(projectId)});pdfBtn.textContent='📄 Create Document';
-    hbtns.append(addBtn,pdfBtn);
-    header.appendChild(hbtns);
-  }
-  wrap.appendChild(header);
-  if(chars.length===0){wrap.appendChild(emptyState('◉','No Characters Yet',studentUid?'This student has no characters yet.':'Create the people who inhabit your story.'));}
+  const hbtns=el('div',{style:'display:flex;gap:8px;'});
+  const addBtn=el('button',{class:'btn btn-primary',onclick:()=>openCharacterDrawer(null,projectId)});addBtn.textContent='+ Add Character';
+  const pdfBtn=el('button',{class:'btn btn-ghost btn-sm',onclick:()=>generateCharactersPdf(projectId)});pdfBtn.textContent='📄 Create Document';
+  hbtns.append(addBtn,pdfBtn);
+  header.appendChild(hbtns); wrap.appendChild(header);
+  if(chars.length===0){wrap.appendChild(emptyState('◉','No Characters Yet','Create the people who inhabit your story.'));}
   else{
     const grid = el('div',{class:'items-grid'});
     chars.forEach(c=>{
       const card = el('div',{class:'item-card'});
       card.innerHTML='<h3>'+esc(c.name)+'</h3><p>'+esc(c.traits||c.occupation||'No traits defined')+'</p>'+(c.age?'<p style="margin-top:6px;font-size:11px;color:var(--fg3);">Age: '+esc(c.age)+(c.pronouns?' · '+esc(c.pronouns):'')+'</p>':'');
-      if(!studentUid){
-        const footer = el('div',{class:'item-card-footer'});
-        const eb = el('button',{class:'btn btn-ghost btn-sm',onclick:()=>openCharacterDrawer(c,projectId)});eb.textContent='Edit';
-        const db2 = el('button',{class:'btn btn-danger btn-sm',onclick:()=>confirmDelete('Delete "'+c.name+'"?',async()=>{await fsDelete('characters',c.id);renderCharacters(container,projectId);toast('Deleted');})});db2.textContent='✕';
-        footer.append(eb,db2); card.appendChild(footer);
-      }
-      grid.appendChild(card);
+      const footer = el('div',{class:'item-card-footer'});
+      const eb = el('button',{class:'btn btn-ghost btn-sm',onclick:()=>openCharacterDrawer(c,projectId)});eb.textContent='Edit';
+      const db2 = el('button',{class:'btn btn-danger btn-sm',onclick:()=>confirmDelete('Delete "'+c.name+'"?',async()=>{await fsDelete('characters',c.id);renderCharacters(container,projectId);toast('Deleted');})});db2.textContent='✕';
+      footer.append(eb,db2); card.appendChild(footer); grid.appendChild(card);
     });
     wrap.appendChild(grid);
   }
   container.appendChild(wrap);
 }
-
+ 
 function openCharacterDrawer(char, projectId){
   const isNew=!char; const data=char||{name:'',traits:'',age:'',pronouns:'',occupation:'',backstory:''};
   const overlay=el('div',{class:'drawer-overlay',onclick:e=>{if(e.target===overlay)overlay.remove();}});
@@ -1323,45 +814,38 @@ function openCharacterDrawer(char, projectId){
     toast(isNew?'Character created':'Character saved');
   };
 }
-
+ 
 // ══════════════════════════════════════════════
 //  LOCATIONS
 // ══════════════════════════════════════════════
-async function renderLocations(container, projectId, studentUid){
+async function renderLocations(container, projectId){
   container.innerHTML='<div style="padding:60px;text-align:center;color:var(--fg3);">Loading…</div>';
-  const qry = studentUid ? (col,...c)=>fsQueryStudent(studentUid,col,...c) : fsQuery;
-  const locs = await qry('locations',where('storyProjectId','==',projectId));
+  const locs = await fsQuery('locations',where('storyProjectId','==',projectId));
   container.innerHTML='';
   const wrap = el('div',{class:'page'});
   const header = el('div',{class:'page-header'});
   header.innerHTML='<div><div class="page-title">Locations</div><div class="page-subtitle">'+locs.length+' location'+(locs.length!==1?'s':'')+'</div></div>';
-  if(!studentUid){
-    const hbtns=el('div',{style:'display:flex;gap:8px;'});
-    const addBtn=el('button',{class:'btn btn-primary',onclick:()=>openLocationDrawer(null,projectId)});addBtn.textContent='+ Add Location';
-    const pdfBtn=el('button',{class:'btn btn-ghost btn-sm',onclick:()=>generateLocationsPdf(projectId)});pdfBtn.textContent='📄 Create Document';
-    hbtns.append(addBtn,pdfBtn);
-    header.appendChild(hbtns);
-  }
-  wrap.appendChild(header);
-  if(locs.length===0){wrap.appendChild(emptyState('⬡','No Locations Yet',studentUid?'No locations added yet.':'Define the places your story unfolds.'));}
+  const hbtns=el('div',{style:'display:flex;gap:8px;'});
+  const addBtn=el('button',{class:'btn btn-primary',onclick:()=>openLocationDrawer(null,projectId)});addBtn.textContent='+ Add Location';
+  const pdfBtn=el('button',{class:'btn btn-ghost btn-sm',onclick:()=>generateLocationsPdf(projectId)});pdfBtn.textContent='📄 Create Document';
+  hbtns.append(addBtn,pdfBtn);
+  header.appendChild(hbtns); wrap.appendChild(header);
+  if(locs.length===0){wrap.appendChild(emptyState('⬡','No Locations Yet','Define the places your story unfolds.'));}
   else{
     const grid = el('div',{class:'items-grid'});
     locs.forEach(l=>{
       const card = el('div',{class:'item-card'});
       card.innerHTML='<h3>'+esc(l.name)+'</h3><p>'+esc(l.description||l.atmosphere||'No description')+'</p>'+(l.storyRole?'<p style="margin-top:6px;font-size:11px;"><span class="tag" style="font-size:10px;">'+esc(l.storyRole)+'</span></p>':'');
-      if(!studentUid){
-        const footer = el('div',{class:'item-card-footer'});
-        const eb = el('button',{class:'btn btn-ghost btn-sm',onclick:()=>openLocationDrawer(l,projectId)});eb.textContent='Edit';
-        const db2 = el('button',{class:'btn btn-danger btn-sm',onclick:()=>confirmDelete('Delete "'+l.name+'"?',async()=>{await fsDelete('locations',l.id);renderLocations(container,projectId);toast('Deleted');})});db2.textContent='✕';
-        footer.append(eb,db2); card.appendChild(footer);
-      }
-      grid.appendChild(card);
+      const footer = el('div',{class:'item-card-footer'});
+      const eb = el('button',{class:'btn btn-ghost btn-sm',onclick:()=>openLocationDrawer(l,projectId)});eb.textContent='Edit';
+      const db2 = el('button',{class:'btn btn-danger btn-sm',onclick:()=>confirmDelete('Delete "'+l.name+'"?',async()=>{await fsDelete('locations',l.id);renderLocations(container,projectId);toast('Deleted');})});db2.textContent='✕';
+      footer.append(eb,db2); card.appendChild(footer); grid.appendChild(card);
     });
     wrap.appendChild(grid);
   }
   container.appendChild(wrap);
 }
-
+ 
 function openLocationDrawer(loc, projectId){
   const isNew=!loc; const data=loc||{name:'',description:'',atmosphere:'',storyRole:''};
   const overlay=el('div',{class:'drawer-overlay',onclick:e=>{if(e.target===overlay)overlay.remove();}});
@@ -1389,32 +873,28 @@ function openLocationDrawer(loc, projectId){
     overlay.remove(); renderLocations(document.getElementById('content'),projectId); toast(isNew?'Location created':'Location saved');
   };
 }
-
+ 
 // ══════════════════════════════════════════════
 //  SCENES
 // ══════════════════════════════════════════════
-async function renderScenes(container, projectId, studentUid){
+async function renderScenes(container, projectId){
   container.innerHTML='<div style="padding:60px;text-align:center;color:var(--fg3);">Loading…</div>';
-  const qry = studentUid ? (col,...c)=>fsQueryStudent(studentUid,col,...c) : fsQuery;
   const [scenes, chars, locs] = await Promise.all([
-    qry('scenes',where('storyProjectId','==',projectId)),
-    qry('characters',where('storyProjectId','==',projectId)),
-    qry('locations',where('storyProjectId','==',projectId)),
+    fsQuery('scenes',where('storyProjectId','==',projectId)),
+    fsQuery('characters',where('storyProjectId','==',projectId)),
+    fsQuery('locations',where('storyProjectId','==',projectId)),
   ]);
   scenes.sort((a,b)=>(a.sequenceNumber||0)-(b.sequenceNumber||0));
   container.innerHTML='';
   const wrap = el('div',{class:'page'});
   const header = el('div',{class:'page-header'});
   header.innerHTML='<div><div class="page-title">Scenes</div><div class="page-subtitle">'+scenes.length+' scene'+(scenes.length!==1?'s':'')+'</div></div>';
-  if(!studentUid){
-    const hbtns=el('div',{style:'display:flex;gap:8px;'});
-    const addBtn=el('button',{class:'btn btn-primary',onclick:()=>openSceneDrawer(null,projectId,chars,locs,scenes.length+1)});addBtn.textContent='+ Add Scene';
-    const pdfBtn=el('button',{class:'btn btn-ghost btn-sm',onclick:()=>generateScenesPdf(projectId)});pdfBtn.textContent='📄 Create Document';
-    hbtns.append(addBtn,pdfBtn);
-    header.appendChild(hbtns);
-  }
-  wrap.appendChild(header);
-  if(scenes.length===0){wrap.appendChild(emptyState('◧','No Scenes Yet',studentUid?'No scenes added yet.':'Break your story into scenes and keep track of the action.'));}
+  const hbtns=el('div',{style:'display:flex;gap:8px;'});
+  const addBtn=el('button',{class:'btn btn-primary',onclick:()=>openSceneDrawer(null,projectId,chars,locs,scenes.length+1)});addBtn.textContent='+ Add Scene';
+  const pdfBtn=el('button',{class:'btn btn-ghost btn-sm',onclick:()=>generateScenesPdf(projectId)});pdfBtn.textContent='📄 Create Document';
+  hbtns.append(addBtn,pdfBtn);
+  header.appendChild(hbtns); wrap.appendChild(header);
+  if(scenes.length===0){wrap.appendChild(emptyState('◧','No Scenes Yet','Break your story into scenes and keep track of the action.'));}
   else{
     const list = el('div',{class:'scene-list'});
     scenes.forEach(sc=>{
@@ -1430,22 +910,17 @@ async function renderScenes(container, projectId, studentUid){
         scChars.forEach(c=>{const ct=el('span',{class:'tag'});ct.textContent='◉ '+c.name;meta.appendChild(ct);});
         body.appendChild(meta);
       }
-      if(!studentUid){
-        const acts = el('div',{style:'display:flex;gap:6px;margin-left:auto;opacity:0;transition:opacity 0.15s;'});
-        item.addEventListener('mouseenter',()=>acts.style.opacity='1'); item.addEventListener('mouseleave',()=>acts.style.opacity='0');
-        const eb=el('button',{class:'btn btn-ghost btn-sm',onclick:()=>openSceneDrawer(sc,projectId,chars,locs,scenes.length+1)});eb.textContent='Edit';
-        const db2=el('button',{class:'btn btn-danger btn-sm',onclick:()=>confirmDelete('Delete "'+sc.title+'"?',async()=>{await fsDelete('scenes',sc.id);renderScenes(container,projectId);toast('Deleted');})});db2.textContent='✕';
-        acts.append(eb,db2); item.append(num,body,acts);
-      } else {
-        item.append(num,body);
-      }
-      list.appendChild(item);
+      const acts = el('div',{style:'display:flex;gap:6px;margin-left:auto;opacity:0;transition:opacity 0.15s;'});
+      item.addEventListener('mouseenter',()=>acts.style.opacity='1'); item.addEventListener('mouseleave',()=>acts.style.opacity='0');
+      const eb=el('button',{class:'btn btn-ghost btn-sm',onclick:()=>openSceneDrawer(sc,projectId,chars,locs,scenes.length+1)});eb.textContent='Edit';
+      const db2=el('button',{class:'btn btn-danger btn-sm',onclick:()=>confirmDelete('Delete "'+sc.title+'"?',async()=>{await fsDelete('scenes',sc.id);renderScenes(container,projectId);toast('Deleted');})});db2.textContent='✕';
+      acts.append(eb,db2); item.append(num,body,acts); list.appendChild(item);
     });
     wrap.appendChild(list);
   }
   container.appendChild(wrap);
 }
-
+ 
 function openSceneDrawer(scene, projectId, chars, locs, nextSeq){
   const isNew=!scene; const data=scene||{title:'',description:'',locationId:'',characterIds:[],sequenceNumber:nextSeq||1};
   const overlay=el('div',{class:'drawer-overlay',onclick:e=>{if(e.target===overlay)overlay.remove();}});
@@ -1478,18 +953,17 @@ function openSceneDrawer(scene, projectId, chars, locs, nextSeq){
     overlay.remove(); renderScenes(document.getElementById('content'),projectId); toast(isNew?'Scene created':'Scene saved');
   };
 }
-
+ 
 // ══════════════════════════════════════════════
 //  WORLD BUILDING
 // ══════════════════════════════════════════════
-async function renderWorld(container, projectId, studentUid){
+async function renderWorld(container, projectId){
   container.innerHTML='<div style="padding:60px;text-align:center;color:var(--fg3);">Loading…</div>';
-  const qry = studentUid ? (col,...c)=>fsQueryStudent(studentUid,col,...c) : fsQuery;
-  const worlds = await qry('worlds',where('storyProjectId','==',projectId));
+  const worlds = await fsQuery('worlds',where('storyProjectId','==',projectId));
   const world = worlds[0]||{};
   container.innerHTML='';
   const wrap = el('div',{class:'page'});
-
+ 
   // Guide prompts for each section (writer's block helpers)
   const GUIDES = {
     moodAndTone: 'Consider: What is the dominant emotional register — hope, dread, wonder, irony? What does the sky look like? What do people do on a Tuesday? What\'s the smell of the air?',
@@ -1503,7 +977,7 @@ async function renderWorld(container, projectId, studentUid){
     language: 'Consider: Are there multiple languages or dialects? What words exist here that don\'t exist in our world? What concepts are untranslatable? What does swearing sound like?',
     economy: 'Consider: What is scarce? What is abundant? What do people trade, barter, or hoard? What is the gap between the richest and the poorest, and what lives in that gap?',
   };
-
+ 
   const SECTIONS = [
     {id:'w-mood',     field:'moodAndTone',   icon:'◎', title:'Mood & Tone'},
     {id:'w-physics',  field:'lawsOfPhysics', icon:'◉', title:'Laws of Physics / Magic'},
@@ -1516,68 +990,57 @@ async function renderWorld(container, projectId, studentUid){
     {id:'w-language', field:'language',      icon:'❧', title:'Language & Dialect'},
     {id:'w-economy',  field:'economy',       icon:'◇', title:'Power & Economy'},
   ];
-
+ 
   const header = el('div',{class:'page-header'});
   header.innerHTML='<div><div class="page-title">World Building</div><div class="page-subtitle">Define the rules, tone, and fabric of your world. Click the guide prompt for each section if you need a starting point.</div></div>';
-  let saveBtn;
-  if(!studentUid){
-    const worldBtns = el('div',{style:'display:flex;gap:8px;'});
-    const pdfWorldBtn = el('button',{class:'btn btn-ghost btn-sm'});pdfWorldBtn.textContent='📄 Create Document';
-    pdfWorldBtn.onclick = ()=>generateWorldPdf(projectId);
-    saveBtn = el('button',{class:'btn btn-primary'});saveBtn.textContent='Save World';
-    worldBtns.append(pdfWorldBtn,saveBtn);
-    header.appendChild(worldBtns);
-  }
+  const worldBtns = el('div',{style:'display:flex;gap:8px;'});
+  const pdfWorldBtn = el('button',{class:'btn btn-ghost btn-sm'});pdfWorldBtn.textContent='📄 Create Document';
+  pdfWorldBtn.onclick = ()=>generateWorldPdf(projectId);
+  const saveBtn = el('button',{class:'btn btn-primary'});saveBtn.textContent='Save World';
+  worldBtns.append(pdfWorldBtn,saveBtn);
+  header.appendChild(worldBtns);
   wrap.appendChild(header);
-
+ 
   const grid = el('div',{class:'world-grid'});
   SECTIONS.forEach(sec=>{
     const section = el('div',{class:'world-section'});
     const h3 = document.createElement('h3');
     h3.textContent = sec.icon+' '+sec.title;
+    const guideToggle = el('div',{class:'guide-toggle'});
+    guideToggle.innerHTML='▸ Writing prompt';
+    const guideText = el('div',{class:'world-section-guide',style:'display:none;'});
+    guideText.textContent = GUIDES[sec.field]||'';
+    guideToggle.onclick=()=>{
+      const open = guideText.style.display==='none';
+      guideText.style.display = open?'block':'none';
+      guideToggle.innerHTML = (open?'▾':'▸')+' Writing prompt';
+    };
     const textarea = el('textarea',{class:'textarea',id:sec.id,rows:'4'});
     textarea.placeholder='';
     textarea.value = esc(world[sec.field]||'');
-    if(studentUid){
-      textarea.readOnly = true;
-      textarea.style.opacity = '0.75';
-      section.append(h3,textarea);
-    } else {
-      const guideToggle = el('div',{class:'guide-toggle'});
-      guideToggle.innerHTML='▸ Writing prompt';
-      const guideText = el('div',{class:'world-section-guide',style:'display:none;'});
-      guideText.textContent = GUIDES[sec.field]||'';
-      guideToggle.onclick=()=>{
-        const open = guideText.style.display==='none';
-        guideText.style.display = open?'block':'none';
-        guideToggle.innerHTML = (open?'▾':'▸')+' Writing prompt';
-      };
-      section.append(h3,guideToggle,guideText,textarea);
-    }
+    section.append(h3,guideToggle,guideText,textarea);
     grid.appendChild(section);
   });
   wrap.appendChild(grid);
   container.appendChild(wrap);
-
-  if(!studentUid && saveBtn){
-    saveBtn.onclick=async()=>{
-      const data={};
-      SECTIONS.forEach(sec=>{
-        const el2=document.getElementById(sec.id);
-        if(el2) data[sec.field]=el2.value;
-      });
-      showSaving();
-      if(world.id) await fsUpdate('worlds',world.id,data);
-      else await fsCreate('worlds',{storyProjectId:projectId,...data});
-      showSaved(); toast('World saved');
-    };
-  }
+ 
+  saveBtn.onclick=async()=>{
+    const data={};
+    SECTIONS.forEach(sec=>{
+      const el2=document.getElementById(sec.id);
+      if(el2) data[sec.field]=el2.value;
+    });
+    showSaving();
+    if(world.id) await fsUpdate('worlds',world.id,data);
+    else await fsCreate('worlds',{storyProjectId:projectId,...data});
+    showSaved(); toast('World saved');
+  };
 }
-
+ 
 // ══════════════════════════════════════════════
 //  OUTLINE  (multi-outline with tabs + drag-to-reorder)
 // ══════════════════════════════════════════════
-
+ 
 // Story structure templates
 const STRUCTURE_TEMPLATES = {
   'blank': { name:'Blank Outline', items:[] },
@@ -1670,16 +1133,15 @@ const STRUCTURE_TEMPLATES = {
     {text:'8. Having changed', level:1},
   ]},
 };
-
+ 
 // Active outline ID per project (session-only — resets to first on reload)
 const _activeOutlineId = {};
-
-async function renderOutline(container, projectId, studentUid) {
+ 
+async function renderOutline(container, projectId) {
   container.innerHTML = '<div style="padding:60px;text-align:center;color:var(--fg3);">Loading…</div>';
-  const qry = studentUid ? (col,...c)=>fsQueryStudent(studentUid,col,...c) : fsQuery;
-
+ 
   // Load all outlines (grouped by outlineId)
-  const allItems = await qry('outlines', where('storyProjectId','==',projectId));
+  const allItems = await fsQuery('outlines', where('storyProjectId','==',projectId));
   // Get distinct outline groups
   const outlineGroups = {};
   allItems.forEach(item => {
@@ -1693,76 +1155,75 @@ async function renderOutline(container, projectId, studentUid) {
   }
   // Sort items within each group
   Object.values(outlineGroups).forEach(g => g.items.sort((a,b)=>(a.order||0)-(b.order||0)));
-
+ 
   const groupList = Object.values(outlineGroups);
   // Determine active group
   if (!_activeOutlineId[projectId] || !outlineGroups[_activeOutlineId[projectId]]) {
     _activeOutlineId[projectId] = groupList[0].id;
   }
-
+ 
   container.innerHTML = '';
   const wrap = el('div',{class:'page'});
-
+ 
   // Header
   const header = el('div',{class:'page-header'});
-  header.innerHTML = '<div><div class="page-title">Outline</div><div class="page-subtitle">'+(studentUid?'Read-only view':'Multiple outlines supported — add a new one with +')+'</div></div>';
+  header.innerHTML = '<div><div class="page-title">Outline</div><div class="page-subtitle">Multiple outlines supported — add a new one with +</div></div>';
   const headerRight = el('div',{style:'display:flex;gap:8px;align-items:center;flex-wrap:wrap;'});
-
-  if(!studentUid){
-    // Structure template dropdown
-    const structLabel = el('span',{style:'font-size:12px;color:var(--fg3);'});structLabel.textContent='New from template:';
-    const structSelect = el('select',{class:'select',style:'width:auto;font-size:12px;padding:5px 10px;'});
-    Object.entries(STRUCTURE_TEMPLATES).forEach(([k,v])=>{
-      const opt=document.createElement('option');opt.value=k;opt.textContent=v.name;
-      structSelect.appendChild(opt);
-    });
-    const pdfOutlineBtn = el('button',{class:'btn btn-ghost btn-sm',onclick:()=>{
-      const ag=outlineGroups[_activeOutlineId[projectId]];
-      if(ag) generateOutlinePdf(projectId, ag.id, ag.name);
-    }});pdfOutlineBtn.textContent='📄 Create Document';
-    headerRight.appendChild(pdfOutlineBtn);
-    const addFromTemplate = el('button',{class:'btn btn-primary btn-sm',onclick:async()=>{
-      const key = structSelect.value;
-      const tmpl = STRUCTURE_TEMPLATES[key];
-      const newId = 'ol-'+Date.now();
-      const name = tmpl.name === 'Blank Outline' ? 'New Outline' : tmpl.name;
-      for(let i=0;i<tmpl.items.length;i++){
-        const it = tmpl.items[i];
-        await fsCreate('outlines',{storyProjectId:projectId,outlineId:newId,outlineName:name,text:it.text,level:it.level,order:i});
-      }
-      if(tmpl.items.length === 0){
-        await fsCreate('outlines',{storyProjectId:projectId,outlineId:newId,outlineName:name,text:'',level:1,order:0});
-      }
-      _activeOutlineId[projectId] = newId;
-      await renderOutline(container, projectId);
-    }});
-    addFromTemplate.textContent = '+ Create';
-    headerRight.append(structLabel, structSelect, addFromTemplate);
-  }
+ 
+  // Structure template dropdown
+  const structLabel = el('span',{style:'font-size:12px;color:var(--fg3);'});structLabel.textContent='New from template:';
+  const structSelect = el('select',{class:'select',style:'width:auto;font-size:12px;padding:5px 10px;'});
+  Object.entries(STRUCTURE_TEMPLATES).forEach(([k,v])=>{
+    const opt=document.createElement('option');opt.value=k;opt.textContent=v.name;
+    structSelect.appendChild(opt);
+  });
+  const pdfOutlineBtn = el('button',{class:'btn btn-ghost btn-sm',onclick:()=>{
+    const ag=outlineGroups[_activeOutlineId[projectId]];
+    if(ag) generateOutlinePdf(projectId, ag.id, ag.name);
+  }});pdfOutlineBtn.textContent='📄 Create Document';
+  headerRight.appendChild(pdfOutlineBtn);
+  const addFromTemplate = el('button',{class:'btn btn-primary btn-sm',onclick:async()=>{
+    const key = structSelect.value;
+    const tmpl = STRUCTURE_TEMPLATES[key];
+    const newId = 'ol-'+Date.now();
+    const name = tmpl.name === 'Blank Outline' ? 'New Outline' : tmpl.name;
+    // Create items
+    for(let i=0;i<tmpl.items.length;i++){
+      const it = tmpl.items[i];
+      await fsCreate('outlines',{storyProjectId:projectId,outlineId:newId,outlineName:name,text:it.text,level:it.level,order:i});
+    }
+    if(tmpl.items.length === 0){
+      // blank — create one empty item so the group exists
+      await fsCreate('outlines',{storyProjectId:projectId,outlineId:newId,outlineName:name,text:'',level:1,order:0});
+    }
+    _activeOutlineId[projectId] = newId;
+    await renderOutline(container, projectId);
+  }});
+  addFromTemplate.textContent = '+ Create';
+  headerRight.append(structLabel, structSelect, addFromTemplate);
   header.appendChild(headerRight);
   wrap.appendChild(header);
-
+ 
   // Tabs
   const tabs = el('div',{class:'outline-tabs'});
   groupList.forEach(g => {
     const tab = el('div',{class:'outline-tab'+(_activeOutlineId[projectId]===g.id?' active':'')});
     tab.textContent = g.name;
-    tab.onclick = () => { _activeOutlineId[projectId]=g.id; renderOutline(container,projectId,studentUid); };
-    if(!studentUid){
-      // Double-click to rename
-      tab.ondblclick = async(e) => {
-        e.stopPropagation();
-        const newName = prompt('Rename outline:', g.name);
-        if(!newName || newName===g.name) return;
-        const groupItems = allItems.filter(i=>(i.outlineId||'default')===g.id);
-        await Promise.all(groupItems.map(i=>fsUpdate('outlines',i.id,{outlineName:newName})));
-        await renderOutline(container,projectId);
-      };
-    }
+    tab.onclick = () => { _activeOutlineId[projectId]=g.id; renderOutline(container,projectId); };
+    // Double-click to rename
+    tab.ondblclick = async(e) => {
+      e.stopPropagation();
+      const newName = prompt('Rename outline:', g.name);
+      if(!newName || newName===g.name) return;
+      // Update all items in this group
+      const groupItems = allItems.filter(i=>(i.outlineId||'default')===g.id);
+      await Promise.all(groupItems.map(i=>fsUpdate('outlines',i.id,{outlineName:newName})));
+      await renderOutline(container,projectId);
+    };
     tabs.appendChild(tab);
   });
-  // Delete tab button (only if more than one outline, and not teacher view)
-  if(!studentUid && groupList.length > 1){
+  // Delete tab button (only if more than one outline)
+  if(groupList.length > 1){
     const activeGroup = outlineGroups[_activeOutlineId[projectId]];
     const delTab = el('div',{class:'outline-tab',style:'color:var(--red);margin-left:auto;',onclick:()=>{
       confirmDelete('Delete outline "'+activeGroup.name+'" and all its items?', async()=>{
@@ -1775,126 +1236,119 @@ async function renderOutline(container, projectId, studentUid) {
     tabs.appendChild(delTab);
   }
   wrap.appendChild(tabs);
-
+ 
   // Active outline items
   const listContainer = el('div',{id:'outline-list'});
   wrap.appendChild(listContainer);
   container.appendChild(wrap);
-
+ 
   const activeGroup = outlineGroups[_activeOutlineId[projectId]];
-  renderOutlineList(projectId, activeGroup.items, activeGroup.id, activeGroup.name, container, studentUid);
-
-  // Add item button at bottom (not in teacher view)
-  if(!studentUid){
-    const addBtn = el('button',{class:'btn btn-ghost btn-sm',style:'margin-top:14px;',onclick:()=>{
-      addOutlineItem(projectId, activeGroup.id, activeGroup.name, activeGroup.items.length, 1, container);
-    }});
-    addBtn.textContent = '+ Add Item';
-    wrap.appendChild(addBtn);
-  }
+  renderOutlineList(projectId, activeGroup.items, activeGroup.id, activeGroup.name, container);
+ 
+  // Add item button at bottom
+  const addBtn = el('button',{class:'btn btn-ghost btn-sm',style:'margin-top:14px;',onclick:()=>{
+    addOutlineItem(projectId, activeGroup.id, activeGroup.name, activeGroup.items.length, 1, container);
+  }});
+  addBtn.textContent = '+ Add Item';
+  wrap.appendChild(addBtn);
 }
-
-function renderOutlineList(projectId, items, outlineId, outlineName, container, studentUid) {
+ 
+function renderOutlineList(projectId, items, outlineId, outlineName, container) {
   const list = document.getElementById('outline-list');
   if(!list) return;
   list.innerHTML = '';
-
+ 
   if(items.length === 0){
-    list.appendChild(emptyState('≡','Empty Outline',studentUid?'No outline items yet.':'Add beats, acts, or chapters. Or create from a template above.'));
+    list.appendChild(emptyState('≡','Empty Outline','Add beats, acts, or chapters. Or create from a template above.'));
     return;
   }
-
+ 
   let dragSrc = null;
-
+ 
   items.forEach(o => {
     const item = el('div',{class:'outline-item',style:'margin-left:'+((o.level-1)*22)+'px'});
+    item.draggable = true;
     item.dataset.id = o.id;
-
+ 
     const content = el('div',{class:'outline-content'});
-
-    if(studentUid){
-      // Read-only: just show text
-      const text = el('div',{style:'padding:4px 0;font-size:14px;color:var(--fg);'});
-      text.textContent = o.text||'';
-      content.appendChild(text);
-      item.appendChild(content);
-    } else {
-      item.draggable = true;
-      const input = el('input',{placeholder:'Outline beat...',value:o.text||''});
-      input.addEventListener('blur', async()=>{ await fsUpdate('outlines',o.id,{text:input.value}); });
-      input.addEventListener('keydown', async e=>{
-        if(e.key==='Enter'){
-          e.preventDefault();
-          addOutlineItem(projectId,outlineId,outlineName,o.order+1,o.level,container);
-        }
-        if(e.key==='Tab'){
-          e.preventDefault();
-          const nl=e.shiftKey?Math.max(1,o.level-1):Math.min(4,o.level+1);
-          await fsUpdate('outlines',o.id,{level:nl});
-          await refreshOutlineList(projectId,outlineId,outlineName,container);
-        }
-        if(e.key==='Backspace'&&input.value===''){
-          e.preventDefault();
-          await fsDelete('outlines',o.id);
-          await refreshOutlineList(projectId,outlineId,outlineName,container);
-        }
-      });
-
-      const levelDots = el('div',{class:'outline-level'});
-      for(let i=1;i<=4;i++){
-        (function(lvl){
-          const d=el('div',{style:'width:8px;height:8px;border-radius:50%;background:'+(lvl<=o.level?'var(--primary)':'var(--border)')+';cursor:pointer;flex-shrink:0;',onclick:async()=>{
-            await fsUpdate('outlines',o.id,{level:lvl});
-            await refreshOutlineList(projectId,outlineId,outlineName,container);
-          }});
-          levelDots.appendChild(d);
-        })(i);
+    const input = el('input',{placeholder:'Outline beat...',value:o.text||''});
+    input.addEventListener('blur', async()=>{ await fsUpdate('outlines',o.id,{text:input.value}); });
+    input.addEventListener('keydown', async e=>{
+      if(e.key==='Enter'){
+        e.preventDefault();
+        const newItems = await fsQuery('outlines',where('storyProjectId','==',projectId),where('outlineId','==',outlineId));
+        newItems.sort((a,b)=>(a.order||0)-(b.order||0));
+        addOutlineItem(projectId,outlineId,outlineName,o.order+1,o.level,container);
       }
-
-      const del = el('button',{class:'btn-icon',style:'font-size:11px;',onclick:async()=>{
+      if(e.key==='Tab'){
+        e.preventDefault();
+        const nl=e.shiftKey?Math.max(1,o.level-1):Math.min(4,o.level+1);
+        await fsUpdate('outlines',o.id,{level:nl});
+        await refreshOutlineList(projectId,outlineId,outlineName,container);
+      }
+      if(e.key==='Backspace'&&input.value===''){
+        e.preventDefault();
         await fsDelete('outlines',o.id);
         await refreshOutlineList(projectId,outlineId,outlineName,container);
-      }});del.textContent='✕';
-
-      content.append(input,levelDots);
-      item.append(content,del);
-
-      // ── Drag-and-drop ──
-      item.addEventListener('dragstart', e=>{
-        dragSrc = item;
-        item.classList.add('dragging');
-        e.dataTransfer.effectAllowed='move';
-        e.dataTransfer.setData('text/plain',o.id);
-      });
-      item.addEventListener('dragend', ()=>{
-        item.classList.remove('dragging');
-        list.querySelectorAll('.outline-item').forEach(i=>i.classList.remove('drag-over'));
-      });
-      item.addEventListener('dragover', e=>{
-        e.preventDefault();
-        e.dataTransfer.dropEffect='move';
-        list.querySelectorAll('.outline-item').forEach(i=>i.classList.remove('drag-over'));
-        item.classList.add('drag-over');
-      });
-      item.addEventListener('drop', async e=>{
-        e.preventDefault();
-        if(dragSrc===item) return;
-        item.classList.remove('drag-over');
-        const allItemEls = Array.from(list.querySelectorAll('.outline-item'));
-        const srcIdx = allItemEls.indexOf(dragSrc);
-        const dstIdx = allItemEls.indexOf(item);
-        if(srcIdx < dstIdx) item.after(dragSrc);
-        else item.before(dragSrc);
-        const reordered = Array.from(list.querySelectorAll('.outline-item'));
-        await Promise.all(reordered.map((el,i)=>fsUpdate('outlines',el.dataset.id,{order:i})));
-        await refreshOutlineList(projectId,outlineId,outlineName,container);
-      });
+      }
+    });
+ 
+    const levelDots = el('div',{class:'outline-level'});
+    for(let i=1;i<=4;i++){
+      (function(lvl){
+        const d=el('div',{style:'width:8px;height:8px;border-radius:50%;background:'+(lvl<=o.level?'var(--primary)':'var(--border)')+';cursor:pointer;flex-shrink:0;',onclick:async()=>{
+          await fsUpdate('outlines',o.id,{level:lvl});
+          await refreshOutlineList(projectId,outlineId,outlineName,container);
+        }});
+        levelDots.appendChild(d);
+      })(i);
     }
-
+ 
+    const del = el('button',{class:'btn-icon',style:'font-size:11px;',onclick:async()=>{
+      await fsDelete('outlines',o.id);
+      await refreshOutlineList(projectId,outlineId,outlineName,container);
+    }});del.textContent='✕';
+ 
+    content.append(input,levelDots);
+    item.append(content,del);
     list.appendChild(item);
+ 
+    // ── Drag-and-drop ──
+    item.addEventListener('dragstart', e=>{
+      dragSrc = item;
+      item.classList.add('dragging');
+      e.dataTransfer.effectAllowed='move';
+      e.dataTransfer.setData('text/plain',o.id);
+    });
+    item.addEventListener('dragend', ()=>{
+      item.classList.remove('dragging');
+      list.querySelectorAll('.outline-item').forEach(i=>i.classList.remove('drag-over'));
+    });
+    item.addEventListener('dragover', e=>{
+      e.preventDefault();
+      e.dataTransfer.dropEffect='move';
+      list.querySelectorAll('.outline-item').forEach(i=>i.classList.remove('drag-over'));
+      item.classList.add('drag-over');
+    });
+    item.addEventListener('drop', async e=>{
+      e.preventDefault();
+      if(dragSrc===item) return;
+      item.classList.remove('drag-over');
+      // Reorder: collect all items in DOM order, reassign order values
+      const allItemEls = Array.from(list.querySelectorAll('.outline-item'));
+      const srcIdx = allItemEls.indexOf(dragSrc);
+      const dstIdx = allItemEls.indexOf(item);
+      // Move src to dst position
+      if(srcIdx < dstIdx) item.after(dragSrc);
+      else item.before(dragSrc);
+      // Write new order to Firestore
+      const reordered = Array.from(list.querySelectorAll('.outline-item'));
+      await Promise.all(reordered.map((el,i)=>fsUpdate('outlines',el.dataset.id,{order:i})));
+      await refreshOutlineList(projectId,outlineId,outlineName,container);
+    });
   });
 }
-
+ 
 async function refreshOutlineList(projectId, outlineId, outlineName, container) {
   // Fetch all outlines for project, then filter client-side to avoid composite index requirement
   const all = await fsQuery('outlines',where('storyProjectId','==',projectId));
@@ -1902,7 +1356,7 @@ async function refreshOutlineList(projectId, outlineId, outlineName, container) 
   fresh.sort((a,b)=>(a.order||0)-(b.order||0));
   renderOutlineList(projectId,fresh,outlineId,outlineName,container);
 }
-
+ 
 async function addOutlineItem(projectId, outlineId, outlineName, order, level, container) {
   await fsCreate('outlines',{storyProjectId:projectId,outlineId,outlineName,text:'',level:level||1,order:order||0});
   await refreshOutlineList(projectId,outlineId,outlineName,container);
@@ -1911,14 +1365,13 @@ async function addOutlineItem(projectId, outlineId, outlineName, order, level, c
     if(inputs.length) inputs[inputs.length-1].focus();
   },100);
 }
-
+ 
 // ══════════════════════════════════════════════
 //  WRITING DESK
 // ══════════════════════════════════════════════
-async function renderWritingDesk(container, projectId, studentUid){
+async function renderWritingDesk(container, projectId){
   container.innerHTML='<div style="padding:60px;text-align:center;color:var(--fg3);">Loading…</div>';
-  const qry = studentUid ? (col,...c)=>fsQueryStudent(studentUid,col,...c) : fsQuery;
-  const docs = await qry('documents',where('storyProjectId','==',projectId));
+  const docs = await fsQuery('documents',where('storyProjectId','==',projectId));
   docs.sort((a,b)=>{
     const at=a.updatedAt?.toDate?a.updatedAt.toDate():new Date(a.updatedAt||0);
     const bt=b.updatedAt?.toDate?b.updatedAt.toDate():new Date(b.updatedAt||0);
@@ -1928,14 +1381,11 @@ async function renderWritingDesk(container, projectId, studentUid){
   const wrap = el('div',{class:'page'});
   const header = el('div',{class:'page-header'});
   header.innerHTML='<div><div class="page-title">Writing Desk</div><div class="page-subtitle">'+docs.length+' document'+(docs.length!==1?'s':'')+'</div></div>';
-  if(!studentUid){
-    const actions = el('div',{style:'display:flex;gap:8px;'});
-    const nb=el('button',{class:'btn btn-ghost',onclick:()=>createDoc(projectId,'narrative')});nb.textContent='+ Narrative';
-    const sb=el('button',{class:'btn btn-primary',onclick:()=>createDoc(projectId,'screenplay')});sb.textContent='+ Screenplay';
-    actions.append(nb,sb); header.appendChild(actions);
-  }
-  wrap.appendChild(header);
-  if(docs.length===0){wrap.appendChild(emptyState('✦','Empty Desk',studentUid?'This student has no documents yet.':'Start writing — a narrative document or a screenplay.'));}
+  const actions = el('div',{style:'display:flex;gap:8px;'});
+  const nb=el('button',{class:'btn btn-ghost',onclick:()=>createDoc(projectId,'narrative')});nb.textContent='+ Narrative';
+  const sb=el('button',{class:'btn btn-primary',onclick:()=>createDoc(projectId,'screenplay')});sb.textContent='+ Screenplay';
+  actions.append(nb,sb); header.appendChild(actions); wrap.appendChild(header);
+  if(docs.length===0){wrap.appendChild(emptyState('✦','Empty Desk','Start writing — a narrative document or a screenplay.'));}
   else{
     const list=el('div',{class:'doc-list'});
     docs.forEach(d=>{
@@ -1944,105 +1394,82 @@ async function renderWritingDesk(container, projectId, studentUid){
       left.innerHTML='<h3>'+esc(d.title||'Untitled')+'</h3><span class="doc-item-badge '+(d.type==='screenplay'?'badge-screenplay':'badge-narrative')+'">'+d.type+'</span>';
       const right=el('div',{style:'display:flex;align-items:center;gap:10px;'});
       const meta=el('div',{style:'font-size:11px;color:var(--fg3);'},[relativeTime(d.updatedAt)]);
-      right.appendChild(meta);
-      if(!studentUid){
-        const pdfDBtn=el('button',{class:'btn btn-ghost btn-sm',onclick:e=>{e.stopPropagation();generateWritingDeskPdf(projectId,d);}});pdfDBtn.textContent='📄';pdfDBtn.title='Export as PDF';
-        const del=el('button',{class:'btn btn-danger btn-sm',onclick:e=>{e.stopPropagation();confirmDelete('Delete "'+d.title+'"?',async()=>{await fsDelete('documents',d.id);renderWritingDesk(container,projectId);toast('Deleted');});}});del.textContent='✕';
-        right.append(pdfDBtn,del);
-      }
-      item.append(left,right); list.appendChild(item);
+      const pdfDBtn=el('button',{class:'btn btn-ghost btn-sm',onclick:e=>{e.stopPropagation();generateWritingDeskPdf(projectId,d);}});pdfDBtn.textContent='📄';pdfDBtn.title='Export as PDF';
+      const del=el('button',{class:'btn btn-danger btn-sm',onclick:e=>{e.stopPropagation();confirmDelete('Delete "'+d.title+'"?',async()=>{await fsDelete('documents',d.id);renderWritingDesk(container,projectId);toast('Deleted');});}});del.textContent='✕';
+      right.append(meta,pdfDBtn,del); item.append(left,right); list.appendChild(item);
     });
     wrap.appendChild(list);
   }
   container.appendChild(wrap);
 }
-
+ 
 async function createDoc(projectId, type){
   const id=await fsCreate('documents',{storyProjectId:projectId,type,title:type==='screenplay'?'Untitled Screenplay':'Untitled Document',content:'',titlePage:{title:'',writtenBy:'',basedOn:'',contact:''}});
   navigate('dashboard',projectId,'writing',id);
 }
-
+ 
 // ══════════════════════════════════════════════
 //  EDITORS
 // ══════════════════════════════════════════════
 let editorSaveTimer=null;
-async function renderEditor(container, projectId, docId, studentUid){
-  const doc = studentUid
-    ? await fsGetStudent(studentUid,'documents',docId)
-    : await fsGet('documents',docId);
+async function renderEditor(container, projectId, docId){
+  const doc = await fsGet('documents',docId);
   if(!doc){navigate('dashboard',projectId,'writing');return;}
   container.innerHTML='';
   const view=el('div',{class:'editor-view'});
-  if(studentUid){
-    // Read-only banner at top of editor
-    const banner = el('div',{style:'background:rgba(104,147,239,0.1);border-bottom:1px solid rgba(104,147,239,0.25);padding:8px 20px;font-size:12px;color:var(--accent);display:flex;align-items:center;gap:8px;'});
-    banner.innerHTML='<span style="font-family:\'JetBrains Mono\',monospace;font-size:10px;text-transform:uppercase;letter-spacing:0.08em;">👁 Read-only</span> <span>You are viewing this student\'s document. Editing is disabled.</span>';
-    view.appendChild(banner);
-  }
-  if(doc.type==='screenplay') renderScreenplayEditor(view,doc,projectId,studentUid);
-  else renderNarrativeEditor(view,doc,projectId,studentUid);
+  if(doc.type==='screenplay') renderScreenplayEditor(view,doc,projectId);
+  else renderNarrativeEditor(view,doc,projectId);
   container.appendChild(view);
 }
-
-function renderNarrativeEditor(view, doc, projectId, studentUid){
+ 
+function renderNarrativeEditor(view, doc, projectId){
   const toolbar=el('div',{class:'editor-topbar'});
   const titleIn=el('input',{class:'editor-title-input',value:doc.title||'',placeholder:'Document title...'});
-  if(!studentUid) titleIn.addEventListener('blur',async()=>{ showSaving(); await fsUpdate('documents',doc.id,{title:titleIn.value}); showSaved(); });
-  else titleIn.readOnly=true;
+  titleIn.addEventListener('blur',async()=>{ showSaving(); await fsUpdate('documents',doc.id,{title:titleIn.value}); showSaved(); });
   toolbar.appendChild(titleIn); toolbar.appendChild(el('div',{class:'editor-divider'}));
-  if(!studentUid){
-    const fmtBtns=[{cmd:'bold',label:'B',style:'font-weight:700'},{cmd:'italic',label:'I',style:'font-style:italic'},{cmd:'underline',label:'U',style:'text-decoration:underline'}];
-    fmtBtns.forEach(b=>{
-      const btn=el('button',{class:'toolbar-btn',style:b.style,title:b.cmd}); btn.textContent=b.label;
-      btn.addEventListener('click',()=>{document.execCommand(b.cmd); editor.focus(); updateToolbar();});
-      toolbar.appendChild(btn);
-    });
-    toolbar.appendChild(el('div',{class:'editor-divider'}));
-    ['H1','H2','H3'].forEach((h,i)=>{
-      const btn=el('button',{class:'toolbar-btn',title:'Heading '+(i+1)}); btn.textContent=h;
-      btn.addEventListener('click',()=>{document.execCommand('formatBlock',false,'h'+(i+1)); editor.focus();});
-      toolbar.appendChild(btn);
-    });
-    toolbar.appendChild(el('div',{class:'editor-divider'}));
-    const listBtn=el('button',{class:'toolbar-btn'}); listBtn.textContent='• List';
-    listBtn.addEventListener('click',()=>{document.execCommand('insertUnorderedList'); editor.focus();});
-    toolbar.appendChild(listBtn); toolbar.appendChild(el('div',{class:'editor-divider'}));
-  }
+  const fmtBtns=[{cmd:'bold',label:'B',style:'font-weight:700'},{cmd:'italic',label:'I',style:'font-style:italic'},{cmd:'underline',label:'U',style:'text-decoration:underline'}];
+  fmtBtns.forEach(b=>{
+    const btn=el('button',{class:'toolbar-btn',style:b.style,title:b.cmd}); btn.textContent=b.label;
+    btn.addEventListener('click',()=>{document.execCommand(b.cmd); editor.focus(); updateToolbar();});
+    toolbar.appendChild(btn);
+  });
+  toolbar.appendChild(el('div',{class:'editor-divider'}));
+  ['H1','H2','H3'].forEach((h,i)=>{
+    const btn=el('button',{class:'toolbar-btn',title:'Heading '+(i+1)}); btn.textContent=h;
+    btn.addEventListener('click',()=>{document.execCommand('formatBlock',false,'h'+(i+1)); editor.focus();});
+    toolbar.appendChild(btn);
+  });
+  toolbar.appendChild(el('div',{class:'editor-divider'}));
+  const listBtn=el('button',{class:'toolbar-btn'}); listBtn.textContent='• List';
+  listBtn.addEventListener('click',()=>{document.execCommand('insertUnorderedList'); editor.focus();});
+  toolbar.appendChild(listBtn); toolbar.appendChild(el('div',{class:'editor-divider'}));
   const backBtn=el('button',{class:'btn btn-ghost btn-sm',onclick:()=>navigate('dashboard',projectId,'writing')}); backBtn.textContent='← Back';
+  const exportNarrBtn=el('button',{class:'btn btn-ghost btn-sm',onclick:()=>generateWritingDeskPdf(projectId,doc)});exportNarrBtn.textContent='📄 Export';
   toolbar.appendChild(backBtn);
-  if(!studentUid){
-    const exportNarrBtn=el('button',{class:'btn btn-ghost btn-sm',onclick:()=>generateWritingDeskPdf(projectId,doc)});exportNarrBtn.textContent='📄 Export';
-    toolbar.appendChild(exportNarrBtn);
-  }
-
+  toolbar.appendChild(exportNarrBtn);
+ 
   const body=el('div',{class:'editor-body'});
-  const editor=el('div',{class:'editor-content','data-placeholder':'Begin your story here...'});
-  if(!studentUid) editor.setAttribute('contenteditable','true');
+  const editor=el('div',{class:'editor-content',contenteditable:'true','data-placeholder':'Begin your story here...'});
   editor.innerHTML=doc.content||'';
   const wc=el('div',{class:'editor-word-count'},[wordCount(editor.innerHTML)+' words']);
-  if(!studentUid){
-    editor.addEventListener('input',()=>{
-      wc.textContent=wordCount(editor.innerHTML)+' words';
-      clearTimeout(editorSaveTimer);
-      editorSaveTimer=setTimeout(async()=>{ showSaving(); await fsUpdate('documents',doc.id,{content:editor.innerHTML}); showSaved(); },1000);
-    });
-    editor.addEventListener('keyup',()=>updateToolbar()); editor.addEventListener('mouseup',()=>updateToolbar());
-  }
+  editor.addEventListener('input',()=>{
+    wc.textContent=wordCount(editor.innerHTML)+' words';
+    clearTimeout(editorSaveTimer);
+    editorSaveTimer=setTimeout(async()=>{ showSaving(); await fsUpdate('documents',doc.id,{content:editor.innerHTML}); showSaved(); },1000);
+  });
+  editor.addEventListener('keyup',()=>updateToolbar()); editor.addEventListener('mouseup',()=>updateToolbar());
   body.appendChild(editor); view.append(toolbar,body,wc);
-  function updateToolbar(){
-    const fmtBtnsLocal=[{cmd:'bold'},{cmd:'italic'},{cmd:'underline'}];
-    toolbar.querySelectorAll('.toolbar-btn').forEach((b,i)=>{ if(fmtBtnsLocal[i]) b.classList.toggle('active',document.queryCommandState(fmtBtnsLocal[i].cmd)); });
-  }
+  function updateToolbar(){fmtBtns.forEach((b,i)=>{toolbar.querySelectorAll('.toolbar-btn')[i].classList.toggle('active',document.queryCommandState(b.cmd));});}
 }
-
+ 
 const SP_TYPES=['scene-heading','action','character','dialogue','parenthetical','transition'];
 const SP_LABELS={'scene-heading':'Scene Heading','action':'Action','character':'Character','dialogue':'Dialogue','parenthetical':'Parenthetical','transition':'Transition'};
 let currentSpType='scene-heading';
-
+ 
 // ── Autofill helpers ──
 let _cachedCharNames = [];
 let _cachedLocNames  = [];
-
+ 
 async function loadAutofillNames(projectId) {
   const [chars, locs] = await Promise.all([
     fsQuery('characters', where('storyProjectId','==',projectId)),
@@ -2051,7 +1478,7 @@ async function loadAutofillNames(projectId) {
   _cachedCharNames = chars.map(c => c.name.toUpperCase());
   _cachedLocNames  = locs.map(l => l.name.toUpperCase());
 }
-
+ 
 function getLineSuggestions(type, typed) {
   const q = typed.toUpperCase();
   if (!q) return [];
@@ -2073,24 +1500,24 @@ function getLineSuggestions(type, typed) {
   }
   return [];
 }
-
+ 
 function showSuggestions(editor, typeBar, node) {
   removeSuggestions();
   if (!node || node === editor) return;
-
+ 
   const type = node.dataset.type;
   if (type !== 'scene-heading' && type !== 'character') return;
-
+ 
   const text = node.textContent || '';
   const suggestions = getLineSuggestions(type, text);
   if (!suggestions.length) return;
-
+ 
   const rect = node.getBoundingClientRect();
   const dropdown = document.createElement('div');
   dropdown.className = 'sp-suggest';
   dropdown.id = 'sp-suggest-box';
   dropdown.style.cssText = `top:${rect.bottom + window.scrollY + 2}px;left:${rect.left + window.scrollX}px;`;
-
+ 
   suggestions.forEach((s, i) => {
     const item = document.createElement('div');
     item.className = 'sp-suggest-item' + (i === 0 ? ' focused' : '');
@@ -2103,15 +1530,15 @@ function showSuggestions(editor, typeBar, node) {
     };
     dropdown.appendChild(item);
   });
-
+ 
   document.body.appendChild(dropdown);
 }
-
+ 
 function removeSuggestions() {
   const existing = document.getElementById('sp-suggest-box');
   if (existing) existing.remove();
 }
-
+ 
 function moveFocus(dir) {
   const box = document.getElementById('sp-suggest-box');
   if (!box) return false;
@@ -2123,7 +1550,7 @@ function moveFocus(dir) {
   items[idx].classList.add('focused');
   return true;
 }
-
+ 
 function acceptFocusedSuggestion(node) {
   const box = document.getElementById('sp-suggest-box');
   if (!box) return false;
@@ -2133,7 +1560,7 @@ function acceptFocusedSuggestion(node) {
   removeSuggestions();
   return true;
 }
-
+ 
 function applySuggestion(node, text) {
   node.textContent = text;
   // Place cursor at end
@@ -2144,109 +1571,107 @@ function applySuggestion(node, text) {
   sel.removeAllRanges();
   sel.addRange(r);
 }
-
-function renderScreenplayEditor(view, doc, projectId, studentUid) {
-  // Pre-load character and location names for autofill (own projects only)
-  if(!studentUid) loadAutofillNames(projectId);
-
+ 
+function renderScreenplayEditor(view, doc, projectId) {
+  // Pre-load character/location names for autofill AND link cache
+  loadAutofillNames(projectId);
+  loadLinkCache(projectId);
+ 
   const toolbar=el('div',{class:'editor-topbar',style:'flex-wrap:wrap;gap:6px;'});
   const titleIn=el('input',{class:'editor-title-input',value:doc.title||'',placeholder:'Screenplay title...'});
-  if(!studentUid) titleIn.addEventListener('blur',async()=>{ showSaving(); await fsUpdate('documents',doc.id,{title:titleIn.value}); showSaved(); });
-  else titleIn.readOnly=true;
+  titleIn.addEventListener('blur',async()=>{ showSaving(); await fsUpdate('documents',doc.id,{title:titleIn.value}); showSaved(); });
   toolbar.appendChild(titleIn); toolbar.appendChild(el('div',{class:'editor-divider'}));
-
-  let typeBar;
-  if(!studentUid){
-    typeBar=el('div',{class:'screenplay-type-selector'});
-    SP_TYPES.forEach(t=>{
-      const btn=el('button',{class:'type-btn'+(t===currentSpType?' active':''),onclick:()=>setSpType(t,typeBar)});
-      btn.textContent=SP_LABELS[t]; btn.dataset.type=t; typeBar.appendChild(btn);
-    });
-    toolbar.append(typeBar,el('div',{class:'editor-divider'}));
-  }
-
+  const typeBar=el('div',{class:'screenplay-type-selector'});
+  SP_TYPES.forEach(t=>{
+    const btn=el('button',{class:'type-btn'+(t===currentSpType?' active':''),onclick:()=>setSpType(t,typeBar)});
+    btn.textContent=SP_LABELS[t]; btn.dataset.type=t; typeBar.appendChild(btn);
+  });
+  toolbar.append(typeBar,el('div',{class:'editor-divider'}));
   const backBtn=el('button',{class:'btn btn-ghost btn-sm',onclick:()=>{removeSuggestions();navigate('dashboard',projectId,'writing');}}); backBtn.textContent='← Back';
+  const exportSpBtn=el('button',{class:'btn btn-ghost btn-sm',onclick:()=>generateWritingDeskPdf(projectId,doc)});exportSpBtn.textContent='📄 Export';
+  const linkToolbarBtn = addLinkToolbarBtn(toolbar, editor, projectId);
   toolbar.appendChild(backBtn);
-  if(!studentUid){
-    const exportSpBtn=el('button',{class:'btn btn-ghost btn-sm',onclick:()=>generateWritingDeskPdf(projectId,doc)});exportSpBtn.textContent='📄 Export';
-    toolbar.appendChild(exportSpBtn);
-  }
-
+  toolbar.appendChild(exportSpBtn);
+  toolbar.appendChild(linkToolbarBtn);
   const body=el('div',{class:'screenplay-body'});
   const page=el('div',{class:'screenplay-page'});
-  const editor=el('div',{class:'screenplay-content'});
+  const editor=el('div',{class:'screenplay-content',contenteditable:'true'});
   editor.style.position='relative';
   editor.innerHTML=doc.content||'<p data-type="scene-heading">INT. LOCATION - DAY</p>';
-
-  if(studentUid){
-    // Read-only: no contenteditable, no event listeners
-    editor.style.cursor='default';
-    editor.style.userSelect='text';
-  } else {
-    editor.setAttribute('contenteditable','true');
-    editor.addEventListener('keydown',e=>{
-      const box = document.getElementById('sp-suggest-box');
-      if (box) {
-        if (e.key === 'ArrowDown') { e.preventDefault(); moveFocus(1); return; }
-        if (e.key === 'ArrowUp')   { e.preventDefault(); moveFocus(-1); return; }
-        if (e.key === 'Tab' || e.key === 'Enter') {
-          const sel = window.getSelection();
-          let node = sel.rangeCount ? sel.getRangeAt(0).startContainer : null;
-          while (node && node.parentNode !== editor) node = node.parentNode;
-          if (acceptFocusedSuggestion(node)) { e.preventDefault(); return; }
-        }
-        if (e.key === 'Escape') { removeSuggestions(); return; }
+  editor._docId = doc.id; // needed by link toolbar save
+ 
+  editor.addEventListener('keydown',e=>{
+    // Handle suggestion navigation
+    const box = document.getElementById('sp-suggest-box');
+    if (box) {
+      if (e.key === 'ArrowDown') { e.preventDefault(); moveFocus(1); return; }
+      if (e.key === 'ArrowUp')   { e.preventDefault(); moveFocus(-1); return; }
+      if (e.key === 'Tab' || e.key === 'Enter') {
+        // Try to accept suggestion first
+        const sel = window.getSelection();
+        let node = sel.rangeCount ? sel.getRangeAt(0).startContainer : null;
+        while (node && node.parentNode !== editor) node = node.parentNode;
+        if (acceptFocusedSuggestion(node)) { e.preventDefault(); return; }
       }
-      if (e.key === 'Tab') {
-        e.preventDefault();
-        const idx=SP_TYPES.indexOf(currentSpType);
-        const next=e.shiftKey?SP_TYPES[(idx-1+SP_TYPES.length)%SP_TYPES.length]:SP_TYPES[(idx+1)%SP_TYPES.length];
-        setSpType(next,typeBar); applyTypeToCurrentLine(editor,next);
-      }
-      if (e.key === 'Enter') {
-        removeSuggestions();
-        setTimeout(()=>{
-          if(currentSpType==='character') setSpType('dialogue',typeBar);
-          else if(currentSpType==='dialogue') setSpType('action',typeBar);
-          else if(currentSpType==='parenthetical') setSpType('dialogue',typeBar);
-          applyTypeToCurrentLine(editor,currentSpType);
-          applyContinuedMarkers(editor);
-        },0);
-      }
-    });
-    editor.addEventListener('keyup', e => {
-      if (['ArrowDown','ArrowUp','ArrowLeft','ArrowRight'].includes(e.key)) {
-        removeSuggestions(); syncTypeFromCursor(editor, typeBar); return;
-      }
+      if (e.key === 'Escape') { removeSuggestions(); return; }
+    }
+ 
+    if (e.key === 'Tab') {
+      e.preventDefault();
+      const idx=SP_TYPES.indexOf(currentSpType);
+      const next=e.shiftKey?SP_TYPES[(idx-1+SP_TYPES.length)%SP_TYPES.length]:SP_TYPES[(idx+1)%SP_TYPES.length];
+      setSpType(next,typeBar); applyTypeToCurrentLine(editor,next);
+    }
+    if (e.key === 'Enter') {
+      removeSuggestions();
+      setTimeout(()=>{
+        if(currentSpType==='character') setSpType('dialogue',typeBar);
+        else if(currentSpType==='dialogue') setSpType('action',typeBar);
+        else if(currentSpType==='parenthetical') setSpType('dialogue',typeBar);
+        applyTypeToCurrentLine(editor,currentSpType);
+        applyContinuedMarkers(editor);
+      },0);
+    }
+  });
+ 
+  editor.addEventListener('keyup', e => {
+    if (['ArrowDown','ArrowUp','ArrowLeft','ArrowRight'].includes(e.key)) {
+      removeSuggestions();
       syncTypeFromCursor(editor, typeBar);
-      const sel = window.getSelection();
-      if (!sel.rangeCount) return;
-      let node = sel.getRangeAt(0).startContainer;
-      while (node && node.parentNode !== editor) node = node.parentNode;
-      showSuggestions(editor, typeBar, node);
-    });
-    editor.addEventListener('mouseup', () => { removeSuggestions(); syncTypeFromCursor(editor, typeBar); });
-    editor.addEventListener('input', () => {
-      applyContinuedMarkers(editor);
-      clearTimeout(editorSaveTimer);
-      editorSaveTimer = setTimeout(async()=>{ showSaving(); await fsUpdate('documents',doc.id,{content:editor.innerHTML}); showSaved(); }, 1000);
-    });
-    document.addEventListener('mousedown', e => {
-      if (!e.target.closest('#sp-suggest-box') && !e.target.closest('.screenplay-content')) {
-        removeSuggestions();
-      }
-    });
-    if(!doc.content) applyTypeToCurrentLine(editor,'scene-heading');
-    else setTimeout(()=>applyContinuedMarkers(editor), 50);
-  }
-
+      return;
+    }
+    syncTypeFromCursor(editor, typeBar);
+    // Show suggestions for current line
+    const sel = window.getSelection();
+    if (!sel.rangeCount) return;
+    let node = sel.getRangeAt(0).startContainer;
+    while (node && node.parentNode !== editor) node = node.parentNode;
+    showSuggestions(editor, typeBar, node);
+  });
+ 
+  editor.addEventListener('mouseup', () => { removeSuggestions(); syncTypeFromCursor(editor, typeBar); });
+  editor.addEventListener('input', () => {
+    applyContinuedMarkers(editor);
+    clearTimeout(editorSaveTimer);
+    editorSaveTimer = setTimeout(async()=>{ showSaving(); await fsUpdate('documents',doc.id,{content:editor.innerHTML}); showSaved(); }, 1000);
+  });
+  // Close suggestions if clicking outside
+  document.addEventListener('mousedown', e => {
+    if (!e.target.closest('#sp-suggest-box') && !e.target.closest('.screenplay-content')) {
+      removeSuggestions();
+    }
+  });
+ 
   page.appendChild(editor); body.appendChild(page);
-  const wc=el('div',{class:'editor-word-count'},studentUid?'Read-only view':'Tab cycles line types · I/E + Tab autofills INT./EXT. · ↑↓ navigate suggestions');
+  const wc=el('div',{class:'editor-word-count'},'Tab cycles line types · I/E + Tab autofills INT./EXT. · ↑↓ navigate suggestions');
   view.append(toolbar,body,wc);
+  if(!doc.content) applyTypeToCurrentLine(editor,'scene-heading');
+  else setTimeout(()=>applyContinuedMarkers(editor), 50);
+  setupEditorLinkClicks(editor, projectId);
 }
-
+ 
 function setSpType(type,typeBar){currentSpType=type;typeBar.querySelectorAll('.type-btn').forEach(b=>b.classList.toggle('active',b.dataset.type===type));}
-
+ 
 function applyTypeToCurrentLine(editor,type){
   const sel=window.getSelection();if(!sel.rangeCount)return;
   let node=sel.getRangeAt(0).startContainer;
@@ -2260,14 +1685,14 @@ function applyTypeToCurrentLine(editor,type){
   // After setting type, refresh CONT'D markers
   setTimeout(()=>applyContinuedMarkers(editor),0);
 }
-
+ 
 function syncTypeFromCursor(editor,typeBar){
   const sel=window.getSelection();if(!sel.rangeCount)return;
   let node=sel.getRangeAt(0).startContainer;
   while(node&&node.parentNode!==editor)node=node.parentNode;
   if(node&&node.dataset&&node.dataset.type)setSpType(node.dataset.type,typeBar);
 }
-
+ 
 // ── CONT'D logic ──
 // Rule: if a character line's name matches the most recent previous character
 // line name (regardless of intervening action/dialogue/parenthetical lines),
@@ -2276,20 +1701,20 @@ function getCharName(node){
   // Strip existing (CONT'D) suffix to get the base name
   return (node.textContent||'').replace(/\s*\(CONT'D\)\s*$/i,'').trim().toUpperCase();
 }
-
+ 
 function applyContinuedMarkers(editor){
   const lines = Array.from(editor.children);
   let lastCharName = null;
-
+ 
   lines.forEach(node=>{
     const type = node.dataset && node.dataset.type;
-
+ 
     if(type === 'character'){
       const baseName = getCharName(node);
       if(!baseName) return;
-
+ 
       const hasContinued = /\(CONT'D\)$/i.test(node.textContent.trim());
-
+ 
       if(lastCharName && baseName === lastCharName){
         // Same character — add CONT'D if not already present
         if(!hasContinued){
@@ -2325,7 +1750,7 @@ function applyContinuedMarkers(editor){
     // CONT'D fires whenever the same character appears again, regardless of intervening lines
   });
 }
-
+ 
 // ══════════════════════════════════════════════
 //  HELPERS
 // ══════════════════════════════════════════════
@@ -2362,18 +1787,21 @@ function openEditProject(p){
   }});saveBtn.textContent='Save';
   footer.append(cancelBtn,saveBtn); modal.appendChild(footer); overlay.appendChild(modal); document.body.appendChild(overlay);
 }
-
+ 
 // Make these available to inline onclick handlers
 window.navigate = navigate;
 window.fsDelete = fsDelete;
 window.renderCharacters = renderCharacters;
 window.renderLocations = renderLocations;
 window.renderScenes = renderScenes;
+window.renderBeatBoard = renderBeatBoard;
+window.renderProps = renderProps;
 window.confirmDelete = confirmDelete;
 window.toast = toast;
-window.exitStudentView = exitStudentView;
-window.openJoinClassModal = openJoinClassModal;
-
+window.generateFullProjectPdf = generateFullProjectPdf;
+window.generateWritingDeskPdf = generateWritingDeskPdf;
+window.openLinkedCard = openLinkedCard;
+ 
 // ══════════════════════════════════════════════
 //  PDF ENGINE
 // ══════════════════════════════════════════════
@@ -2382,7 +1810,7 @@ const PDF_COLORS = {
   fg:'#1a2e22', fg2:'#3d5c48', fg3:'#7a9070',
   border:'#d1d8d0', card:'#ffffff', accent:'#e8ebe7',
 };
-
+ 
 function pdfBaseStyles(){
   return `<style>
     @import url('https://fonts.googleapis.com/css2?family=Belleza&family=Lora:ital,wght@0,400;0,600;1,400&family=JetBrains+Mono:wght@400;500&display=swap');
@@ -2418,7 +1846,7 @@ function pdfBaseStyles(){
     @media print{body{background:white;}.pdf-page{padding:32px 40px;}}
   </style>`;
 }
-
+ 
 function pdfHeader(projectName, docTitle, subtitle){
   const date = new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
   return `<div class="pdf-header">
@@ -2427,12 +1855,12 @@ function pdfHeader(projectName, docTitle, subtitle){
     <div class="pdf-doc-subtitle">${escHtml(subtitle||'')} &nbsp;·&nbsp; Generated ${date}</div>
   </div>`;
 }
-
+ 
 function pdfFooter(projectName){
   const date = new Date().toLocaleDateString();
   return `<div class="pdf-footer"><span>${escHtml(projectName)}</span><span>Narrative Studio &nbsp;·&nbsp; ${date}</span></div>`;
 }
-
+ 
 function buildCharactersPdf(project, chars){
   let body = chars.length ? '' : '<p style="color:#7a9070;font-style:italic;">No characters have been added yet.</p>';
   chars.forEach(c=>{
@@ -2449,7 +1877,7 @@ function buildCharactersPdf(project, chars){
   });
   return `<!DOCTYPE html><html><head><meta charset="UTF-8">${pdfBaseStyles()}</head><body><div class="pdf-page">${pdfHeader(project.name,'Characters',chars.length+' character'+(chars.length!==1?'s':''))}${body}${pdfFooter(project.name)}</div></body></html>`;
 }
-
+ 
 function buildLocationsPdf(project, locs){
   let body = locs.length ? '' : '<p style="color:#7a9070;font-style:italic;">No locations have been added yet.</p>';
   locs.forEach(l=>{
@@ -2462,7 +1890,7 @@ function buildLocationsPdf(project, locs){
   });
   return `<!DOCTYPE html><html><head><meta charset="UTF-8">${pdfBaseStyles()}</head><body><div class="pdf-page">${pdfHeader(project.name,'Locations',locs.length+' location'+(locs.length!==1?'s':''))}${body}${pdfFooter(project.name)}</div></body></html>`;
 }
-
+ 
 function buildScenesPdf(project, scenes, chars, locs){
   const charMap={};chars.forEach(c=>charMap[c.id]=c.name);
   const locMap={};locs.forEach(l=>locMap[l.id]=l.name);
@@ -2484,7 +1912,7 @@ function buildScenesPdf(project, scenes, chars, locs){
   });
   return `<!DOCTYPE html><html><head><meta charset="UTF-8">${pdfBaseStyles()}</head><body><div class="pdf-page">${pdfHeader(project.name,'Scenes',scenes.length+' scene'+(scenes.length!==1?'s':'')+' in sequence')}${body}${pdfFooter(project.name)}</div></body></html>`;
 }
-
+ 
 function buildWorldPdf(project, world){
   const FIELDS=[
     {key:'moodAndTone',label:'Mood & Tone'},{key:'lawsOfPhysics',label:'Laws of Physics / Magic'},
@@ -2499,13 +1927,13 @@ function buildWorldPdf(project, world){
   if(filled.length) body+='</div>';
   return `<!DOCTYPE html><html><head><meta charset="UTF-8">${pdfBaseStyles()}</head><body><div class="pdf-page">${pdfHeader(project.name,'World Building',filled.length+' of '+FIELDS.length+' sections completed')}${body}${pdfFooter(project.name)}</div></body></html>`;
 }
-
+ 
 function buildOutlinePdf(project, items, outlineName){
   let body = items.length ? '' : '<p style="color:#7a9070;font-style:italic;">No outline items have been added yet.</p>';
   items.forEach(o=>{ body+=`<div class="pdf-outline-item level-${o.level||1}">${escHtml(o.text)}</div>`; });
   return `<!DOCTYPE html><html><head><meta charset="UTF-8">${pdfBaseStyles()}</head><body><div class="pdf-page">${pdfHeader(project.name,escHtml(outlineName||'Outline'),items.length+' items')}${body}${pdfFooter(project.name)}</div></body></html>`;
 }
-
+ 
 function buildProjectPdf(project,chars,locs,scenes,world,outlineItems,outlineName){
   const charMap={};chars.forEach(c=>charMap[c.id]=c.name);
   const locMap={};locs.forEach(l=>locMap[l.id]=l.name);
@@ -2552,7 +1980,7 @@ function buildProjectPdf(project,chars,locs,scenes,world,outlineItems,outlineNam
   }
   return `<!DOCTYPE html><html><head><meta charset="UTF-8">${pdfBaseStyles()}</head><body><div class="pdf-page">${pdfHeader(project.name,'Project Overview — '+escHtml(project.name),'Complete project package')}${body}${pdfFooter(project.name)}</div></body></html>`;
 }
-
+ 
 function buildScreenplayPdf(project,doc){
   const rawHtml=doc.content||'';
   const parser=new DOMParser();
@@ -2577,12 +2005,12 @@ function buildScreenplayPdf(project,doc){
   const titlePage=`<div style="min-height:90vh;display:flex;flex-direction:column;align-items:center;justify-content:center;page-break-after:always;text-align:center;"><div style="margin-bottom:60px;"><div style="font-size:22px;font-weight:bold;text-transform:uppercase;margin-bottom:12px;">${escHtml(tp.title||doc.title||'Untitled')}</div>${tp.writtenBy?`<div style="margin-top:20px;font-size:14px;">Written by</div><div style="font-size:16px;font-weight:bold;">${escHtml(tp.writtenBy)}</div>`:''}${tp.basedOn?`<div style="margin-top:16px;font-size:13px;color:#555;">${escHtml(tp.basedOn)}</div>`:''}</div>${tp.contact?`<div style="margin-top:40px;font-size:12px;color:#555;text-align:left;">${escHtml(tp.contact)}</div>`:''}</div>`;
   return `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>*{box-sizing:border-box;margin:0;padding:0;}body{background:white;color:#111;font-family:'Courier New',Courier,monospace;font-size:12pt;line-height:1.7;}.sp-page{max-width:680px;margin:0 auto;padding:72px 72px 72px 96px;}@media print{.sp-page{padding:1in 1in 1in 1.5in;}}</style></head><body><div class="sp-page">${titlePage}${body}</div></body></html>`;
 }
-
+ 
 function buildNarrativePdf(project,doc){
   const rawHtml=doc.content||'<p>Empty document.</p>';
   return `<!DOCTYPE html><html><head><meta charset="UTF-8">${pdfBaseStyles()}<style>.narrative-body{max-width:640px;margin:0 auto;font-size:14px;line-height:1.9;}.narrative-body h1,.narrative-body h2,.narrative-body h3{font-family:'Belleza',serif;color:#2d6a4f;margin:1.4em 0 0.5em;}.narrative-body p{margin-bottom:0.8em;}.narrative-body ul,.narrative-body ol{padding-left:1.6em;margin-bottom:0.8em;}</style></head><body><div class="pdf-page">${pdfHeader(project.name,escHtml(doc.title||'Untitled'),'Narrative document')}<div class="narrative-body">${rawHtml}</div>${pdfFooter(project.name)}</div></body></html>`;
 }
-
+ 
 function showPdfOverlay(title,htmlContent,onDownload){
   const existing=document.getElementById('pdf-overlay-wrap');
   if(existing)existing.remove();
@@ -2599,19 +2027,19 @@ function showPdfOverlay(title,htmlContent,onDownload){
   body.appendChild(iframe);frame.append(topbar,body);overlay.appendChild(frame);document.body.appendChild(overlay);
   overlay.addEventListener('click',e=>{if(e.target===overlay)overlay.remove();});
 }
-
+ 
 function downloadPdf(htmlContent,filename){
   const win=window.open('','_blank');
   if(!win){toast('Please allow popups to download PDF','error');return;}
   win.document.write(htmlContent);win.document.close();
   win.onload=()=>setTimeout(()=>win.print(),300);
 }
-
+ 
 async function hashData(data){
   const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(JSON.stringify(data)));
   return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('').slice(0,16);
 }
-
+ 
 // ══════════════════════════════════════════════
 //  DOCUMENT LIBRARY
 // ══════════════════════════════════════════════
@@ -2625,111 +2053,94 @@ const DOC_TYPES={
   'screenplay':{label:'Screenplay',icon:'✦'},
   'narrative':{label:'Narrative Document',icon:'✦'},
 };
-
-async function renderDocumentLibrary(container,projectId,studentUid){
-  container.innerHTML='<div style="padding:60px;text-align:center;color:var(--fg3);">Loading…</div>';
-  const get = studentUid ? (col,id)=>fsGetStudent(studentUid,col,id) : fsGet;
-  const qry = studentUid ? (col,...c)=>fsQueryStudent(studentUid,col,...c) : fsQuery;
-  const [project,generatedDocs]=await Promise.all([get('projects',projectId),qry('generatedDocs',where('storyProjectId','==',projectId))]);
-  generatedDocs.sort((a,b)=>{
-    const at=a.updatedAt?.toDate?a.updatedAt.toDate():new Date(a.updatedAt||0);
-    const bt=b.updatedAt?.toDate?b.updatedAt.toDate():new Date(b.updatedAt||0);
-    return bt-at;
-  });
-  container.innerHTML='';
-  const wrap=el('div',{class:'page'});
-  const header=el('div',{class:'page-header'});
-  header.innerHTML='<div><div class="page-title">Document Library</div><div class="page-subtitle">Generated PDFs. New versions are only saved when data has changed.</div></div>';
-  if(!studentUid){
-    const exportBtn=el('button',{class:'btn btn-primary',onclick:()=>generateFullProjectPdf(projectId,project)});
-    exportBtn.textContent='◈ Export Full Project';
-    header.appendChild(exportBtn);
-  }
-  wrap.appendChild(header);
-  if(!generatedDocs.length){
-    wrap.appendChild(emptyState('📁','No Documents Yet',studentUid?'This student has no generated documents yet.':'Generate PDFs from any tool page, or click Export Full Project above.'));
-  } else {
-    const groups={};
-    generatedDocs.forEach(d=>{
-      const key=d.docType+'|'+(d.sourceId||'');
-      if(!groups[key])groups[key]={docType:d.docType,sourceId:d.sourceId,sourceTitle:d.sourceTitle,versions:[]};
-      groups[key].versions.push(d);
-    });
-    const list=el('div',{class:'doclibrary-list'});
-    Object.values(groups).forEach(group=>{
-      group.versions.sort((a,b)=>b.version-a.version);
-      const latest=group.versions[0];
-      const typeInfo=DOC_TYPES[group.docType]||{label:group.docType,icon:'◈'};
-      const item=el('div',{class:'doclibrary-item'});
-      const itemHeader=el('div',{class:'doclibrary-item-header'});
-      const titleBlock=el('div');
-      titleBlock.innerHTML=`<div class="doclibrary-item-title">${typeInfo.icon} ${escHtml(group.sourceTitle||typeInfo.label)}</div><div class="doclibrary-item-meta">${group.versions.length} version${group.versions.length!==1?'s':''} · Latest: ${relativeTime(latest.updatedAt)}</div>`;
-      const actions=el('div',{style:'display:flex;gap:6px;flex-shrink:0;'});
-      const previewBtn=el('button',{class:'btn btn-ghost btn-sm',onclick:()=>showPdfOverlay(group.sourceTitle||typeInfo.label,latest.htmlContent,()=>downloadPdf(latest.htmlContent,sanitizeFilename(group.sourceTitle||group.docType)+'.pdf'))});
-      previewBtn.textContent='👁 Preview';
-      const dlBtn=el('button',{class:'btn btn-primary btn-sm',onclick:()=>downloadPdf(latest.htmlContent,sanitizeFilename(group.sourceTitle||group.docType)+'.pdf')});
-      dlBtn.textContent='⬇ Download';
-      actions.append(previewBtn,dlBtn);itemHeader.append(titleBlock,actions);item.appendChild(itemHeader);
-      if(group.versions.length>1){
-        const versions=el('div',{class:'doclibrary-versions'});
-        group.versions.forEach((ver,i)=>{
-          const vrow=el('div',{class:'doclibrary-version'});
-          const vlabel=el('div',{class:'doclibrary-version-label'});
-          const badge=el('span',{class:'version-badge'+(i===0?' version-current':'')});badge.textContent='v'+ver.version;
-          vlabel.append(badge,document.createTextNode(' '+relativeTime(ver.updatedAt)));
-          const vdl=el('button',{class:'btn btn-ghost btn-sm',onclick:()=>downloadPdf(ver.htmlContent,sanitizeFilename(group.sourceTitle||group.docType)+'-v'+ver.version+'.pdf')});
-          vdl.textContent='⬇';vrow.append(vlabel,vdl);versions.appendChild(vrow);
-        });
-        item.appendChild(versions);
-      }
-      list.appendChild(item);
-    });
-    wrap.appendChild(list);
-  }
-  container.appendChild(wrap);
-}
-
-function sanitizeFilename(s){return(s||'document').replace(/[^a-zA-Z0-9\s\-_]/g,'').replace(/\s+/g,'-').toLowerCase();}
-
-async function generateAndStorePdf(docType,projectId,project,sourceId,sourceTitle,htmlContent){
-  const contentHash=await hashData(htmlContent||docType+projectId+sourceId);
-  const existing=await fsQuery('generatedDocs',where('storyProjectId','==',projectId));
-  const matching=existing.filter(d=>d.docType===docType&&(d.sourceId||'')===(sourceId||''));
+ 
+ 
+async function generateAndStorePdf(docType,projectId,project,sourceId,sourceTitle,htmlContent,dataSnapshot){
+  // dataSnapshot is a compact JSON of the source data — stored instead of HTML
+  const snapshotStr = dataSnapshot ? JSON.stringify(dataSnapshot) : htmlContent;
+  const contentHash = await hashData(snapshotStr);
+ 
+  const existing = await fsQuery('generatedDocs',where('storyProjectId','==',projectId));
+  const matching = existing.filter(d=>d.docType===docType&&(d.sourceId||'')===(sourceId||''));
   matching.sort((a,b)=>b.version-a.version);
-  if(matching.length>0&&matching[0].contentHash===contentHash){
+ 
+  if(matching.length>0 && matching[0].contentHash===contentHash){
     toast('No changes since last version — showing existing document');
-    showPdfOverlay(sourceTitle||DOC_TYPES[docType]?.label||docType,matching[0].htmlContent,()=>downloadPdf(matching[0].htmlContent,sanitizeFilename(sourceTitle||docType)+'.pdf'));
+    const html = matching[0].dataSnapshot
+      ? await rehydratePdf(matching[0].docType, JSON.parse(matching[0].dataSnapshot), matching[0].sourceTitle, projectId)
+      : matching[0].htmlContent||'';
+    showPdfOverlay(sourceTitle||DOC_TYPES[docType]?.label||docType, html,
+      ()=>downloadPdf(html, sanitizeFilename(sourceTitle||docType)+'.pdf'));
     return;
   }
-  const newVersion=matching.length>0?matching[0].version+1:1;
+ 
+  const newVersion = matching.length>0 ? matching[0].version+1 : 1;
   showSaving();
-  await fsCreate('generatedDocs',{storyProjectId:projectId,docType,sourceId:sourceId||'',sourceTitle:sourceTitle||DOC_TYPES[docType]?.label||docType,version:newVersion,contentHash,htmlContent});
+ 
+  // Store only the compact snapshot — never the full HTML
+  const docData = {
+    storyProjectId:projectId,
+    docType, sourceId:sourceId||'', sourceTitle:sourceTitle||DOC_TYPES[docType]?.label||docType,
+    version:newVersion, contentHash,
+    dataSnapshot: dataSnapshot ? JSON.stringify(dataSnapshot) : null,
+    // Fallback for writing desk docs which use raw HTML content
+    htmlContent: dataSnapshot ? null : htmlContent,
+  };
+ 
+  await fsCreate('generatedDocs', docData);
   showSaved();
   toast('Version '+newVersion+' saved to Document Library');
-  showPdfOverlay(sourceTitle||DOC_TYPES[docType]?.label||docType,htmlContent,()=>downloadPdf(htmlContent,sanitizeFilename(sourceTitle||docType)+'.pdf'));
+  showPdfOverlay(sourceTitle||DOC_TYPES[docType]?.label||docType, htmlContent,
+    ()=>downloadPdf(htmlContent, sanitizeFilename(sourceTitle||docType)+'.pdf'));
 }
-
+ 
+// Regenerate HTML from a stored snapshot
+async function rehydratePdf(docType, snapshot, sourceTitle, projectId){
+  const project = snapshot.project || await fsGet('projects',projectId);
+  switch(docType){
+    case 'characters':  return buildCharactersPdf(project, snapshot.chars||[]);
+    case 'locations':   return buildLocationsPdf(project, snapshot.locs||[]);
+    case 'scenes':      return buildScenesPdf(project, snapshot.scenes||[], snapshot.chars||[], snapshot.locs||[]);
+    case 'world':       return buildWorldPdf(project, snapshot.world||{});
+    case 'outline':     return buildOutlinePdf(project, snapshot.items||[], sourceTitle||'Outline');
+    case 'project':     return buildProjectPdf(project, snapshot.chars||[], snapshot.locs||[], snapshot.scenes||[], snapshot.world||{}, snapshot.outlineItems||[], snapshot.outlineName||'Outline');
+    default:            return snapshot.htmlContent||'';
+  }
+}
+ 
+// Updated generate functions — now pass compact snapshots
 async function generateCharactersPdf(projectId){
   const[project,chars]=await Promise.all([fsGet('projects',projectId),fsQuery('characters',where('storyProjectId','==',projectId))]);
-  await generateAndStorePdf('characters',projectId,project,'characters','Characters',buildCharactersPdf(project,chars));
+  const html=buildCharactersPdf(project,chars);
+  await generateAndStorePdf('characters',projectId,project,'characters','Characters',html,{project,chars});
 }
 async function generateLocationsPdf(projectId){
   const[project,locs]=await Promise.all([fsGet('projects',projectId),fsQuery('locations',where('storyProjectId','==',projectId))]);
-  await generateAndStorePdf('locations',projectId,project,'locations','Locations',buildLocationsPdf(project,locs));
+  const html=buildLocationsPdf(project,locs);
+  await generateAndStorePdf('locations',projectId,project,'locations','Locations',html,{project,locs});
 }
 async function generateScenesPdf(projectId){
-  const[project,scenes,chars,locs]=await Promise.all([fsGet('projects',projectId),fsQuery('scenes',where('storyProjectId','==',projectId)),fsQuery('characters',where('storyProjectId','==',projectId)),fsQuery('locations',where('storyProjectId','==',projectId))]);
+  const[project,scenes,chars,locs]=await Promise.all([
+    fsGet('projects',projectId),
+    fsQuery('scenes',where('storyProjectId','==',projectId)),
+    fsQuery('characters',where('storyProjectId','==',projectId)),
+    fsQuery('locations',where('storyProjectId','==',projectId)),
+  ]);
   scenes.sort((a,b)=>(a.sequenceNumber||0)-(b.sequenceNumber||0));
-  await generateAndStorePdf('scenes',projectId,project,'scenes','Scenes',buildScenesPdf(project,scenes,chars,locs));
+  const html=buildScenesPdf(project,scenes,chars,locs);
+  await generateAndStorePdf('scenes',projectId,project,'scenes','Scenes',html,{project,scenes,chars,locs});
 }
 async function generateWorldPdf(projectId){
   const[project,worlds]=await Promise.all([fsGet('projects',projectId),fsQuery('worlds',where('storyProjectId','==',projectId))]);
-  await generateAndStorePdf('world',projectId,project,'world','World Building',buildWorldPdf(project,worlds[0]||{}));
+  const world=worlds[0]||{};
+  const html=buildWorldPdf(project,world);
+  await generateAndStorePdf('world',projectId,project,'world','World Building',html,{project,world});
 }
 async function generateOutlinePdf(projectId,outlineId,outlineName){
   const[project,allItems]=await Promise.all([fsGet('projects',projectId),fsQuery('outlines',where('storyProjectId','==',projectId))]);
   const items=allItems.filter(i=>(i.outlineId||'default')===outlineId).sort((a,b)=>(a.order||0)-(b.order||0));
-  await generateAndStorePdf('outline',projectId,project,'outline-'+outlineId,outlineName,buildOutlinePdf(project,items,outlineName));
+  const html=buildOutlinePdf(project,items,outlineName);
+  await generateAndStorePdf('outline',projectId,project,'outline-'+outlineId,outlineName,html,{project,items});
 }
 async function generateFullProjectPdf(projectId,project){
   if(!project)project=await fsGet('projects',projectId);
@@ -2747,31 +2158,410 @@ async function generateFullProjectPdf(projectId,project){
   const outlineName=outlineItems.length?(outlineItems[0].outlineName||'Outline'):'Outline';
   scenes.sort((a,b)=>(a.sequenceNumber||0)-(b.sequenceNumber||0));
   const html=buildProjectPdf(project,chars,locs,scenes,world,outlineItems,outlineName);
-  await generateAndStorePdf('project',projectId,project,'project','Full Project — '+project.name,html);
+  await generateAndStorePdf('project',projectId,project,'project','Full Project — '+project.name,html,
+    {project,chars,locs,scenes,world,outlineItems,outlineName});
 }
 async function generateWritingDeskPdf(projectId,doc){
   const project=await fsGet('projects',projectId);
   const html=doc.type==='screenplay'?buildScreenplayPdf(project,doc):buildNarrativePdf(project,doc);
-  await generateAndStorePdf(doc.type==='screenplay'?'screenplay':'narrative',projectId,project,'doc-'+doc.id,doc.title||'Untitled',html);
+  // Writing desk docs store the raw HTML since they contain rich content
+  await generateAndStorePdf(
+    doc.type==='screenplay'?'screenplay':'narrative',
+    projectId,project,'doc-'+doc.id,doc.title||'Untitled',
+    html, null // null = store htmlContent fallback
+  );
 }
-
-
+ 
+// Updated renderDocumentLibrary to use rehydration
+async function renderDocumentLibrary(container,projectId){
+  container.innerHTML='<div style="padding:60px;text-align:center;color:var(--fg3);">Loading…</div>';
+  const[project,generatedDocs]=await Promise.all([fsGet('projects',projectId),fsQuery('generatedDocs',where('storyProjectId','==',projectId))]);
+  generatedDocs.sort((a,b)=>{
+    const at=a.updatedAt?.toDate?a.updatedAt.toDate():new Date(a.updatedAt||0);
+    const bt=b.updatedAt?.toDate?b.updatedAt.toDate():new Date(b.updatedAt||0);
+    return bt-at;
+  });
+  container.innerHTML='';
+  const wrap=el('div',{class:'page'});
+  const header=el('div',{class:'page-header'});
+  header.innerHTML='<div><div class="page-title">Document Library</div><div class="page-subtitle">Generated PDFs. New versions are only saved when data has changed.</div></div>';
+  const exportBtn=el('button',{class:'btn btn-primary',onclick:()=>generateFullProjectPdf(projectId,project)});
+  exportBtn.textContent='◈ Export Full Project';
+  header.appendChild(exportBtn);
+  wrap.appendChild(header);
+  if(!generatedDocs.length){
+    wrap.appendChild(emptyState('📁','No Documents Yet','Generate PDFs from any tool page, or click Export Full Project above.'));
+  } else {
+    const groups={};
+    generatedDocs.forEach(d=>{
+      const key=d.docType+'|'+(d.sourceId||'');
+      if(!groups[key])groups[key]={docType:d.docType,sourceId:d.sourceId,sourceTitle:d.sourceTitle,versions:[]};
+      groups[key].versions.push(d);
+    });
+    const list=el('div',{class:'doclibrary-list'});
+    Object.values(groups).forEach(group=>{
+      group.versions.sort((a,b)=>b.version-a.version);
+      const latest=group.versions[0];
+      const typeInfo=DOC_TYPES[group.docType]||{label:group.docType,icon:'◈'};
+      const item=el('div',{class:'doclibrary-item'});
+      const itemHeader=el('div',{class:'doclibrary-item-header'});
+      const titleBlock=el('div');
+      titleBlock.innerHTML=`<div class="doclibrary-item-title">${typeInfo.icon} ${escHtml(group.sourceTitle||typeInfo.label)}</div><div class="doclibrary-item-meta">${group.versions.length} version${group.versions.length!==1?'s':''} · Latest: ${relativeTime(latest.updatedAt)}</div>`;
+      const actions=el('div',{style:'display:flex;gap:6px;flex-shrink:0;'});
+      const previewBtn=el('button',{class:'btn btn-ghost btn-sm',onclick:async()=>{
+        const html=await rehydratePdf(latest.docType,latest.dataSnapshot?JSON.parse(latest.dataSnapshot):{htmlContent:latest.htmlContent},latest.sourceTitle,projectId);
+        showPdfOverlay(group.sourceTitle||typeInfo.label,html,()=>downloadPdf(html,sanitizeFilename(group.sourceTitle||group.docType)+'.pdf'));
+      }});previewBtn.textContent='👁 Preview';
+      const dlBtn=el('button',{class:'btn btn-primary btn-sm',onclick:async()=>{
+        const html=await rehydratePdf(latest.docType,latest.dataSnapshot?JSON.parse(latest.dataSnapshot):{htmlContent:latest.htmlContent},latest.sourceTitle,projectId);
+        downloadPdf(html,sanitizeFilename(group.sourceTitle||group.docType)+'.pdf');
+      }});dlBtn.textContent='⬇ Download';
+      actions.append(previewBtn,dlBtn);itemHeader.append(titleBlock,actions);item.appendChild(itemHeader);
+      if(group.versions.length>1){
+        const versions=el('div',{class:'doclibrary-versions'});
+        group.versions.forEach((ver,i)=>{
+          const vrow=el('div',{class:'doclibrary-version'});
+          const vlabel=el('div',{class:'doclibrary-version-label'});
+          const badge=el('span',{class:'version-badge'+(i===0?' version-current':'')});badge.textContent='v'+ver.version;
+          vlabel.append(badge,document.createTextNode(' '+relativeTime(ver.updatedAt)));
+          const vdl=el('button',{class:'btn btn-ghost btn-sm',onclick:async()=>{
+            const html=await rehydratePdf(ver.docType,ver.dataSnapshot?JSON.parse(ver.dataSnapshot):{htmlContent:ver.htmlContent},ver.sourceTitle,projectId);
+            downloadPdf(html,sanitizeFilename(group.sourceTitle||group.docType)+'-v'+ver.version+'.pdf');
+          }});vdl.textContent='⬇';vrow.append(vlabel,vdl);versions.appendChild(vrow);
+        });
+        item.appendChild(versions);
+      }
+      list.appendChild(item);
+    });
+    wrap.appendChild(list);
+  }
+  container.appendChild(wrap);
+}
+ 
+// ══════════════════════════════════════════════
+//  PROPS
+// ══════════════════════════════════════════════
+async function renderProps(container,projectId){
+  container.innerHTML='<div style="padding:60px;text-align:center;color:var(--fg3);">Loading…</div>';
+  const props=await fsQuery('props',where('storyProjectId','==',projectId));
+  container.innerHTML='';
+  const wrap=el('div',{class:'page'});
+  const header=el('div',{class:'page-header'});
+  header.innerHTML='<div><div class="page-title">Props</div><div class="page-subtitle">'+props.length+' prop'+(props.length!==1?'s':'')+' · Linkable from the screenplay and outline editors</div></div>';
+  const addBtn=el('button',{class:'btn btn-primary',onclick:()=>openPropDrawer(null,projectId)});addBtn.textContent='+ Add Prop';
+  header.appendChild(addBtn);wrap.appendChild(header);
+  if(!props.length){wrap.appendChild(emptyState('◇','No Props Yet','Track significant objects — weapons, vehicles, MacGuffins, anything that recurs across scenes.'));}
+  else{
+    const grid=el('div',{class:'items-grid'});
+    props.forEach(p=>{
+      const card=el('div',{class:'item-card'});
+      card.innerHTML='<h3>'+escHtml(p.name)+'</h3><p>'+escHtml(p.description||'No description')+'</p>'+(p.significance?'<p style="margin-top:6px;font-size:11px;"><span class="tag" style="background:rgba(229,184,110,0.1);color:var(--gold);border-color:rgba(229,184,110,0.25);font-size:10px;">'+escHtml(p.significance)+'</span></p>':'');
+      const footer=el('div',{class:'item-card-footer'});
+      const eb=el('button',{class:'btn btn-ghost btn-sm',onclick:()=>openPropDrawer(p,projectId)});eb.textContent='Edit';
+      const db=el('button',{class:'btn btn-danger btn-sm',onclick:()=>confirmDelete('Delete "'+p.name+'"?',async()=>{await fsDelete('props',p.id);renderProps(container,projectId);toast('Deleted');})});db.textContent='✕';
+      footer.append(eb,db);card.appendChild(footer);grid.appendChild(card);
+    });
+    wrap.appendChild(grid);
+  }
+  container.appendChild(wrap);
+}
+ 
+function openPropDrawer(prop,projectId){
+  const isNew=!prop;const data=prop||{name:'',description:'',significance:'',appearsIn:''};
+  const overlay=el('div',{class:'drawer-overlay',onclick:e=>{if(e.target===overlay)overlay.remove();}});
+  const drawer=el('div',{class:'drawer'});
+  drawer.innerHTML=`
+    <div class="drawer-header"><div class="drawer-title">${isNew?'New Prop':'Edit Prop'}</div><button class="btn-icon" onclick="this.closest('.drawer-overlay').remove()">✕</button></div>
+    <div class="drawer-body">
+      <div class="field"><label class="label">Name</label><input class="input" id="pd-name" value="${escHtml(data.name)}" placeholder="e.g. The Silver Revolver"></div>
+      <div class="field"><label class="label">Description</label><textarea class="textarea" id="pd-desc" rows="3" placeholder="What does it look like? Where did it come from?">${escHtml(data.description||'')}</textarea></div>
+      <div class="field"><label class="label">Story Significance</label><input class="input" id="pd-sig" value="${escHtml(data.significance||'')}" placeholder="e.g. Murder weapon, MacGuffin, Symbol of power"></div>
+      <div class="field"><label class="label">Appears In</label><input class="input" id="pd-appears" value="${escHtml(data.appearsIn||'')}" placeholder="e.g. Act I, Scenes 3 and 7"></div>
+    </div>
+    <div class="drawer-footer">
+      ${!isNew?`<button class="btn btn-danger" onclick="confirmDelete('Delete this prop?',async()=>{await fsDelete('props','${prop.id}');document.querySelector('.drawer-overlay').remove();renderProps(document.getElementById('content'),'${projectId}');toast('Deleted');})">Delete</button>`:''}
+      <button class="btn btn-ghost" onclick="this.closest('.drawer-overlay').remove()">Cancel</button>
+      <button class="btn btn-primary" id="pd-save">Save Prop</button>
+    </div>`;
+  document.body.appendChild(overlay);overlay.appendChild(drawer);
+  drawer.querySelector('#pd-save').onclick=async()=>{
+    const up={name:v('pd-name'),description:v('pd-desc'),significance:v('pd-sig'),appearsIn:v('pd-appears')};
+    showSaving();
+    if(isNew)await fsCreate('props',{storyProjectId:projectId,...up});
+    else await fsUpdate('props',prop.id,up);
+    showSaved();
+    overlay.remove();renderProps(document.getElementById('content'),projectId);toast(isNew?'Prop created':'Prop saved');
+  };
+}
+ 
+// ══════════════════════════════════════════════
+//  ENTITY LINKING — screenplay + outline
+// ══════════════════════════════════════════════
+// Cache for link data within a session
+let _linkCache = { chars:[], locs:[], scenes:[], props:[], projectId:null };
+ 
+async function loadLinkCache(projectId){
+  if(_linkCache.projectId===projectId) return;
+  const[chars,locs,scenes,props]=await Promise.all([
+    fsQuery('characters',where('storyProjectId','==',projectId)),
+    fsQuery('locations',where('storyProjectId','==',projectId)),
+    fsQuery('scenes',where('storyProjectId','==',projectId)),
+    fsQuery('props',where('storyProjectId','==',projectId)),
+  ]);
+  _linkCache={chars,locs,scenes,props,projectId};
+}
+ 
+function removeLinkPopover(){
+  const p=document.getElementById('link-popover');
+  if(p)p.remove();
+}
+ 
+function showLinkPopover(anchorEl, onSelect, projectId){
+  removeLinkPopover();
+  const rect=anchorEl.getBoundingClientRect();
+  const pop=document.createElement('div');
+  pop.className='link-popover';
+  pop.id='link-popover';
+  pop.style.cssText=`position:fixed;top:${rect.bottom+window.scrollY+4}px;left:${rect.left+window.scrollX}px;`;
+ 
+  const sections=[
+    {title:'Characters', items:_linkCache.chars, type:'char', icon:'◉'},
+    {title:'Locations',  items:_linkCache.locs,  type:'loc',  icon:'⬡'},
+    {title:'Scenes',     items:_linkCache.scenes, type:'scene',icon:'◧'},
+    {title:'Props',      items:_linkCache.props,  type:'prop', icon:'◇'},
+  ];
+ 
+  let hasContent=false;
+  sections.forEach(sec=>{
+    if(!sec.items.length)return;
+    hasContent=true;
+    const title=document.createElement('div');title.className='link-popover-title';title.textContent=sec.title;pop.appendChild(title);
+    sec.items.slice(0,6).forEach(item=>{
+      const row=document.createElement('div');row.className='link-popover-item';
+      row.innerHTML=`<span>${sec.icon}</span><span>${escHtml(item.name||item.title||'Untitled')}</span>`;
+      row.onmousedown=e=>{e.preventDefault();removeLinkPopover();onSelect(sec.type,item);};
+      pop.appendChild(row);
+    });
+    const sep=document.createElement('div');sep.className='link-popover-sep';pop.appendChild(sep);
+  });
+ 
+  if(!hasContent){
+    const empty=document.createElement('div');empty.className='link-popover-title';empty.textContent='No entities yet — add characters, locations, scenes or props first.';pop.appendChild(empty);
+  }
+ 
+  document.body.appendChild(pop);
+  setTimeout(()=>document.addEventListener('mousedown',outsideHandler),0);
+  function outsideHandler(e){if(!pop.contains(e.target)){removeLinkPopover();document.removeEventListener('mousedown',outsideHandler);}}
+}
+ 
+function getLinkClass(type){
+  return {char:'link-char',loc:'link-loc',scene:'link-scene',prop:'link-prop'}[type]||'link-char';
+}
+function getLinkIcon(type){
+  return {char:'◉',loc:'⬡',scene:'◧',prop:'◇'}[type]||'◉';
+}
+ 
+function wrapSelectionAsLink(type, entity){
+  const sel=window.getSelection();
+  if(!sel.rangeCount)return;
+  const range=sel.getRangeAt(0);
+  if(range.collapsed)return;
+  const span=document.createElement('span');
+  span.className='link-btn '+getLinkClass(type);
+  span.dataset.linkType=type;
+  span.dataset.linkId=entity.id;
+  span.dataset.linkName=entity.name||entity.title||'';
+  span.innerHTML=getLinkIcon(type)+' ';
+  try{
+    range.surroundContents(span);
+    sel.removeAllRanges();
+  }catch(e){
+    // If selection spans multiple nodes, just insert at cursor
+    const frag=range.extractContents();
+    span.appendChild(frag);
+    range.insertNode(span);
+  }
+}
+ 
+function openLinkedCard(type, id, projectId){
+  // Load and show the entity in a side panel
+  const loaders={
+    char:  ()=>fsGet('characters',id).then(e=>showEntityPanel('Character',e,['name','age','pronouns','occupation','traits','backstory'])),
+    loc:   ()=>fsGet('locations',id).then(e=>showEntityPanel('Location',e,['name','description','atmosphere','storyRole'])),
+    scene: ()=>fsGet('scenes',id).then(e=>showEntityPanel('Scene',e,['title','description','sequenceNumber'])),
+    prop:  ()=>fsGet('props',id).then(e=>showEntityPanel('Prop',e,['name','description','significance','appearsIn'])),
+  };
+  if(loaders[type])loaders[type]();
+}
+ 
+function showEntityPanel(typeName, entity, fields){
+  if(!entity){toast('Entity not found','error');return;}
+  const overlay=el('div',{class:'drawer-overlay',onclick:e=>{if(e.target===overlay)overlay.remove();}});
+  const drawer=el('div',{class:'drawer'});
+  const header=el('div',{class:'drawer-header'});
+  header.innerHTML=`<div class="drawer-title">${escHtml(typeName)}</div>`;
+  const closeBtn=el('button',{class:'btn-icon',onclick:()=>overlay.remove()});closeBtn.textContent='✕';
+  header.appendChild(closeBtn);
+  const body=el('div',{class:'drawer-body'});
+  fields.forEach(f=>{
+    const val=entity[f];
+    if(!val&&val!==0)return;
+    const field=el('div',{class:'field'});
+    const label=el('label',{class:'label'});label.textContent=f.charAt(0).toUpperCase()+f.slice(1).replace(/([A-Z])/g,' $1');
+    const value=el('div',{style:'font-size:14px;color:var(--fg2);line-height:1.6;'});value.textContent=String(val);
+    field.append(label,value);body.appendChild(field);
+  });
+  drawer.append(header,body);overlay.appendChild(drawer);document.body.appendChild(overlay);
+}
+ 
+// Add a "🔗 Link" button to screenplay editor toolbar
+function addLinkToolbarBtn(toolbar, editor, projectId){
+  const linkBtn=el('button',{class:'toolbar-btn',title:'Link selected text to a character, location, scene or prop'});
+  linkBtn.innerHTML='🔗 Link';
+  linkBtn.onclick=async()=>{
+    const sel=window.getSelection();
+    if(!sel||sel.isCollapsed){toast('Select some text first to link it','info');return;}
+    await loadLinkCache(projectId);
+    showLinkPopover(linkBtn,(type,entity)=>{
+      wrapSelectionAsLink(type,entity);
+      // Trigger save
+      clearTimeout(editorSaveTimer);
+      editorSaveTimer=setTimeout(async()=>{showSaving();await fsUpdate('documents',editor._docId,{content:editor.innerHTML});showSaved();},800);
+    },projectId);
+  };
+  return linkBtn;
+}
+ 
+// Click handler for links inside editors — opens entity panel
+function setupEditorLinkClicks(editor, projectId){
+  editor.addEventListener('click',e=>{
+    const link=e.target.closest('.link-btn');
+    if(!link)return;
+    e.preventDefault();e.stopPropagation();
+    openLinkedCard(link.dataset.linkType,link.dataset.linkId,projectId);
+  });
+}
+ 
+// ══════════════════════════════════════════════
+//  BEAT BOARD
+// ══════════════════════════════════════════════
+async function renderBeatBoard(container,projectId){
+  container.innerHTML='<div style="padding:60px;text-align:center;color:var(--fg3);">Loading…</div>';
+  const[beats,chars,locs]=await Promise.all([
+    fsQuery('beats',where('storyProjectId','==',projectId)),
+    fsQuery('characters',where('storyProjectId','==',projectId)),
+    fsQuery('locations',where('storyProjectId','==',projectId)),
+  ]);
+  beats.sort((a,b)=>(a.order||0)-(b.order||0));
+  const charMap={};chars.forEach(c=>charMap[c.id]=c.name);
+  const locMap={};locs.forEach(l=>locMap[l.id]=l.name);
+  container.innerHTML='';
+  const wrap=el('div',{class:'page'});
+  const header=el('div',{class:'page-header'});
+  header.innerHTML='<div><div class="page-title">Beat Board</div><div class="page-subtitle">Drag cards to reorder · Click to edit · Double-click title to rename</div></div>';
+  const addBtn=el('button',{class:'btn btn-primary',onclick:()=>openBeatDrawer(null,projectId,chars,locs,beats.length)});addBtn.textContent='+ Add Beat';
+  header.appendChild(addBtn);wrap.appendChild(header);
+  const board=el('div',{class:'beat-board',id:'beat-board'});
+  beats.forEach(b=>board.appendChild(beatCard(b,projectId,chars,locs,charMap,locMap,beats,container)));
+  // Add card button at end
+  const addCard=el('div',{class:'beat-add-card',onclick:()=>openBeatDrawer(null,projectId,chars,locs,beats.length)});
+  addCard.innerHTML='<span style="font-size:20px;font-weight:300;">+</span><span>Add Beat</span>';
+  board.appendChild(addCard);
+  wrap.appendChild(board);
+  container.appendChild(wrap);
+}
+ 
+function beatCard(b,projectId,chars,locs,charMap,locMap,allBeats,container){
+  const card=el('div',{class:'beat-card'});
+  card.draggable=true;
+  card.dataset.id=b.id;
+  const locName=b.locationId&&locMap[b.locationId]?locMap[b.locationId]:'';
+  const charNames=(b.characterIds||[]).map(id=>charMap[id]).filter(Boolean);
+  card.innerHTML=`
+    <div class="beat-card-num">Beat #${(b.order||0)+1}</div>
+    <div class="beat-card-title">${escHtml(b.title||'Untitled Beat')}</div>
+    ${b.description?`<div class="beat-card-desc">${escHtml(b.description)}</div>`:''}
+    ${b.notes?`<div style="font-size:11px;color:var(--fg3);font-style:italic;margin-top:4px;">${escHtml(b.notes)}</div>`:''}
+    <div class="beat-card-tags">
+      ${locName?`<span class="tag" style="background:rgba(94,202,200,0.1);color:var(--teal);border-color:rgba(94,202,200,0.25);font-size:10px;">⬡ ${escHtml(locName)}</span>`:''}
+      ${charNames.map(n=>`<span class="tag" style="font-size:10px;">◉ ${escHtml(n)}</span>`).join('')}
+    </div>
+    <div class="beat-card-actions">
+      <button class="btn-icon" style="font-size:11px;" title="Edit">✎</button>
+      <button class="btn-icon" style="font-size:11px;color:var(--red);" title="Delete">✕</button>
+    </div>`;
+  card.querySelectorAll('.beat-card-actions button')[0].onclick=e=>{e.stopPropagation();openBeatDrawer(b,projectId,chars,locs,allBeats.length);};
+  card.querySelectorAll('.beat-card-actions button')[1].onclick=e=>{e.stopPropagation();confirmDelete('Delete beat "'+b.title+'"?',async()=>{await fsDelete('beats',b.id);await renderBeatBoard(container,projectId);toast('Deleted');});};
+ 
+  // Drag and drop
+  let dragSrc=null;
+  const board=()=>document.getElementById('beat-board');
+  card.addEventListener('dragstart',e=>{dragSrc=card;card.classList.add('dragging');e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('text/plain',b.id);});
+  card.addEventListener('dragend',()=>{card.classList.remove('dragging');board()&&board().querySelectorAll('.beat-card').forEach(c=>c.classList.remove('drag-over'));});
+  card.addEventListener('dragover',e=>{e.preventDefault();e.dataTransfer.dropEffect='move';board()&&board().querySelectorAll('.beat-card').forEach(c=>c.classList.remove('drag-over'));card.classList.add('drag-over');});
+  card.addEventListener('drop',async e=>{
+    e.preventDefault();if(dragSrc===card)return;
+    card.classList.remove('drag-over');
+    const allCards=Array.from(board().querySelectorAll('.beat-card'));
+    const srcIdx=allCards.indexOf(dragSrc),dstIdx=allCards.indexOf(card);
+    if(srcIdx<dstIdx)card.after(dragSrc);else card.before(dragSrc);
+    const reordered=Array.from(board().querySelectorAll('.beat-card'));
+    await Promise.all(reordered.map((c,i)=>fsUpdate('beats',c.dataset.id,{order:i})));
+    await renderBeatBoard(container,projectId);
+  });
+  return card;
+}
+ 
+function openBeatDrawer(beat,projectId,chars,locs,nextOrder){
+  const isNew=!beat;const data=beat||{title:'',description:'',notes:'',locationId:'',characterIds:[],order:nextOrder||0};
+  const overlay=el('div',{class:'drawer-overlay',onclick:e=>{if(e.target===overlay)overlay.remove();}});
+  const drawer=el('div',{class:'drawer'});
+  const charOpts=chars.map(c=>`<label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--fg2);cursor:pointer;"><input type="checkbox" value="${c.id}" ${(data.characterIds||[]).includes(c.id)?'checked':''}> ${escHtml(c.name)}</label>`).join('');
+  drawer.innerHTML=`
+    <div class="drawer-header"><div class="drawer-title">${isNew?'New Beat':'Edit Beat'}</div><button class="btn-icon" onclick="this.closest('.drawer-overlay').remove()">✕</button></div>
+    <div class="drawer-body">
+      <div class="field"><label class="label">Title</label><input class="input" id="bd-title" value="${escHtml(data.title||'')}" placeholder="What happens in this beat?"></div>
+      <div class="field"><label class="label">Description</label><textarea class="textarea" id="bd-desc" rows="3" placeholder="Describe the beat in detail...">${escHtml(data.description||'')}</textarea></div>
+      <div class="field"><label class="label">Notes / Director's Notes</label><textarea class="textarea" id="bd-notes" rows="2" placeholder="Subtext, tone, visual ideas...">${escHtml(data.notes||'')}</textarea></div>
+      <div class="field"><label class="label">Location</label><select class="select" id="bd-loc"><option value="">— No Location —</option>${locs.map(l=>`<option value="${l.id}"${data.locationId===l.id?' selected':''}>${escHtml(l.name)}</option>`).join('')}</select></div>
+      ${chars.length?`<div class="field"><label class="label">Characters</label><div style="display:flex;flex-direction:column;gap:8px;padding:10px;background:var(--bg3);border-radius:var(--radius-sm);">${charOpts}</div></div>`:''}
+    </div>
+    <div class="drawer-footer">
+      ${!isNew?`<button class="btn btn-danger" onclick="confirmDelete('Delete this beat?',async()=>{await fsDelete('beats','${beat.id}');document.querySelector('.drawer-overlay').remove();renderBeatBoard(document.getElementById('content'),'${projectId}');toast('Deleted');})">Delete</button>`:''}
+      <button class="btn btn-ghost" onclick="this.closest('.drawer-overlay').remove()">Cancel</button>
+      <button class="btn btn-primary" id="bd-save">Save Beat</button>
+    </div>`;
+  document.body.appendChild(overlay);overlay.appendChild(drawer);
+  drawer.querySelector('#bd-save').onclick=async()=>{
+    const cbs=Array.from(drawer.querySelectorAll('input[type="checkbox"]:checked')).map(c=>c.value);
+    const up={title:v('bd-title'),description:v('bd-desc'),notes:v('bd-notes'),locationId:v('bd-loc'),characterIds:cbs};
+    showSaving();
+    if(isNew)await fsCreate('beats',{storyProjectId:projectId,order:nextOrder||0,...up});
+    else await fsUpdate('beats',beat.id,up);
+    showSaved();
+    overlay.remove();
+    await renderBeatBoard(document.getElementById('content'),projectId);
+    toast(isNew?'Beat created':'Beat saved');
+  };
+}
+ 
+ 
 // ══════════════════════════════════════════════
 //  VEGAS NOIR SEED — only runs for the owner UID
 //  once, ever. Safe to leave in for other users.
 // ══════════════════════════════════════════════
 const OWNER_UID     = 'vCXND7JhhscwvGoWS4kztBBDmbk2';
 const VEGAS_SEED_ID = 'seed-vegas-noir-v1';
-
+ 
 async function maybeSeedVegasNoir() {
   if (currentUser.uid !== OWNER_UID) return;
   // Check if already seeded
   const existing = await fsGet('projects', VEGAS_SEED_ID);
   if (existing) return;
-
+ 
   const pid = VEGAS_SEED_ID;
   const t   = serverTimestamp;
-
+ 
   // ── Project ──
   await setDoc(userDoc('projects', pid), {
     name: 'Vegas Noir', colorLabel: 'gold',
@@ -2779,7 +2569,7 @@ async function maybeSeedVegasNoir() {
     tags: ['neo-noir','thriller','dark comedy','screenplay'],
     createdAt: t(), updatedAt: t()
   });
-
+ 
   // ── Characters ──
   const chars = [
     { _id:'buck',    name:'Jason "Buck" Buchanan III',  age:'Early 30s', pronouns:'he/him', occupation:'Bartender / The Scapegoat',        traits:'Observant, cynical, secretly hopeful. A listener by trade. Dry wit, high tolerance for chaos. Handsome but perpetually tired. Calloused bar hands.',                                                                                            backstory:"Grew up in local Vegas. Saving tips in a hidden floor safe for years. Wants to move to the Pacific Northwest — he calls it the Quiet. Drives a 2003 Ford Taurus with a finicky starter requiring percussive maintenance. Holds a Favor from The Mayor earned by handling an assault on The Mayor's daughter with total discretion." },
@@ -2800,7 +2590,7 @@ async function maybeSeedVegasNoir() {
     const {_id, ...data} = c;
     await setDoc(userDoc('characters', pid+'-'+_id), { storyProjectId:pid, ...data, createdAt:t(), updatedAt:t() });
   }
-
+ 
   // ── Locations ──
   const locs = [
     { _id:'cage',     name:'The Cage (Bar)',                   description:'An old Vegas dive bar. Dark, sticky, honest.',                                                                                                                                         atmosphere:'Lived-in, amber-lit, the smell of spilled beer and lime juice.',                                     storyRole:"Buck's workplace. Elena's body discovered here." },
@@ -2816,7 +2606,7 @@ async function maybeSeedVegasNoir() {
     const {_id, ...data} = l;
     await setDoc(userDoc('locations', pid+'-'+_id), { storyProjectId:pid, ...data, createdAt:t(), updatedAt:t() });
   }
-
+ 
   // ── World ──
   await setDoc(userDoc('worlds', pid+'-world'), {
     storyProjectId: pid,
@@ -2828,7 +2618,7 @@ async function maybeSeedVegasNoir() {
     conflicts:     "A-Plot: Sal frames Buck for Elena's murder. B-Plot: DeJohnette re-opens the Julianna Vane cold case. C-Plot: Renzo targets the Paradiso soft opening; Sal assumes it is a federal sting. D-Plot: Gary and Brenda make everything worse and get arrested for a crime they did not commit.",
     createdAt: t(), updatedAt: t()
   });
-
+ 
   // ── Scenes ──
   const scenes = [
     { _id:'s01', seq:1,  title:'Card 01 — The Last Call',              description:"Buck wants to close up The Cage. Renzo wants to brag. Renzo pitches Buck on the Paradiso heist. Buck declines.",                                                                                                        locationId:pid+'-cage',    characterIds:[pid+'-buck',pid+'-renzo'] },
@@ -2862,7 +2652,7 @@ async function maybeSeedVegasNoir() {
     const {_id, seq, ...data} = sc;
     await setDoc(userDoc('scenes', pid+'-'+_id), { storyProjectId:pid, sequenceNumber:seq, ...data, createdAt:t(), updatedAt:t() });
   }
-
+ 
   // ── Outline ──
   const outlineItems = [
     {order:0,  level:1, text:'ACT I — EXPOSITION'},
@@ -2895,7 +2685,7 @@ async function maybeSeedVegasNoir() {
   for (const o of outlineItems) {
     await setDoc(userDoc('outlines', pid+'-o'+o.order), { storyProjectId:pid, ...o, createdAt:t(), updatedAt:t() });
   }
-
+ 
   // ── Screenplay document ──
   await setDoc(userDoc('documents', pid+'-draft'), {
     storyProjectId: pid,
@@ -2905,10 +2695,10 @@ async function maybeSeedVegasNoir() {
     titlePage: { title:'Vegas Noir', writtenBy:'', basedOn:'Based on original material', contact:'' },
     createdAt: t(), updatedAt: t()
   });
-
+ 
   console.log('Vegas Noir seeded successfully.');
 }
-
+ 
 // ══════════════════════════════════════════════
 //  AUTH STATE LISTENER — app entry point
 // ══════════════════════════════════════════════
@@ -2919,20 +2709,13 @@ onAuthStateChanged(auth, async user=>{
     document.getElementById('topbar').style.display='flex';
     document.getElementById('main').style.display='flex';
     document.getElementById('logo-btn').addEventListener('click',()=>navigate('home'));
-    // Ensure profile exists in userProfiles collection
+    // Seed Vegas Noir for the owner account, silently
     await loadUserTheme();
-    await ensureUserProfile();
     await maybeSeedVegasNoir();
     navigate('home');
   } else {
     currentUser = null;
-    viewingStudent = null;
     document.getElementById('topbar').style.display='none';
     document.getElementById('main').style.display='none';
     renderAuth();
   }
-});
-
-</script>
-</body>
-</html>
