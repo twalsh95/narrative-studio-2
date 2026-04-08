@@ -1589,16 +1589,17 @@ function renderScreenplayEditor(view, doc, projectId) {
   toolbar.append(typeBar,el('div',{class:'editor-divider'}));
   const backBtn=el('button',{class:'btn btn-ghost btn-sm',onclick:()=>{removeSuggestions();navigate('dashboard',projectId,'writing');}}); backBtn.textContent='← Back';
   const exportSpBtn=el('button',{class:'btn btn-ghost btn-sm',onclick:()=>generateWritingDeskPdf(projectId,doc)});exportSpBtn.textContent='📄 Export';
-  const linkToolbarBtn = addLinkToolbarBtn(toolbar, editor, projectId);
   toolbar.appendChild(backBtn);
   toolbar.appendChild(exportSpBtn);
-  toolbar.appendChild(linkToolbarBtn);
   const body=el('div',{class:'screenplay-body'});
   const page=el('div',{class:'screenplay-page'});
   const editor=el('div',{class:'screenplay-content',contenteditable:'true'});
   editor.style.position='relative';
   editor.innerHTML=doc.content||'<p data-type="scene-heading">INT. LOCATION - DAY</p>';
   editor._docId = doc.id; // needed by link toolbar save
+  // Add link button now that editor is defined
+  const linkToolbarBtn = addLinkToolbarBtn(toolbar, editor, projectId);
+  toolbar.appendChild(linkToolbarBtn);
 
   editor.addEventListener('keydown',e=>{
     // Handle suggestion navigation
@@ -2447,27 +2448,76 @@ function setupEditorLinkClicks(editor, projectId){
 // ══════════════════════════════════════════════
 async function renderBeatBoard(container,projectId){
   container.innerHTML='<div style="padding:60px;text-align:center;color:var(--fg3);">Loading…</div>';
-  const[beats,chars,locs]=await Promise.all([
+
+  const[beats,chars,locs,allOutlines]=await Promise.all([
     fsQuery('beats',where('storyProjectId','==',projectId)),
     fsQuery('characters',where('storyProjectId','==',projectId)),
     fsQuery('locations',where('storyProjectId','==',projectId)),
+    fsQuery('outlines',where('storyProjectId','==',projectId)),
   ]);
-  beats.sort((a,b)=>(a.order||0)-(b.order||0));
+
+  // ── Sync from outline ──
+  // Use the first outline group (same logic as PDF export)
+  const firstGroupId = allOutlines.length ? (allOutlines[0].outlineId||'default') : 'default';
+  const outlineItems = allOutlines
+    .filter(o=>(o.outlineId||'default')===firstGroupId && o.text && o.text.trim())
+    .sort((a,b)=>(a.order||0)-(b.order||0));
+
+  // Find outline items that don't yet have a beat
+  const existingSourceIds = new Set(beats.filter(b=>b.sourceOutlineId).map(b=>b.sourceOutlineId));
+  const newBeats = [];
+  for(const item of outlineItems){
+    if(!existingSourceIds.has(item.id)){
+      await fsCreate('beats',{
+        storyProjectId:projectId,
+        title:item.text,
+        description:'',
+        notes:'',
+        locationId:'',
+        characterIds:[],
+        order: beats.length + newBeats.length,
+        sourceOutlineId: item.id,
+        outlineLevel: item.level||1,
+      });
+      newBeats.push(item.id); // track that we created this one
+    }
+  }
+
+  // Reload beats if we created new ones
+  const finalBeats = newBeats.length > 0
+    ? await fsQuery('beats',where('storyProjectId','==',projectId))
+    : beats;
+  finalBeats.sort((a,b)=>(a.order||0)-(b.order||0));
+
   const charMap={};chars.forEach(c=>charMap[c.id]=c.name);
   const locMap={};locs.forEach(l=>locMap[l.id]=l.name);
+
   container.innerHTML='';
   const wrap=el('div',{class:'page'});
   const header=el('div',{class:'page-header'});
-  header.innerHTML='<div><div class="page-title">Beat Board</div><div class="page-subtitle">Drag cards to reorder · Click to edit · Double-click title to rename</div></div>';
-  const addBtn=el('button',{class:'btn btn-primary',onclick:()=>openBeatDrawer(null,projectId,chars,locs,beats.length)});addBtn.textContent='+ Add Beat';
-  header.appendChild(addBtn);wrap.appendChild(header);
-  const board=el('div',{class:'beat-board',id:'beat-board'});
-  beats.forEach(b=>board.appendChild(beatCard(b,projectId,chars,locs,charMap,locMap,beats,container)));
-  // Add card button at end
-  const addCard=el('div',{class:'beat-add-card',onclick:()=>openBeatDrawer(null,projectId,chars,locs,beats.length)});
-  addCard.innerHTML='<span style="font-size:20px;font-weight:300;">+</span><span>Add Beat</span>';
-  board.appendChild(addCard);
-  wrap.appendChild(board);
+  header.innerHTML='<div><div class="page-title">Beat Board</div><div class="page-subtitle">Auto-populated from your outline · Drag to reorder · Edit cards to add detail</div></div>';
+
+  const hbtns=el('div',{style:'display:flex;gap:8px;'});
+  const syncBtn=el('button',{class:'btn btn-ghost btn-sm',onclick:async()=>{
+    // Re-sync: check for new outline items
+    await renderBeatBoard(container,projectId);
+    toast('Synced from outline');
+  }});syncBtn.textContent='↺ Sync from Outline';
+  const addBtn=el('button',{class:'btn btn-primary',onclick:()=>openBeatDrawer(null,projectId,chars,locs,finalBeats.length)});addBtn.textContent='+ Add Beat';
+  hbtns.append(syncBtn,addBtn);
+  header.appendChild(hbtns);
+  wrap.appendChild(header);
+
+  if(!finalBeats.length){
+    wrap.appendChild(emptyState('▦','No Beats Yet','Add items to your Outline and they will appear here automatically, or click + Add Beat to create one manually.'));
+  } else {
+    const board=el('div',{class:'beat-board',id:'beat-board'});
+    finalBeats.forEach(b=>board.appendChild(beatCard(b,projectId,chars,locs,charMap,locMap,finalBeats,container)));
+    const addCard=el('div',{class:'beat-add-card',onclick:()=>openBeatDrawer(null,projectId,chars,locs,finalBeats.length)});
+    addCard.innerHTML='<span style="font-size:20px;font-weight:300;">+</span><span>Add Beat</span>';
+    board.appendChild(addCard);
+    wrap.appendChild(board);
+  }
   container.appendChild(wrap);
 }
 
