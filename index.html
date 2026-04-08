@@ -2300,6 +2300,25 @@ function openPropDrawer(prop,projectId){
 // ══════════════════════════════════════════════
 // Cache for link data within a session
 let _linkCache = { chars:[], locs:[], scenes:[], props:[], projectId:null };
+// Saved selection range (survives button click clearing the selection)
+let _savedRange = null;
+
+function saveSelection(){
+  const sel = window.getSelection();
+  if(sel && sel.rangeCount > 0 && !sel.isCollapsed){
+    _savedRange = sel.getRangeAt(0).cloneRange();
+    return true;
+  }
+  return false;
+}
+
+function restoreSelection(){
+  if(!_savedRange) return false;
+  const sel = window.getSelection();
+  sel.removeAllRanges();
+  sel.addRange(_savedRange);
+  return true;
+}
 
 async function loadLinkCache(projectId){
   if(_linkCache.projectId===projectId) return;
@@ -2323,7 +2342,7 @@ function showLinkPopover(anchorEl, onSelect, projectId){
   const pop=document.createElement('div');
   pop.className='link-popover';
   pop.id='link-popover';
-  pop.style.cssText=`position:fixed;top:${rect.bottom+window.scrollY+4}px;left:${rect.left+window.scrollX}px;`;
+  pop.style.cssText=`position:fixed;top:${rect.bottom+4}px;left:${rect.left}px;`;
 
   const sections=[
     {title:'Characters', items:_linkCache.chars, type:'char', icon:'◉'},
@@ -2419,12 +2438,19 @@ function showEntityPanel(typeName, entity, fields){
 function addLinkToolbarBtn(toolbar, editor, projectId){
   const linkBtn=el('button',{class:'toolbar-btn',title:'Link selected text to a character, location, scene or prop'});
   linkBtn.innerHTML='🔗 Link';
+  // Save selection on mousedown — BEFORE the click clears it
+  linkBtn.addEventListener('mousedown', e=>{
+    e.preventDefault(); // prevents button from stealing focus and clearing selection
+    saveSelection();
+  });
   linkBtn.onclick=async()=>{
-    const sel=window.getSelection();
-    if(!sel||sel.isCollapsed){toast('Select some text first to link it','info');return;}
+    // Check saved range — selection is already gone by the time onclick fires
+    if(!_savedRange){toast('Select some text first to link it','info');return;}
     await loadLinkCache(projectId);
     showLinkPopover(linkBtn,(type,entity)=>{
+      restoreSelection(); // put the selection back before wrapping
       wrapSelectionAsLink(type,entity);
+      _savedRange = null;
       // Trigger save
       clearTimeout(editorSaveTimer);
       editorSaveTimer=setTimeout(async()=>{showSaving();await fsUpdate('documents',editor._docId,{content:editor.innerHTML});showSaved();},800);
