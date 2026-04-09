@@ -262,6 +262,81 @@
   .outline-item{cursor:grab;user-select:none;}
   .outline-item.dragging{opacity:0.4;cursor:grabbing;}
   .outline-item.drag-over{border-color:var(--primary);background:var(--active-bg);}
+
+  /* ── Phase 5A — Classroom System ── */
+  .mode-toggle{display:flex;align-items:center;gap:2px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:3px;}
+  .mode-btn{padding:5px 14px;border-radius:5px;border:none;cursor:pointer;font-size:12px;font-family:'Lora',serif;background:transparent;color:var(--fg3);transition:all 0.15s;}
+  .mode-btn.active{background:var(--primary);color:white;}
+  .classroom-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:18px;margin-top:8px;}
+  .classroom-card{background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:22px;transition:all 0.2s;cursor:pointer;position:relative;}
+  .classroom-card:hover{border-color:var(--border2);box-shadow:var(--shadow);}
+  .classroom-card.archived{opacity:0.6;}
+  .classroom-card h3{font-family:'Belleza',serif;font-size:18px;margin-bottom:6px;}
+  .classroom-code{font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--active-bg);color:var(--primary);padding:3px 10px;border-radius:10px;display:inline-block;margin-bottom:10px;letter-spacing:0.08em;}
+  .classroom-meta{font-size:12px;color:var(--fg3);}
+  .classroom-actions{display:flex;gap:6px;margin-top:14px;}
+  .roster-table{width:100%;border-collapse:collapse;font-size:13px;}
+  .roster-table th{text-align:left;padding:10px 14px;font-size:11px;letter-spacing:0.06em;text-transform:uppercase;color:var(--fg3);border-bottom:1px solid var(--border);font-weight:normal;font-family:'JetBrains Mono',monospace;}
+  .roster-table td{padding:12px 14px;border-bottom:1px solid var(--border);color:var(--fg2);vertical-align:middle;}
+  .roster-table tr:last-child td{border-bottom:none;}
+  .roster-table tr:hover td{background:var(--bg3);}
+  .stat-pill{font-family:'JetBrains Mono',monospace;font-size:11px;background:var(--bg3);padding:2px 8px;border-radius:10px;color:var(--fg3);}
+  .teacher-banner{background:rgba(104,147,239,0.12);border-bottom:1px solid rgba(104,147,239,0.25);padding:10px 24px;display:flex;align-items:center;justify-content:space-between;font-size:13px;color:var(--accent);}
+  .teacher-banner strong{font-family:'Belleza',serif;font-size:14px;}
+  .class-view-wrap{padding:32px 40px;max-width:1100px;}
+  .class-section-title{font-family:'Belleza',serif;font-size:22px;color:var(--fg);margin-bottom:6px;}
+  .class-section-sub{font-size:13px;color:var(--fg3);margin-bottom:24px;}
+  .my-classes-list{display:flex;flex-direction:column;gap:10px;margin-top:16px;}
+  .my-class-item{background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:16px 20px;display:flex;align-items:center;justify-content:space-between;}
+  .my-class-item h3{font-family:'Belleza',serif;font-size:15px;margin-bottom:2px;}
+  .my-class-item p{font-size:12px;color:var(--fg3);}
+  .join-code-input{font-family:'JetBrains Mono',monospace;letter-spacing:0.1em;text-transform:uppercase;}
+  .archived-section{margin-top:28px;}
+  .archived-toggle{font-size:13px;color:var(--fg3);cursor:pointer;display:flex;align-items:center;gap:6px;padding:8px 0;}
+  .archived-toggle:hover{color:var(--fg);}
+
+  /* ── Phase 5B — Comments & Sharing ── */
+  .feedback-btn{position:fixed;bottom:32px;right:32px;z-index:150;background:var(--accent);color:white;border:none;border-radius:40px;padding:11px 20px;font-family:'Lora',serif;font-size:13px;cursor:pointer;box-shadow:0 4px 16px rgba(104,147,239,0.4);display:flex;align-items:center;gap:7px;transition:all 0.2s;}
+  .feedback-btn:hover{background:#5a80d6;transform:translateY(-2px);}
+  .comment-sidebar{position:fixed;right:0;top:57px;bottom:0;width:360px;background:var(--bg2);border-left:1px solid var(--border);display:flex;flex-direction:column;z-index:140;animation:slideIn 0.2s ease;box-shadow:-4px 0 24px rgba(0,0,0,0.2);}
+  .comment-sidebar-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border);}
+  .comment-sidebar-title{font-family:'Belleza',serif;font-size:17px;}
+  .comment-sidebar-context{font-size:11px;color:var(--fg3);font-family:'JetBrains Mono',monospace;letter-spacing:0.06em;text-transform:uppercase;margin-top:2px;}
+  .comment-list{flex:1;overflow-y:auto;padding:16px;}
+  .comment-item{margin-bottom:18px;padding-bottom:18px;border-bottom:1px solid var(--border);}
+  .comment-item:last-child{border-bottom:none;}
+  .comment-meta{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
+  .comment-author{font-family:'Belleza',serif;font-size:13px;color:var(--fg);}
+  .comment-time{font-size:11px;color:var(--fg3);}
+  .comment-body{font-size:13px;color:var(--fg2);line-height:1.6;margin-bottom:8px;}
+  .comment-replies{padding-left:14px;border-left:2px solid var(--border);margin-top:8px;}
+  .reply-item{margin-bottom:8px;}
+  .reply-meta{display:flex;align-items:center;gap:6px;margin-bottom:4px;}
+  .reply-author{font-size:12px;font-family:'Belleza',serif;color:var(--fg2);}
+  .reply-time{font-size:10px;color:var(--fg3);}
+  .reply-body{font-size:12px;color:var(--fg2);line-height:1.5;}
+  .reply-input-row{display:flex;gap:6px;margin-top:8px;}
+  .reply-input-row input{flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:5px 10px;color:var(--fg);font-family:'Lora',serif;font-size:12px;outline:none;}
+  .reply-input-row input:focus{border-color:var(--primary);}
+  .comment-new{padding:16px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:8px;}
+  .comment-new textarea{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:9px 12px;color:var(--fg);font-family:'Lora',serif;font-size:13px;resize:vertical;min-height:80px;outline:none;width:100%;}
+  .comment-new textarea:focus{border-color:var(--primary);}
+  .unread-dot{width:9px;height:9px;border-radius:50%;background:var(--green);display:inline-block;margin-left:4px;flex-shrink:0;box-shadow:0 0 0 2px var(--bg);}
+  .feedback-panel{padding:20px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:16px;}
+  .unread-list{display:flex;flex-direction:column;gap:8px;margin-top:8px;}
+  .unread-item{background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 16px;cursor:pointer;transition:all 0.15s;}
+  .unread-item:hover{border-color:var(--border2);}
+  .unread-item-context{font-size:11px;color:var(--fg3);font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px;}
+  .unread-item-body{font-size:13px;color:var(--fg2);line-height:1.5;}
+  .share-toggle-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;}
+  .share-toggle-label{font-size:12px;color:var(--fg2);}
+  .toggle-sm{width:28px;height:16px;border-radius:8px;background:var(--border2);position:relative;cursor:pointer;transition:background 0.2s;flex-shrink:0;}
+  .toggle-sm.on{background:var(--primary);}
+  .toggle-sm-knob{width:10px;height:10px;border-radius:50%;background:white;position:absolute;top:3px;left:3px;transition:transform 0.2s;}
+  .toggle-sm.on .toggle-sm-knob{transform:translateX(12px);}
+  .class-projects-section{margin-top:32px;padding-top:24px;border-top:1px solid var(--border);}
+  .class-projects-title{font-family:'Belleza',serif;font-size:20px;color:var(--fg);margin-bottom:6px;}
+  .class-projects-sub{font-size:13px;color:var(--fg3);margin-bottom:18px;}
 </style>
 </head>
 <body>
@@ -290,7 +365,7 @@ import {
 } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js';
 import {
   getFirestore, collection, doc, addDoc, setDoc, getDoc, getDocs,
-  updateDoc, deleteDoc, query, where, orderBy, serverTimestamp, writeBatch
+  updateDoc, deleteDoc, query, where, orderBy, serverTimestamp, writeBatch, limit
 } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js';
 
 // ══════════════════════════════════════════════
@@ -427,11 +502,129 @@ async function fsBatchDelete(colName, fieldName, value){
 }
 
 // ══════════════════════════════════════════════
+//  PHASE 5A — CLASSROOM CONSTANTS & HELPERS
+// ══════════════════════════════════════════════
+const TEACHER_UID = 'vCXND7JhhscwvGoWS4kztBBDmbk2';
+function isTeacher(){ return currentUser && currentUser.uid === TEACHER_UID; }
+
+// Classroom Firestore helpers (top-level collections, not user-scoped)
+function classroomDoc(classroomId){ return doc(db,'classrooms',classroomId); }
+function classroomMemberDoc(classroomId,uid){ return doc(db,'classrooms',classroomId,'members',uid); }
+function classroomMembersCol(classroomId){ return collection(db,'classrooms',classroomId,'members'); }
+
+async function getAllClassrooms(){
+  const q = query(collection(db,'classrooms'), where('teacherUid','==',TEACHER_UID));
+  const snap = await getDocs(q);
+  return snap.docs.map(d=>({id:d.id,...d.data()}));
+}
+
+async function getClassroomMembers(classroomId){
+  const snap = await getDocs(classroomMembersCol(classroomId));
+  return snap.docs.map(d=>({uid:d.id,...d.data()}));
+}
+
+async function getStudentClassrooms(uid){
+  // Find all classrooms where this student is a member
+  const allQ = query(collection(db,'classrooms'), where('teacherUid','==',TEACHER_UID), where('archived','==',false));
+  const snap = await getDocs(allQ);
+  const results = [];
+  for(const d of snap.docs){
+    const memberSnap = await getDoc(doc(db,'classrooms',d.id,'members',uid));
+    if(memberSnap.exists()) results.push({id:d.id,...d.data()});
+  }
+  return results;
+}
+
+function generateClassCode(){
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let code = '';
+  for(let i=0;i<8;i++){
+    if(i===4) code+='-';
+    code+=chars[Math.floor(Math.random()*chars.length)];
+  }
+  return code;
+}
+
+async function createClassroom(name){
+  const code = generateClassCode();
+  const ref = doc(collection(db,'classrooms'));
+  await setDoc(ref,{
+    name, code, teacherUid:TEACHER_UID,
+    archived:false,
+    createdAt:serverTimestamp(), updatedAt:serverTimestamp()
+  });
+  return {id:ref.id, name, code};
+}
+
+async function joinClassroomByCode(code){
+  const q = query(collection(db,'classrooms'), where('code','==',code.toUpperCase().trim()), where('archived','==',false));
+  const snap = await getDocs(q);
+  if(snap.empty) return null;
+  const classroomId = snap.docs[0].id;
+  const data = snap.docs[0].data();
+  await setDoc(classroomMemberDoc(classroomId, currentUser.uid),{
+    displayName: currentUser.displayName||currentUser.email,
+    email: currentUser.email,
+    joinedAt: serverTimestamp()
+  });
+  return {id:classroomId,...data};
+}
+
+async function leaveClassroom(classroomId){
+  await deleteDoc(classroomMemberDoc(classroomId, currentUser.uid));
+}
+
+// Get student stats from their Firestore subtree
+async function getStudentStats(studentUid){
+  try{
+    const stuCol = (c)=>collection(db,'users',studentUid,c);
+    const [projSnap, scenesSnap, docsSnap] = await Promise.all([
+      getDocs(query(stuCol('projects'), limit(50))),
+      getDocs(query(stuCol('scenes'), limit(200))),
+      getDocs(query(stuCol('generatedDocs'), limit(50))),
+    ]);
+    const allDocs = await getDocs(query(stuCol('documents'), limit(50)));
+    let totalWords = 0;
+    allDocs.docs.forEach(d=>{
+      const html = d.data().content||'';
+      const txt = html.replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').trim();
+      if(txt) totalWords += txt.split(' ').length;
+    });
+    // approximate last active
+    let lastActive = null;
+    [...projSnap.docs,...allDocs.docs].forEach(d=>{
+      const ua = d.data().updatedAt;
+      if(ua && (!lastActive || ua.seconds > lastActive.seconds)) lastActive = ua;
+    });
+    return {
+      projects: projSnap.size,
+      scenes: scenesSnap.size,
+      wordCount: totalWords,
+      documents: docsSnap.size,
+      lastActive
+    };
+  } catch(e){ return {projects:'—',scenes:'—',wordCount:'—',documents:'—',lastActive:null}; }
+}
+
+// ══════════════════════════════════════════════
 //  ROUTER
 // ══════════════════════════════════════════════
 let currentRoute = {page:'home', projectId:null, sub:null, subId:null};
+// classViewState tracks teacher class view navigation
+let classViewState = {view:'list', classroomId:null, studentUid:null, studentName:null, sub:'overview'};
+
 function navigate(page, projectId, sub, subId){
+  document.getElementById('feedback-fab')?.remove();
+  document.getElementById('comment-sidebar')?.remove();
   currentRoute = {page:page||'home', projectId:projectId||null, sub:sub||null, subId:subId||null};
+  render();
+}
+
+function navigateClassView(view, classroomId, studentUid, studentName, sub){
+  document.getElementById('feedback-fab')?.remove();
+  document.getElementById('comment-sidebar')?.remove();
+  classViewState = {view:view||'list', classroomId:classroomId||null, studentUid:studentUid||null, studentName:studentName||null, sub:sub||'overview'};
+  currentRoute = {page:'classView', projectId:null, sub:null, subId:null};
   render();
 }
 
@@ -452,7 +645,12 @@ async function render(){
   savingSpan.className = 'saving-indicator';
   tr.appendChild(savingSpan);
 
-  if(page==='home'){
+  if(page==='classView'){
+    sidebar.style.display='none';
+    bc.innerHTML='';
+    renderClassViewButtons(tr);
+    await renderClassView(content);
+  } else if(page==='home'){
     sidebar.style.display='none';
     bc.innerHTML='';
     renderHomeButtons(tr);
@@ -480,15 +678,63 @@ async function render(){
   }
 }
 
+function renderModeToggle(){
+  if(!isTeacher()) return null;
+  const wrap = el('div',{class:'mode-toggle'});
+  const myWork = el('button',{class:'mode-btn active',onclick:()=>navigate('home')});myWork.textContent='My Work';
+  const classBtn = el('button',{class:'mode-btn',onclick:()=>navigateClassView('list')});classBtn.textContent='Class View';
+  wrap.append(myWork,classBtn);
+  return wrap;
+}
+
+function renderClassViewModeToggle(){
+  if(!isTeacher()) return null;
+  const wrap = el('div',{class:'mode-toggle'});
+  const myWork = el('button',{class:'mode-btn',onclick:()=>navigate('home')});myWork.textContent='My Work';
+  const classBtn = el('button',{class:'mode-btn active'});classBtn.textContent='Class View';
+  wrap.append(myWork,classBtn);
+  return wrap;
+}
+
 function renderHomeButtons(tr){
-  const userDiv = el('div',{class:'user-badge'});
-  const avatar = el('div',{class:'user-avatar'},[currentUser.displayName?currentUser.displayName[0].toUpperCase():'U']);
+  const userDiv = el('div',{class:'user-badge',style:'cursor:pointer;position:relative;',onclick:()=>{ if(!isTeacher()) showFeedbackModal(); }});
+  const avatar = el('div',{class:'user-avatar',style:'position:relative;'});
+  avatar.textContent = currentUser.displayName?currentUser.displayName[0].toUpperCase():'U';
+  avatar.id = 'user-avatar-btn';
   const name = el('span',{},[currentUser.displayName||currentUser.email]);
-  const signOutBtn = el('button',{class:'btn btn-ghost btn-sm',onclick:()=>handleSignOut()},'Sign Out');
+  const signOutBtn = el('button',{class:'btn btn-ghost btn-sm',onclick:e=>{e.stopPropagation();handleSignOut();}});signOutBtn.textContent='Sign Out';
   userDiv.append(avatar,name);
   tr.insertBefore(themeToggleEl(),tr.firstChild);
   tr.insertBefore(signOutBtn,tr.firstChild);
+  // Student: show "My Classes" button + unread badge
+  if(!isTeacher()){
+    const classesBtn = el('button',{class:'btn btn-ghost btn-sm',onclick:()=>showMyClassesModal()});classesBtn.textContent='🎓 My Classes';
+    tr.insertBefore(classesBtn,tr.firstChild);
+    // Check for unread comments and show badge
+    checkUnreadComments().then(count=>{
+      if(count>0){
+        const dot=el('span',{class:'unread-dot',title:count+' unread comment'+(count!==1?'s':''),style:'position:absolute;top:-2px;right:-2px;'});
+        avatar.style.position='relative';
+        avatar.appendChild(dot);
+      }
+    });
+  }
   tr.insertBefore(userDiv,tr.firstChild);
+  const toggle = renderModeToggle();
+  if(toggle) tr.insertBefore(toggle,tr.firstChild);
+}
+
+function renderClassViewButtons(tr){
+  const userDiv = el('div',{class:'user-badge'});
+  const avatar = el('div',{class:'user-avatar'},[currentUser.displayName?currentUser.displayName[0].toUpperCase():'U']);
+  const name = el('span',{},[currentUser.displayName||currentUser.email]);
+  userDiv.append(avatar,name);
+  const signOutBtn = el('button',{class:'btn btn-ghost btn-sm',onclick:()=>handleSignOut()},'Sign Out');
+  tr.insertBefore(themeToggleEl(),tr.firstChild);
+  tr.insertBefore(signOutBtn,tr.firstChild);
+  tr.insertBefore(userDiv,tr.firstChild);
+  const toggle = renderClassViewModeToggle();
+  if(toggle) tr.insertBefore(toggle,tr.firstChild);
 }
 
 function renderDashboardButtons(tr){
@@ -506,8 +752,712 @@ function renderBreadcrumb(bc, projectId, sub){
 function capitalize(s){return s?s.charAt(0).toUpperCase()+s.slice(1):'';}
 
 // ══════════════════════════════════════════════
-//  AUTH
+//  PHASE 5A — CLASS VIEW (TEACHER)
 // ══════════════════════════════════════════════
+async function renderClassView(container){
+  const {view, classroomId, studentUid, studentName, sub} = classViewState;
+  if(view==='list') await renderClassroomList(container);
+  else if(view==='roster') await renderClassroomRoster(container, classroomId);
+  else if(view==='student') await renderStudentWorkspace(container, classroomId, studentUid, studentName, sub);
+}
+
+async function renderClassroomList(container){
+  container.innerHTML='<div style="padding:60px;text-align:center;color:var(--fg3);">Loading classrooms…</div>';
+  const classrooms = await getAllClassrooms();
+  const active = classrooms.filter(c=>!c.archived);
+  const archived = classrooms.filter(c=>c.archived);
+  container.innerHTML='';
+  const wrap = el('div',{class:'class-view-wrap'});
+  const hdr = el('div',{class:'page-header'});
+  hdr.innerHTML='<div><div class="class-section-title">Class View</div><div class="class-section-sub">Manage your classrooms and view student work.</div></div>';
+  const newBtn = el('button',{class:'btn btn-primary',onclick:()=>openCreateClassroomModal()});newBtn.textContent='+ Create Classroom';
+  hdr.appendChild(newBtn);
+  wrap.appendChild(hdr);
+
+  if(active.length===0){
+    wrap.appendChild(emptyState('🏫','No Classrooms Yet','Create your first classroom and share the code with your students.'));
+  } else {
+    const grid = el('div',{class:'classroom-grid'});
+    active.forEach(c=>grid.appendChild(classroomCard(c,false)));
+    wrap.appendChild(grid);
+  }
+
+  if(archived.length>0){
+    const arcSection = el('div',{class:'archived-section'});
+    const toggle = el('div',{class:'archived-toggle',onclick:()=>{
+      const g=document.getElementById('archived-grid');
+      if(g) g.style.display=g.style.display==='none'?'grid':'none';
+      toggle.querySelector('.arc-caret').textContent=g&&g.style.display==='grid'?'▾':'▸';
+    }});
+    toggle.innerHTML='<span class="arc-caret">▸</span> Archived Classrooms ('+archived.length+')';
+    const arcGrid = el('div',{id:'archived-grid',class:'classroom-grid',style:'display:none;margin-top:12px;'});
+    archived.forEach(c=>arcGrid.appendChild(classroomCard(c,true)));
+    arcSection.append(toggle,arcGrid);
+    wrap.appendChild(arcSection);
+  }
+
+  container.appendChild(wrap);
+}
+
+function classroomCard(c, isArchived){
+  const card = el('div',{class:'classroom-card'+(isArchived?' archived':'')});
+  card.innerHTML=`<h3>${esc(c.name)}</h3><div class="classroom-code">${esc(c.code)}</div><div class="classroom-meta" id="cc-meta-${c.id}">Loading…</div>`;
+  const actions = el('div',{class:'classroom-actions'});
+  if(!isArchived){
+    const openBtn=el('button',{class:'btn btn-primary btn-sm',onclick:e=>{e.stopPropagation();navigateClassView('roster',c.id);}});openBtn.textContent='View Roster';
+    const archBtn=el('button',{class:'btn btn-ghost btn-sm',onclick:e=>{e.stopPropagation();confirmDelete('Archive "'+c.name+'"? Students will no longer be able to join.',async()=>{await updateDoc(classroomDoc(c.id),{archived:true,updatedAt:serverTimestamp()});renderClassView(document.getElementById('content'));toast('Classroom archived');});}});archBtn.textContent='Archive';
+    actions.append(openBtn,archBtn);
+  } else {
+    const unarchBtn=el('button',{class:'btn btn-ghost btn-sm',onclick:e=>{e.stopPropagation();updateDoc(classroomDoc(c.id),{archived:false,updatedAt:serverTimestamp()}).then(()=>{renderClassView(document.getElementById('content'));toast('Classroom restored');});}});unarchBtn.textContent='Restore';
+    actions.append(unarchBtn);
+  }
+  card.appendChild(actions);
+  // async load member count
+  getClassroomMembers(c.id).then(members=>{
+    const metaEl=document.getElementById('cc-meta-'+c.id);
+    if(metaEl) metaEl.textContent=members.length+' student'+(members.length!==1?'s':'')+(isArchived?' · Archived':'');
+  });
+  return card;
+}
+
+async function renderClassroomRoster(container, classroomId){
+  container.innerHTML='<div style="padding:60px;text-align:center;color:var(--fg3);">Loading roster…</div>';
+  const classSnap = await getDoc(classroomDoc(classroomId));
+  if(!classSnap.exists()){container.innerHTML='<div style="padding:60px;text-align:center;color:var(--fg3);">Classroom not found.</div>';return;}
+  const classroom = {id:classroomId,...classSnap.data()};
+  const members = await getClassroomMembers(classroomId);
+  container.innerHTML='';
+
+  const wrap = el('div',{class:'class-view-wrap'});
+  const hdr = el('div',{class:'page-header'});
+  const backBtn = el('button',{class:'btn btn-ghost btn-sm',style:'margin-right:8px;',onclick:()=>navigateClassView('list')});backBtn.textContent='← All Classes';
+  const titleWrap = el('div',{style:'display:flex;flex-direction:column;gap:4px;'});
+  titleWrap.innerHTML='<div class="class-section-title">'+esc(classroom.name)+'</div><div class="class-section-sub"><span class="classroom-code" style="margin-bottom:0">'+esc(classroom.code)+'</span> &nbsp;·&nbsp; '+members.length+' student'+(members.length!==1?'s':'')+'</div>';
+  const leftWrap=el('div',{style:'display:flex;align-items:flex-start;gap:10px;flex-wrap:wrap;'});leftWrap.append(backBtn,titleWrap);
+  hdr.appendChild(leftWrap);
+  wrap.appendChild(hdr);
+
+  if(members.length===0){
+    wrap.appendChild(emptyState('👥','No Students Yet','Share the class code with your students: '+classroom.code));
+  } else {
+    const tableWrap = el('div',{style:'overflow-x:auto;'});
+    const table = el('table',{class:'roster-table'});
+    table.innerHTML=`<thead><tr>
+      <th>Student</th><th>Projects</th><th>Scenes</th><th>Word Count</th><th>Documents</th><th>Last Active</th><th></th>
+    </tr></thead>`;
+    const tbody = el('tbody');
+    table.appendChild(tbody);
+    tableWrap.appendChild(table);
+    wrap.appendChild(tableWrap);
+
+    // Render rows with loading state, then fill in stats async
+    members.forEach(m=>{
+      const tr2 = el('tr',{id:'row-'+m.uid});
+      tr2.innerHTML=`
+        <td><strong>${esc(m.displayName||m.email)}</strong><div style="font-size:11px;color:var(--fg3)">${esc(m.email||'')}</div></td>
+        <td><span class="stat-pill" id="st-proj-${m.uid}">…</span></td>
+        <td><span class="stat-pill" id="st-sc-${m.uid}">…</span></td>
+        <td><span class="stat-pill" id="st-wc-${m.uid}">…</span></td>
+        <td><span class="stat-pill" id="st-doc-${m.uid}">…</span></td>
+        <td style="font-size:12px;color:var(--fg3)" id="st-la-${m.uid}">…</td>
+        <td style="display:flex;gap:6px;align-items:center;">
+          <button class="btn btn-primary btn-sm" onclick="openStudentWorkspace('${classroomId}','${m.uid}','${esc(m.displayName||m.email)}')">Open Workspace</button>
+          <button class="btn btn-danger btn-sm" onclick="removeStudentFromClass('${classroomId}','${m.uid}','${esc(m.displayName||m.email)}')">Remove</button>
+        </td>
+      `;
+      tbody.appendChild(tr2);
+      // Load stats async
+      getStudentStats(m.uid).then(stats=>{
+        const sp=document.getElementById('st-proj-'+m.uid); if(sp) sp.textContent=stats.projects;
+        const ss=document.getElementById('st-sc-'+m.uid);   if(ss) ss.textContent=stats.scenes;
+        const sw=document.getElementById('st-wc-'+m.uid);   if(sw) sw.textContent=stats.wordCount;
+        const sd=document.getElementById('st-doc-'+m.uid);  if(sd) sd.textContent=stats.documents;
+        const sl=document.getElementById('st-la-'+m.uid);   if(sl) sl.textContent=stats.lastActive?relativeTime(stats.lastActive):'—';
+      });
+    });
+  }
+  container.appendChild(wrap);
+}
+
+window.openStudentWorkspace = function(classroomId, studentUid, studentName){
+  navigateClassView('student', classroomId, studentUid, studentName, 'overview');
+};
+
+window.removeStudentFromClass = function(classroomId, studentUid, studentName){
+  confirmDelete('Remove '+studentName+' from this classroom?', async()=>{
+    await deleteDoc(classroomMemberDoc(classroomId, studentUid));
+    navigateClassView('roster', classroomId);
+    toast('Student removed');
+  });
+};
+
+// Student workspace view — teacher reads student data
+async function renderStudentWorkspace(container, classroomId, studentUid, studentName, sub){
+  viewingStudentUid = studentUid;
+  // Banner
+  const bannerEl = document.getElementById('student-view-banner');
+  if(bannerEl) bannerEl.remove();
+  const banner = el('div',{id:'student-view-banner',class:'teacher-banner'});
+  banner.innerHTML=`<span>👁 Viewing <strong>${esc(studentName)}'s workspace</strong> — read only</span>`;
+  const backBtn2 = el('button',{class:'btn btn-ghost btn-sm',onclick:()=>{viewingStudentUid=null;document.getElementById('student-view-banner')?.remove();navigateClassView('roster',classroomId);}});backBtn2.textContent='← Back to Roster';
+  banner.appendChild(backBtn2);
+  document.getElementById('content').before(banner);
+
+  // Reuse existing render logic but pointed at student UID
+  // We temporarily swap currentUser.uid reads via a proxy approach
+  // by using studentCol helpers
+  container.innerHTML='<div style="padding:60px;text-align:center;color:var(--fg3);">Loading student workspace…</div>';
+
+  // Show student's projects list as the "home" view
+  await renderStudentHome(container, studentUid, classroomId, studentName);
+}
+
+async function renderStudentHome(container, studentUid, classroomId, studentName){
+  const stuCol = (c)=>collection(db,'users',studentUid,c);
+  const projects = await getDocs(query(stuCol('projects'), orderBy('updatedAt','desc')));
+  const projectList = projects.docs.map(d=>({id:d.id,...d.data()}));
+
+  container.innerHTML='';
+  const wrap = el('div',{id:'home-wrap'});
+  const hero = el('div',{class:'home-hero',style:'padding-bottom:28px'});
+  hero.innerHTML='<h1 style="font-size:32px">'+esc(studentName)+'\'s Projects</h1><p>Select a project to explore their workspace.</p>';
+  wrap.appendChild(hero);
+
+  if(projectList.length===0){
+    wrap.appendChild(emptyState('✦','No Projects','This student hasn\'t created any projects yet.'));
+  } else {
+    const grid = el('div',{class:'projects-grid'});
+    projectList.forEach(p=>{
+      const card = el('div',{class:'project-card',onclick:()=>renderStudentProject(container, studentUid, p.id, classroomId, studentName)});
+      card.appendChild(el('div',{class:'project-card-color',style:'background:'+colorStyle(p.colorLabel)}));
+      card.appendChild(el('h3',{},[p.name||'Untitled']));
+      card.appendChild(el('p',{},[p.description||'No description yet.']));
+      const footer = el('div',{class:'project-card-footer'});
+      footer.appendChild(el('div',{class:'project-card-meta'},[relativeTime(p.updatedAt)]));
+      card.appendChild(footer);
+      grid.appendChild(card);
+    });
+    wrap.appendChild(grid);
+  }
+  container.appendChild(wrap);
+}
+
+async function renderStudentProject(container, studentUid, projectId, classroomId, studentName){
+  // Show the student project with a read-only sidebar
+  const stuDoc = (c,id)=>doc(db,'users',studentUid,c,id);
+  const stuCol = (c,...constraints)=>{
+    const q = query(collection(db,'users',studentUid,c),...constraints);
+    return getDocs(q).then(s=>s.docs.map(d=>({id:d.id,...d.data()})));
+  };
+
+  const sidebar = document.getElementById('sidebar');
+  sidebar.style.display='flex';
+  sidebar.style.flexDirection='column';
+
+  const pSnap = await getDoc(stuDoc('projects',projectId));
+  const p = pSnap.exists()?{id:projectId,...pSnap.data()}:null;
+
+  sidebar.innerHTML='';
+  if(p){
+    const info=el('div',{class:'sidebar-project'});
+    info.innerHTML='<div class="sidebar-project-name">'+esc(p.name)+'</div><div class="sidebar-project-tag">'+esc(studentName)+'</div>';
+    sidebar.appendChild(info);
+    sidebar.appendChild(el('div',{class:'sidebar-divider'}));
+  }
+  const nav=el('div',{class:'nav-section'});
+  let activeSub='overview';
+  const navItems=[{id:'overview',label:'Overview',icon:'◈'},{id:'characters',label:'Characters',icon:'◉'},{id:'locations',label:'Locations',icon:'⬡'},{id:'scenes',label:'Scenes',icon:'◧'},{id:'props',label:'Props',icon:'◇'},{id:'world',label:'World Building',icon:'◎'},{id:'outline',label:'Outline',icon:'≡'},{id:'beatboard',label:'Beat Board',icon:'▦'},{id:'writing',label:'Writing Desk',icon:'✦'}];
+
+  function setStudentSub(subId){
+    activeSub=subId;
+    sidebar.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+    sidebar.querySelector('[data-sub="'+subId+'"]')?.classList.add('active');
+    loadStudentSub(subId);
+  }
+
+  navItems.forEach(item=>{
+    const navItem=el('div',{class:'nav-item'+(item.id==='overview'?' active':''),'data-sub':item.id,onclick:()=>setStudentSub(item.id)});
+    navItem.innerHTML='<span style="font-size:14px">'+item.icon+'</span><span>'+item.label+'</span>';
+    nav.appendChild(navItem);
+  });
+  sidebar.appendChild(nav);
+
+  // Back button at bottom
+  const bottom=el('div',{class:'sidebar-bottom'});
+  const backBtn=el('button',{class:'btn btn-ghost btn-sm',style:'width:100%;justify-content:center;',onclick:()=>{
+    sidebar.style.display='none';
+    renderStudentHome(document.getElementById('content'), studentUid, classroomId, studentName);
+  }});backBtn.textContent='← All Projects';
+  bottom.appendChild(backBtn);
+  sidebar.appendChild(bottom);
+
+  async function loadStudentSub(s){
+    container.innerHTML='<div style="padding:60px;text-align:center;color:var(--fg3);">Loading…</div>';
+    // Render read-only views using student data
+    await renderStudentSubView(container, studentUid, projectId, s, stuDoc, stuCol);
+  }
+  loadStudentSub('overview');
+}
+
+async function renderStudentSubView(container, studentUid, projectId, sub, stuDoc, stuCol){
+  container.innerHTML='';
+  const wrap = el('div',{class:'page'});
+
+  if(sub==='overview'){
+    const [p, chars, locs, scenes, docs] = await Promise.all([
+      getDoc(stuDoc('projects',projectId)).then(s=>s.exists()?{id:projectId,...s.data()}:null),
+      stuCol('characters',where('storyProjectId','==',projectId)),
+      stuCol('locations',where('storyProjectId','==',projectId)),
+      stuCol('scenes',where('storyProjectId','==',projectId)),
+      stuCol('documents',where('storyProjectId','==',projectId)),
+    ]);
+    if(!p){container.innerHTML='<div style="padding:60px;text-align:center">Not found</div>';return;}
+    wrap.innerHTML=`
+      <div class="page-header"><div><div class="page-title">${esc(p.name)}</div><div class="page-subtitle">Last updated ${relativeTime(p.updatedAt)}</div></div></div>
+      <div class="overview-grid">
+        <div class="stat-card"><div class="stat-num">${chars.length}</div><div class="stat-label">Characters</div></div>
+        <div class="stat-card"><div class="stat-num">${locs.length}</div><div class="stat-label">Locations</div></div>
+        <div class="stat-card"><div class="stat-num">${scenes.length}</div><div class="stat-label">Scenes</div></div>
+        <div class="stat-card"><div class="stat-num">${docs.length}</div><div class="stat-label">Documents</div></div>
+      </div>
+      ${p.description?`<div class="field" style="max-width:600px;"><label class="label">Description</label><p style="font-size:14px;color:var(--fg2);line-height:1.6;">${esc(p.description)}</p></div>`:''}
+    `;
+  } else if(sub==='characters'){
+    const chars = await stuCol('characters',where('storyProjectId','==',projectId));
+    wrap.innerHTML='<div class="page-header"><div><div class="page-title">Characters</div><div class="page-subtitle">'+chars.length+' character'+(chars.length!==1?'s':'')+'</div></div></div>';
+    if(chars.length===0){wrap.appendChild(emptyState('◉','No Characters','This student hasn\'t added any characters yet.'));}
+    else{
+      const grid=el('div',{class:'items-grid'});
+      chars.forEach(c=>{
+        const card=el('div',{class:'item-card'});
+        card.innerHTML='<h3>'+esc(c.name)+'</h3><p>'+esc(c.traits||c.occupation||'No traits defined')+'</p>'+(c.age?'<p style="margin-top:6px;font-size:11px;color:var(--fg3);">Age: '+esc(c.age)+(c.pronouns?' · '+esc(c.pronouns):'')+'</p>':'')+(c.backstory?'<p style="margin-top:8px;font-size:12px;color:var(--fg3);">'+esc(c.backstory.substring(0,100))+(c.backstory.length>100?'…':'')+'</p>':'');
+        grid.appendChild(card);
+      });
+      wrap.appendChild(grid);
+    }
+  } else if(sub==='locations'){
+    const locs = await stuCol('locations',where('storyProjectId','==',projectId));
+    wrap.innerHTML='<div class="page-header"><div><div class="page-title">Locations</div><div class="page-subtitle">'+locs.length+' location'+(locs.length!==1?'s':'')+'</div></div></div>';
+    if(locs.length===0){wrap.appendChild(emptyState('⬡','No Locations',''));}
+    else{
+      const grid=el('div',{class:'items-grid'});
+      locs.forEach(l=>{
+        const card=el('div',{class:'item-card'});
+        card.innerHTML='<h3>'+esc(l.name)+'</h3><p>'+esc(l.description||l.atmosphere||'No description')+'</p>';
+        grid.appendChild(card);
+      });
+      wrap.appendChild(grid);
+    }
+  } else if(sub==='scenes'){
+    const scenes = await stuCol('scenes',where('storyProjectId','==',projectId));
+    scenes.sort((a,b)=>(a.sequenceNumber||0)-(b.sequenceNumber||0));
+    wrap.innerHTML='<div class="page-header"><div><div class="page-title">Scenes</div><div class="page-subtitle">'+scenes.length+' scene'+(scenes.length!==1?'s':'')+'</div></div></div>';
+    if(scenes.length===0){wrap.appendChild(emptyState('◧','No Scenes',''));}
+    else{
+      const list=el('div',{class:'scene-list'});
+      scenes.forEach(sc=>{
+        const item=el('div',{class:'scene-item'});
+        item.innerHTML='<div class="scene-num">#'+sc.sequenceNumber+'</div><div class="scene-body"><h3>'+esc(sc.title)+'</h3><p>'+esc(sc.description||'No description')+'</p></div>';
+        list.appendChild(item);
+      });
+      wrap.appendChild(list);
+    }
+  } else if(sub==='writing'){
+    const docs = await stuCol('documents',where('storyProjectId','==',projectId));
+    wrap.innerHTML='<div class="page-header"><div><div class="page-title">Writing Desk</div><div class="page-subtitle">'+docs.length+' document'+(docs.length!==1?'s':'')+'</div></div></div>';
+    if(docs.length===0){wrap.appendChild(emptyState('✦','No Documents',''));}
+    else{
+      const list=el('div',{class:'doc-list'});
+      docs.forEach(d=>{
+        const item=el('div',{class:'doc-item',onclick:()=>viewStudentDoc(container,d,sub,studentUid,projectId,stuDoc,stuCol)});
+        item.innerHTML=`<div class="doc-item-left"><h3>${esc(d.title||'Untitled')}</h3><div style="font-size:12px;color:var(--fg3)">${relativeTime(d.updatedAt)}</div></div><span class="doc-item-badge badge-${d.type||'narrative'}">${d.type||'narrative'}</span>`;
+        list.appendChild(item);
+      });
+      wrap.appendChild(list);
+    }
+  } else {
+    wrap.innerHTML='<div class="page-header"><div><div class="page-title">'+capitalize(sub)+'</div></div></div><p style="color:var(--fg3);padding:20px 0">Read-only view.</p>';
+  }
+  container.appendChild(wrap);
+  // Inject the floating feedback button for the teacher
+  if(isTeacher()){
+    injectFeedbackButton(studentUid, sub||'general', projectId, capitalize(sub||'general'));
+  }
+}
+
+function viewStudentDoc(container, doc2, sub, studentUid, projectId, stuDoc, stuCol){
+  container.innerHTML='';
+  const wrap=el('div',{class:'page'});
+  const backBtn=el('button',{class:'btn btn-ghost btn-sm',style:'margin-bottom:18px',onclick:()=>renderStudentSubView(container,studentUid,projectId,sub,stuDoc,stuCol)});backBtn.textContent='← Back to Documents';
+  wrap.appendChild(backBtn);
+  const title=el('div',{class:'page-title',style:'margin-bottom:16px'});title.textContent=doc2.title||'Untitled';
+  wrap.appendChild(title);
+  const body=el('div',{class:'editor-body',style:'padding:0'});
+  const content=el('div',{class:'editor-content',style:'max-width:700px;pointer-events:none;'});
+  content.innerHTML=doc2.content||'<p style="color:var(--fg3)">No content yet.</p>';
+  body.appendChild(content);
+  wrap.appendChild(body);
+  container.appendChild(wrap);
+}
+
+// ── Create Classroom Modal ──
+function openCreateClassroomModal(){
+  const overlay=el('div',{class:'modal-overlay',onclick:e=>{if(e.target===overlay)overlay.remove();}});
+  const modal=el('div',{class:'modal'});
+  modal.innerHTML=`
+    <div class="modal-title">Create Classroom</div>
+    <div class="field"><label class="label">Classroom Name</label><input class="input" id="cc-name" placeholder="e.g. Screenwriting — Period 2" autofocus></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="this.closest('.modal-overlay').remove()">Cancel</button>
+      <button class="btn btn-primary" id="cc-create">Create</button>
+    </div>
+  `;
+  document.body.appendChild(overlay);overlay.appendChild(modal);
+  const input=modal.querySelector('#cc-name');
+  setTimeout(()=>input.focus(),50);
+  modal.querySelector('#cc-create').onclick=async()=>{
+    const name=input.value.trim();
+    if(!name){input.focus();return;}
+    const btn=modal.querySelector('#cc-create');btn.disabled=true;btn.textContent='Creating…';
+    const result = await createClassroom(name);
+    overlay.remove();
+    toast('Classroom "'+result.name+'" created! Code: '+result.code);
+    renderClassView(document.getElementById('content'));
+  };
+  input.addEventListener('keydown',e=>{if(e.key==='Enter')modal.querySelector('#cc-create').click();});
+}
+
+// ── Student: My Classes Modal ──
+async function showMyClassesModal(){
+  const overlay=el('div',{class:'modal-overlay',onclick:e=>{if(e.target===overlay)overlay.remove();}});
+  const modal=el('div',{class:'modal'});
+  modal.innerHTML='<div class="modal-title">My Classes</div><div id="myclasses-body" style="min-height:60px;display:flex;align-items:center;justify-content:center;color:var(--fg3)">Loading…</div><div class="modal-footer"><button class="btn btn-ghost" onclick="this.closest(\'.modal-overlay\').remove()">Close</button></div>';
+  document.body.appendChild(overlay);overlay.appendChild(modal);
+
+  async function refreshClasses(){
+    const body=modal.querySelector('#myclasses-body');
+    body.innerHTML='<div style="color:var(--fg3)">Loading…</div>';
+    const classes = await getStudentClassrooms(currentUser.uid);
+    body.innerHTML='';
+    if(classes.length===0){
+      body.innerHTML='<div style="color:var(--fg3);font-size:13px;text-align:center;padding:16px 0">You\'re not enrolled in any classrooms yet.</div>';
+    } else {
+      const list=el('div',{class:'my-classes-list',style:'margin-top:8px'});
+      classes.forEach(c=>{
+        const item=el('div',{class:'my-class-item'});
+        item.innerHTML=`<div><h3>${esc(c.name)}</h3><p><span class="classroom-code" style="margin-bottom:0;font-size:11px;">${esc(c.code)}</span></p></div>`;
+        const leaveBtn=el('button',{class:'btn btn-danger btn-sm',onclick:()=>{
+          confirmDelete('Leave "'+c.name+'"? You can rejoin with the class code.',async()=>{
+            await leaveClassroom(c.id);
+            toast('Left '+c.name);
+            refreshClasses();
+          });
+        }});leaveBtn.textContent='Leave';
+        item.appendChild(leaveBtn);
+        list.appendChild(item);
+      });
+      body.appendChild(list);
+    }
+
+    // Join section
+    const divider=el('div',{class:'sidebar-divider',style:'margin:18px 0'});
+    const joinTitle=el('div',{style:'font-size:13px;font-weight:bold;color:var(--fg);margin-bottom:8px'});joinTitle.textContent='Join a Classroom';
+    const joinRow=el('div',{style:'display:flex;gap:8px;'});
+    const codeInput=el('input',{class:'input join-code-input',placeholder:'Enter class code (e.g. ABCD-1234)',style:'flex:1;font-size:13px;'});
+    const joinBtn=el('button',{class:'btn btn-primary',onclick:async()=>{
+      const code=codeInput.value.trim();
+      if(!code){codeInput.focus();return;}
+      joinBtn.disabled=true;joinBtn.textContent='Joining…';
+      const result = await joinClassroomByCode(code);
+      if(result){
+        toast('Joined '+result.name+'!');
+        refreshClasses();
+      } else {
+        toast('Code not found or classroom is archived.','error');
+        joinBtn.disabled=false;joinBtn.textContent='Join';
+      }
+    }});joinBtn.textContent='Join';
+    joinRow.append(codeInput,joinBtn);
+    codeInput.addEventListener('keydown',e=>{if(e.key==='Enter')joinBtn.click();});
+    body.append(divider,joinTitle,joinRow);
+  }
+  refreshClasses();
+}
+
+// ══════════════════════════════════════════════
+//  PHASE 5B — COMMENTS & FEEDBACK
+// ══════════════════════════════════════════════
+
+// ── Firestore helpers for comments ──
+function commentsCol(){ return collection(db,'comments'); }
+function commentDoc(id){ return doc(db,'comments',id); }
+function repliesCol(commentId){ return collection(db,'comments',commentId,'replies'); }
+
+async function getCommentsForContext(studentUid, toolContext){
+  try{
+    const q = query(commentsCol(), where('studentUid','==',studentUid), where('toolContext','==',toolContext), orderBy('createdAt','desc'));
+    const snap = await getDocs(q);
+    return snap.docs.map(d=>({id:d.id,...d.data()}));
+  } catch(e){ return []; }
+}
+
+async function postComment(studentUid, toolContext, body, projectId){
+  const ref = await addDoc(commentsCol(),{
+    studentUid,
+    projectId: projectId||null,
+    toolContext,
+    authorUid: currentUser.uid,
+    authorName: currentUser.displayName||currentUser.email,
+    body,
+    read: false,
+    createdAt: serverTimestamp()
+  });
+  return ref.id;
+}
+
+async function postReply(commentId, body2){
+  await addDoc(repliesCol(commentId),{
+    authorUid: currentUser.uid,
+    authorName: currentUser.displayName||currentUser.email,
+    body: body2,
+    createdAt: serverTimestamp()
+  });
+}
+
+async function getReplies(commentId){
+  try{
+    const q = query(repliesCol(commentId), orderBy('createdAt','asc'));
+    const snap = await getDocs(q);
+    return snap.docs.map(d=>({id:d.id,...d.data()}));
+  } catch(e){ return []; }
+}
+
+async function markCommentRead(commentId){
+  try{ await updateDoc(commentDoc(commentId),{read:true}); } catch(e){}
+}
+
+async function checkUnreadComments(){
+  if(isTeacher()) return 0;
+  try{
+    const q = query(commentsCol(), where('studentUid','==',currentUser.uid), where('read','==',false));
+    const snap = await getDocs(q);
+    return snap.size;
+  } catch(e){ return 0; }
+}
+
+async function getUnreadComments(){
+  try{
+    const q = query(commentsCol(), where('studentUid','==',currentUser.uid), where('read','==',false), orderBy('createdAt','desc'));
+    const snap = await getDocs(q);
+    return snap.docs.map(d=>({id:d.id,...d.data()}));
+  } catch(e){ return []; }
+}
+
+// ── Comment Sidebar (teacher leaves feedback) ──
+function openCommentSidebar(studentUid, toolContext, projectId, label){
+  document.getElementById('comment-sidebar')?.remove();
+  const sidebar = el('div',{class:'comment-sidebar',id:'comment-sidebar'});
+  const header = el('div',{class:'comment-sidebar-header'});
+  header.innerHTML='<div><div class="comment-sidebar-title">💬 Feedback</div><div class="comment-sidebar-context">'+esc(label||toolContext)+'</div></div>';
+  const closeBtn = el('button',{class:'btn-icon',onclick:()=>sidebar.remove()});closeBtn.textContent='✕';
+  header.appendChild(closeBtn);
+  sidebar.appendChild(header);
+
+  const listEl = el('div',{class:'comment-list',id:'comment-list-inner'});
+  listEl.innerHTML='<div style="color:var(--fg3);font-size:13px;text-align:center;padding:20px 0">Loading…</div>';
+  sidebar.appendChild(listEl);
+
+  const newArea = el('div',{class:'comment-new'});
+  const ta = el('textarea',{placeholder:'Write feedback for this student…'});
+  ta.className='textarea';
+  const postBtn = el('button',{class:'btn btn-primary btn-sm',style:'align-self:flex-end;'});postBtn.textContent='Post Comment';
+  postBtn.onclick = async()=>{
+    const body3 = ta.value.trim();
+    if(!body3) return;
+    postBtn.disabled=true;postBtn.textContent='Posting…';
+    await postComment(studentUid, toolContext, body3, projectId);
+    ta.value='';
+    postBtn.disabled=false;postBtn.textContent='Post Comment';
+    loadComments();
+    toast('Feedback posted');
+  };
+  newArea.append(ta,postBtn);
+  sidebar.appendChild(newArea);
+  document.body.appendChild(sidebar);
+
+  async function loadComments(){
+    listEl.innerHTML='<div style="color:var(--fg3);font-size:13px;text-align:center;padding:20px 0">Loading…</div>';
+    const comments = await getCommentsForContext(studentUid, toolContext);
+    listEl.innerHTML='';
+    if(comments.length===0){
+      listEl.innerHTML='<div style="color:var(--fg3);font-size:13px;text-align:center;padding:20px 0">No comments yet. Write the first one below.</div>';
+      return;
+    }
+    for(const c of comments){
+      const item = el('div',{class:'comment-item'});
+      const ts = c.createdAt?.toDate?.()?c.createdAt.toDate().toLocaleDateString():'';
+      item.innerHTML=`
+        <div class="comment-meta"><span class="comment-author">${esc(c.authorName)}</span><span class="comment-time">${ts}</span></div>
+        <div class="comment-body">${esc(c.body)}</div>
+      `;
+      const repliesWrap = el('div',{class:'comment-replies'});
+      const replies = await getReplies(c.id);
+      replies.forEach(r=>{
+        const ri=el('div',{class:'reply-item'});
+        const rts=r.createdAt?.toDate?.()?r.createdAt.toDate().toLocaleDateString():'';
+        ri.innerHTML=`<div class="reply-meta"><span class="reply-author">${esc(r.authorName)}</span><span class="reply-time">${rts}</span></div><div class="reply-body">${esc(r.body)}</div>`;
+        repliesWrap.appendChild(ri);
+      });
+      const replyRow = el('div',{class:'reply-input-row'});
+      const ri2 = el('input',{type:'text',placeholder:'Reply…'});
+      const rb2 = el('button',{class:'btn btn-ghost btn-sm',onclick:async()=>{
+        const b2=ri2.value.trim();if(!b2)return;
+        rb2.disabled=true;
+        await postReply(c.id,b2);
+        ri2.value='';rb2.disabled=false;
+        loadComments();
+      }});rb2.textContent='↵';
+      ri2.addEventListener('keydown',e=>{if(e.key==='Enter')rb2.click();});
+      replyRow.append(ri2,rb2);
+      repliesWrap.appendChild(replyRow);
+      item.appendChild(repliesWrap);
+      listEl.appendChild(item);
+    }
+  }
+  loadComments();
+}
+
+// ── Feedback button injected into student workspace pages ──
+function injectFeedbackButton(studentUid, toolContext, projectId, label){
+  document.getElementById('feedback-fab')?.remove();
+  const btn = el('button',{id:'feedback-fab',class:'feedback-btn',onclick:()=>openCommentSidebar(studentUid, toolContext, projectId, label)});
+  btn.innerHTML='💬 Leave Feedback';
+  document.body.appendChild(btn);
+}
+
+// ── Student: View their own feedback ──
+async function showFeedbackModal(){
+  const overlay=el('div',{class:'modal-overlay',onclick:e=>{if(e.target===overlay){overlay.remove();}}});
+  const modal=el('div',{class:'modal',style:'width:520px;'});
+  modal.innerHTML='<div class="modal-title">📬 My Feedback</div><div id="feedback-modal-body" style="min-height:80px;color:var(--fg3);text-align:center;padding:20px 0">Loading…</div><div class="modal-footer"><button class="btn btn-ghost" onclick="this.closest(\'.modal-overlay\').remove()">Close</button></div>';
+  document.body.appendChild(overlay);overlay.appendChild(modal);
+
+  const body4 = modal.querySelector('#feedback-modal-body');
+  const unread = await getUnreadComments();
+  body4.innerHTML='';
+
+  if(unread.length===0){
+    let allComments=[];
+    try{
+      const allQ = query(commentsCol(), where('studentUid','==',currentUser.uid), orderBy('createdAt','desc'));
+      const allSnap = await getDocs(allQ);
+      allComments = allSnap.docs.map(d=>({id:d.id,...d.data()}));
+    } catch(e){}
+    if(allComments.length===0){
+      body4.innerHTML='<div style="color:var(--fg3);font-size:13px;padding:20px 0">No feedback yet. Your teacher hasn\'t left any comments.</div>';
+      return;
+    }
+    const intro=el('div',{style:'color:var(--fg3);font-size:12px;margin-bottom:12px'});intro.textContent='All caught up! Here\'s your feedback history:';
+    body4.appendChild(intro);
+    await renderFeedbackItems(body4, allComments, false);
+  } else {
+    const intro=el('div',{style:'font-size:13px;color:var(--fg2);margin-bottom:12px'});
+    intro.innerHTML='<strong>'+unread.length+' unread comment'+(unread.length!==1?'s':'')+'</strong>';
+    body4.appendChild(intro);
+    await renderFeedbackItems(body4, unread, true);
+    document.querySelector('.unread-dot')?.remove();
+  }
+}
+
+async function renderFeedbackItems(container, comments, markAsRead){
+  const list = el('div',{class:'unread-list'});
+  for(const c of comments){
+    const item = el('div',{class:'unread-item'});
+    const ts = c.createdAt?.toDate?.()?c.createdAt.toDate().toLocaleDateString():'';
+    const contextDiv=el('div',{class:'unread-item-context'});contextDiv.textContent=c.toolContext;
+    const bodyDiv=el('div',{class:'unread-item-body'});bodyDiv.textContent=c.body;
+    const timeDiv=el('div',{style:'font-size:11px;color:var(--fg3);margin-top:4px'});timeDiv.textContent=ts;
+    item.append(contextDiv,bodyDiv,timeDiv);
+    const replies = await getReplies(c.id);
+    if(replies.length>0){
+      const rw=el('div',{class:'comment-replies',style:'margin-top:8px'});
+      replies.forEach(r=>{
+        const ri=el('div',{class:'reply-item'});
+        const rnDiv=el('div',{class:'reply-meta'});const rn=el('span',{class:'reply-author'});rn.textContent=r.authorName;rnDiv.appendChild(rn);
+        const rb3=el('div',{class:'reply-body'});rb3.textContent=r.body;
+        ri.append(rnDiv,rb3); rw.appendChild(ri);
+      });
+      item.appendChild(rw);
+    }
+    // Student reply input
+    const replyRow2=el('div',{class:'reply-input-row',style:'margin-top:10px'});
+    const ri3=el('input',{type:'text',placeholder:'Reply to teacher…'});
+    const rb4=el('button',{class:'btn btn-ghost btn-sm',onclick:async()=>{
+      const b3=ri3.value.trim();if(!b3)return;
+      rb4.disabled=true;
+      await postReply(c.id,b3);
+      ri3.value='';rb4.disabled=false;
+      toast('Reply sent');
+    }});rb4.textContent='Send';
+    ri3.addEventListener('keydown',e=>{if(e.key==='Enter')rb4.click();});
+    replyRow2.append(ri3,rb4);
+    item.appendChild(replyRow2);
+    if(markAsRead) markCommentRead(c.id);
+    list.appendChild(item);
+  }
+  container.appendChild(list);
+}
+
+// ══════════════════════════════════════════════
+//  PHASE 5B — PROJECT SHARING
+// ══════════════════════════════════════════════
+async function getSharedProjectsForStudent(studentUid){
+  try{
+    const q = query(collection(db,'users',studentUid,'projects'), where('shared','==',true));
+    const snap = await getDocs(q);
+    return snap.docs.map(d=>({id:d.id,...d.data()}));
+  } catch(e){ return []; }
+}
+
+async function getClassmateSharedProjects(studentUid){
+  const classes = await getStudentClassrooms(studentUid);
+  if(!classes.length) return [];
+  const allShared = [];
+  for(const classroom of classes){
+    const members = await getClassroomMembers(classroom.id);
+    for(const m of members){
+      if(m.uid===studentUid) continue;
+      const shared = await getSharedProjectsForStudent(m.uid);
+      shared.forEach(p=>allShared.push({...p, ownerName:m.displayName||m.email, ownerUid:m.uid}));
+    }
+  }
+  return allShared;
+}
+
+async function setProjectShared(projectId, shared){
+  showSaving();
+  await fsUpdate('projects', projectId, {shared});
+  showSaved();
+  toast(shared?'Project shared with classmates':'Project unshared');
+}
+
+function makeShareToggle(project){
+  const isShared = project.shared===true;
+  const toggleRow=el('div',{class:'share-toggle-row',onclick:e=>e.stopPropagation()});
+  const lbl=el('span',{class:'share-toggle-label'});lbl.textContent='Share with classmates';
+  const track=el('div',{class:'toggle-sm'+(isShared?' on':'')});
+  const knob=el('div',{class:'toggle-sm-knob'});
+  track.appendChild(knob);
+  track.onclick=async(e)=>{
+    e.stopPropagation();
+    const next=!track.classList.contains('on');
+    track.classList.toggle('on',next);
+    await setProjectShared(project.id, next);
+  };
+  toggleRow.append(lbl,track);
+  return toggleRow;
+}
+
 function renderAuth(){
   document.getElementById('topbar').style.display='none';
   document.getElementById('main').style.display='none';
@@ -602,9 +1552,39 @@ async function renderHome(container){
     wrap.appendChild(emptyState('✦','No Stories Yet','Begin your first project and build a world that lasts.'));
   } else {
     const grid = el('div',{class:'projects-grid'});
-    projects.forEach(p=>grid.appendChild(projectCard(p)));
+    projects.forEach(p=>{
+      const card = projectCard(p);
+      // Students get a share toggle on each project card
+      if(!isTeacher()) card.appendChild(makeShareToggle(p));
+      grid.appendChild(card);
+    });
     wrap.appendChild(grid);
   }
+
+  // Class Projects section — shared work from classmates (students only)
+  if(!isTeacher()){
+    getClassmateSharedProjects(currentUser.uid).then(shared=>{
+      if(!shared.length) return;
+      const section = el('div',{class:'class-projects-section'});
+      const secTitle=el('div',{class:'class-projects-title'});secTitle.textContent='Class Projects';
+      const secSub=el('div',{class:'class-projects-sub'});secSub.textContent='Work your classmates have shared with the class.';
+      section.append(secTitle,secSub);
+      const grid2 = el('div',{class:'projects-grid'});
+      shared.forEach(p=>{
+        const card=el('div',{class:'project-card',style:'cursor:default;'});
+        card.appendChild(el('div',{class:'project-card-color',style:'background:'+colorStyle(p.colorLabel)}));
+        const h3=el('h3');h3.textContent=p.name||'Untitled';card.appendChild(h3);
+        const desc=el('p');desc.textContent=p.description||'No description yet.';card.appendChild(desc);
+        const footer=el('div',{class:'project-card-footer'});
+        const meta=el('div',{class:'project-card-meta'});meta.textContent='by '+(p.ownerName||'classmate');
+        footer.appendChild(meta);card.appendChild(footer);
+        grid2.appendChild(card);
+      });
+      section.appendChild(grid2);
+      wrap.appendChild(section);
+    });
+  }
+
   container.appendChild(wrap);
 }
 
@@ -2776,6 +3756,82 @@ async function maybeSeedVegasNoir() {
 }
 
 // ══════════════════════════════════════════════
+// ══════════════════════════════════════════════
+//  PHASE 5 — GLOBAL HELPERS & WINDOW BINDINGS
+// ══════════════════════════════════════════════
+let viewingStudentUid = null;
+
+// Expose functions needed by inline onclick strings
+window.showFeedbackModal = showFeedbackModal;
+window.openCommentSidebar = openCommentSidebar;
+
+/*
+ ╔══════════════════════════════════════════════════════════════════╗
+ ║  FIRESTORE SECURITY RULES — paste into Firebase Console         ║
+ ║  (Firestore Database → Rules tab)                               ║
+ ╚══════════════════════════════════════════════════════════════════╝
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── User workspaces ──────────────────────────────────────────
+    match /users/{uid}/{document=**} {
+      // Owner always has full access
+      allow read, write: if request.auth.uid == uid;
+
+      // Teacher can read any enrolled student's workspace
+      allow read: if request.auth.uid == 'vCXND7JhhscwvGoWS4kztBBDmbk2'
+        && exists(/databases/$(database)/documents/classrooms/$(request.auth.token.classroomId)/members/$(uid));
+
+      // Classmates can read projects marked shared:true
+      allow read: if resource.data.shared == true
+        && isClassmate(request.auth.uid, uid);
+    }
+
+    // ── Classrooms ───────────────────────────────────────────────
+    match /classrooms/{classroomId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth.uid == 'vCXND7JhhscwvGoWS4kztBBDmbk2';
+
+      match /members/{memberUid} {
+        allow read: if request.auth != null;
+        allow write: if request.auth.uid == memberUid
+                     || request.auth.uid == 'vCXND7JhhscwvGoWS4kztBBDmbk2';
+        allow delete: if request.auth.uid == memberUid
+                      || request.auth.uid == 'vCXND7JhhscwvGoWS4kztBBDmbk2';
+      }
+    }
+
+    // ── Comments ─────────────────────────────────────────────────
+    match /comments/{commentId} {
+      // Teacher can read/write all comments
+      allow read, write: if request.auth.uid == 'vCXND7JhhscwvGoWS4kztBBDmbk2';
+      // Student can read comments on their own workspace
+      allow read, update: if request.auth.uid == resource.data.studentUid;
+
+      match /replies/{replyId} {
+        // Teacher can read/write all replies
+        allow read, write: if request.auth.uid == 'vCXND7JhhscwvGoWS4kztBBDmbk2';
+        // Student can read and create replies on their own comments
+        allow read, create: if request.auth.uid == get(
+          /databases/$(database)/documents/comments/$(commentId)).data.studentUid;
+      }
+    }
+
+    // ── Helper function ──────────────────────────────────────────
+    function isClassmate(readerUid, ownerUid) {
+      // True if reader and owner share at least one classroom
+      // NOTE: Firestore rules can't do this query efficiently.
+      // In practice, use a Cloud Function or client-side filtering.
+      return false; // replace with proper logic if needed
+    }
+  }
+}
+*/
+
+// ── Auth state listener ──
+// ══════════════════════════════════════════════
 //  AUTH STATE LISTENER — app entry point
 // ══════════════════════════════════════════════
 onAuthStateChanged(auth, async user=>{
@@ -2784,13 +3840,21 @@ onAuthStateChanged(auth, async user=>{
     document.getElementById('auth-container').innerHTML='';
     document.getElementById('topbar').style.display='flex';
     document.getElementById('main').style.display='flex';
-    document.getElementById('logo-btn').addEventListener('click',()=>navigate('home'));
+    document.getElementById('logo-btn').addEventListener('click',()=>{
+      document.getElementById('student-view-banner')?.remove();
+      viewingStudentUid=null;
+      navigate('home');
+    });
     // Seed Vegas Noir for the owner account, silently
     await loadUserTheme();
     await maybeSeedVegasNoir();
     navigate('home');
   } else {
     currentUser = null;
+    viewingStudentUid = null;
+    document.getElementById('student-view-banner')?.remove();
+    document.getElementById('feedback-fab')?.remove();
+    document.getElementById('comment-sidebar')?.remove();
     document.getElementById('topbar').style.display='none';
     document.getElementById('main').style.display='none';
     renderAuth();
