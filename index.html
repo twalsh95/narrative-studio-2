@@ -769,14 +769,22 @@ async function renderClassView(container){
   else if(view==='student') await renderStudentWorkspace(container, classroomId, studentUid, studentName, sub);
 }
 
+function showClassroomLoadError(container, e){
+  const wrap = el('div',{style:'padding:60px;text-align:center;'});
+  const errDiv = el('div',{style:'color:var(--red);font-size:12px;margin-bottom:12px;'});
+  errDiv.textContent = 'Error loading classrooms: ' + (e && e.message ? e.message : String(e));
+  const helpDiv = el('div',{style:'color:var(--fg3);font-size:13px;'});
+  helpDiv.textContent = 'If this is a Firestore index error, check the browser console for a link to create the required index.';
+  wrap.append(errDiv, helpDiv);
+  container.innerHTML = '';
+  container.appendChild(wrap);
+}
+
 async function renderClassroomList(container){
   container.innerHTML='<div style="padding:60px;text-align:center;color:var(--fg3);">Loading classrooms…</div>';
   let classrooms = [];
   try { classrooms = await getAllClassrooms(); }
-  catch(e){
-    container.innerHTML='<div style="padding:60px;text-align:center;"><div style="color:var(--red);font-family:'JetBrains Mono',monospace;font-size:12px;margin-bottom:12px;">Error loading classrooms: '+e.message+'</div><div style="color:var(--fg3);font-size:13px;">If this is a Firestore index error, check the browser console for a link to create the required index.</div></div>';
-    return;
-  }
+  catch(e){ showClassroomLoadError(container, e); return; }
   const active = classrooms.filter(c=>!c.archived);
   const archived = classrooms.filter(c=>c.archived);
   container.innerHTML='';
