@@ -337,6 +337,12 @@
   .class-projects-section{margin-top:32px;padding-top:24px;border-top:1px solid var(--border);}
   .class-projects-title{font-family:'Belleza',serif;font-size:20px;color:var(--fg);margin-bottom:6px;}
   .class-projects-sub{font-size:13px;color:var(--fg3);margin-bottom:18px;}
+  /* Tool hint banners */
+  .tool-hint{display:flex;align-items:flex-start;gap:10px;background:var(--bg3);border:1px solid var(--border);border-left:3px solid var(--primary);border-radius:var(--radius-sm);padding:10px 14px;margin-bottom:22px;font-size:12px;color:var(--fg3);line-height:1.5;}
+  .tool-hint-icon{font-size:15px;flex-shrink:0;margin-top:1px;}
+  .tool-hint-text{flex:1;}
+  .tool-hint-close{background:none;border:none;cursor:pointer;color:var(--fg3);font-size:13px;padding:0 2px;flex-shrink:0;line-height:1;margin-top:1px;}
+  .tool-hint-close:hover{color:var(--fg);}
 </style>
 </head>
 <body>
@@ -458,6 +464,8 @@ function el(tag, attrs, children){
 }
 function v(id){const e=document.getElementById(id); return e?e.value.trim():'';}
 function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+// Alias used throughout the PDF engine
+const escHtml = esc;
 function wordCount(html){const t=html.replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').trim(); return t?t.split(' ').length:0;}
 function showSaving(){ setSavingIndicator('◌ Saving…','var(--fg3)'); }
 function showSaved(){  setSavingIndicator('✓ Saved','var(--green)'); setTimeout(()=>setSavingIndicator('',''),2000); }
@@ -763,7 +771,12 @@ async function renderClassView(container){
 
 async function renderClassroomList(container){
   container.innerHTML='<div style="padding:60px;text-align:center;color:var(--fg3);">Loading classrooms…</div>';
-  const classrooms = await getAllClassrooms();
+  let classrooms = [];
+  try { classrooms = await getAllClassrooms(); }
+  catch(e){
+    container.innerHTML='<div style="padding:60px;text-align:center;"><div style="color:var(--red);font-family:'JetBrains Mono',monospace;font-size:12px;margin-bottom:12px;">Error loading classrooms: '+e.message+'</div><div style="color:var(--fg3);font-size:13px;">If this is a Firestore index error, check the browser console for a link to create the required index.</div></div>';
+    return;
+  }
   const active = classrooms.filter(c=>!c.archived);
   const archived = classrooms.filter(c=>c.archived);
   container.innerHTML='';
@@ -1693,6 +1706,12 @@ async function renderOverview(container, projectId){
       <button class="btn btn-ghost btn-sm" onclick="generateFullProjectPdf('${projectId}')">📄 Export Project as PDF</button>
     </div>
   `;
+  const _hintOv=toolHintBanner('overview');
+  if(_hintOv){
+    const _ovGrid=wrap.querySelector('.overview-grid');
+    if(_ovGrid) wrap.insertBefore(_hintOv,_ovGrid);
+    else wrap.appendChild(_hintOv);
+  }
   container.appendChild(wrap);
   const nameEl = wrap.querySelector('#proj-name-edit');
   nameEl.addEventListener('focus',()=>nameEl.style.borderBottomColor='var(--border)');
@@ -1735,6 +1754,7 @@ async function renderCharacters(container, projectId){
   const pdfBtn=el('button',{class:'btn btn-ghost btn-sm',onclick:()=>generateCharactersPdf(projectId)});pdfBtn.textContent='📄 Create Document';
   hbtns.append(addBtn,pdfBtn);
   header.appendChild(hbtns); wrap.appendChild(header);
+  const _hintC=toolHintBanner('characters'); if(_hintC) wrap.appendChild(_hintC);
   if(chars.length===0){wrap.appendChild(emptyState('◉','No Characters Yet','Create the people who inhabit your story.'));}
   else{
     const grid = el('div',{class:'items-grid'});
@@ -1810,6 +1830,7 @@ async function renderLocations(container, projectId){
   const pdfBtn=el('button',{class:'btn btn-ghost btn-sm',onclick:()=>generateLocationsPdf(projectId)});pdfBtn.textContent='📄 Create Document';
   hbtns.append(addBtn,pdfBtn);
   header.appendChild(hbtns); wrap.appendChild(header);
+  const _hintL=toolHintBanner('locations'); if(_hintL) wrap.appendChild(_hintL);
   if(locs.length===0){wrap.appendChild(emptyState('⬡','No Locations Yet','Define the places your story unfolds.'));}
   else{
     const grid = el('div',{class:'items-grid'});
@@ -1874,6 +1895,7 @@ async function renderScenes(container, projectId){
   const pdfBtn=el('button',{class:'btn btn-ghost btn-sm',onclick:()=>generateScenesPdf(projectId)});pdfBtn.textContent='📄 Create Document';
   hbtns.append(addBtn,pdfBtn);
   header.appendChild(hbtns); wrap.appendChild(header);
+  const _hintSc=toolHintBanner('scenes'); if(_hintSc) wrap.appendChild(_hintSc);
   if(scenes.length===0){wrap.appendChild(emptyState('◧','No Scenes Yet','Break your story into scenes and keep track of the action.'));}
   else{
     const list = el('div',{class:'scene-list'});
@@ -1980,6 +2002,7 @@ async function renderWorld(container, projectId){
   worldBtns.append(pdfWorldBtn,saveBtn);
   header.appendChild(worldBtns);
   wrap.appendChild(header);
+  const _hintW=toolHintBanner('world'); if(_hintW) wrap.appendChild(_hintW);
 
   const grid = el('div',{class:'world-grid'});
   SECTIONS.forEach(sec=>{
@@ -2183,6 +2206,7 @@ async function renderOutline(container, projectId) {
   headerRight.append(structLabel, structSelect, addFromTemplate);
   header.appendChild(headerRight);
   wrap.appendChild(header);
+  const _hintOl=toolHintBanner('outline'); if(_hintOl) wrap.appendChild(_hintOl);
 
   // Tabs
   const tabs = el('div',{class:'outline-tabs'});
@@ -2365,6 +2389,7 @@ async function renderWritingDesk(container, projectId){
   const nb=el('button',{class:'btn btn-ghost',onclick:()=>createDoc(projectId,'narrative')});nb.textContent='+ Narrative';
   const sb=el('button',{class:'btn btn-primary',onclick:()=>createDoc(projectId,'screenplay')});sb.textContent='+ Screenplay';
   actions.append(nb,sb); header.appendChild(actions); wrap.appendChild(header);
+  const _hintWD=toolHintBanner('writing'); if(_hintWD) wrap.appendChild(_hintWD);
   if(docs.length===0){wrap.appendChild(emptyState('✦','Empty Desk','Start writing — a narrative document or a screenplay.'));}
   else{
     const list=el('div',{class:'doc-list'});
@@ -2431,7 +2456,12 @@ function renderNarrativeEditor(view, doc, projectId){
   const body=el('div',{class:'editor-body'});
   const editor=el('div',{class:'editor-content',contenteditable:'true','data-placeholder':'Begin your story here...'});
   editor.innerHTML=doc.content||'';
-  const wc=el('div',{class:'editor-word-count'},[wordCount(editor.innerHTML)+' words']);
+  editor._docId = doc.id;
+  // Add link button — pre-load cache, then append
+  loadLinkCache(projectId);
+  const narrativeLinkBtn = addLinkToolbarBtn(toolbar, editor, projectId);
+  toolbar.appendChild(narrativeLinkBtn);
+  const wc=el('div',{class:'editor-word-count'},[wordCount(editor.innerHTML)+' words · 🔗 select text then Link to tag characters, locations, scenes & props']);
   editor.addEventListener('input',()=>{
     wc.textContent=wordCount(editor.innerHTML)+' words';
     clearTimeout(editorSaveTimer);
@@ -2439,6 +2469,7 @@ function renderNarrativeEditor(view, doc, projectId){
   });
   editor.addEventListener('keyup',()=>updateToolbar()); editor.addEventListener('mouseup',()=>updateToolbar());
   body.appendChild(editor); view.append(toolbar,body,wc);
+  setupEditorLinkClicks(editor, projectId);
   function updateToolbar(){fmtBtns.forEach((b,i)=>{toolbar.querySelectorAll('.toolbar-btn')[i].classList.toggle('active',document.queryCommandState(b.cmd));});}
 }
 
@@ -2740,6 +2771,31 @@ function emptyState(icon,title,text){
   d.innerHTML='<div style="font-size:48px;margin-bottom:16px;opacity:0.2;">'+icon+'</div><h3>'+title+'</h3><p>'+text+'</p>';
   return d;
 }
+
+// ── Tool tip / hint banner ──
+const TOOL_TIPS = {
+  overview:   { icon:'◈', tip:'Your project dashboard. Click any stat card to jump to that tool. Edit the project name inline by clicking it.' },
+  characters: { icon:'◉', tip:'Build your cast here. Characters you add appear as autofill suggestions in the screenplay editor and can be linked to scenes and beats.' },
+  locations:  { icon:'⬡', tip:'Every place your story visits. Location names autofill in the screenplay editor as INT./EXT. scene headings.' },
+  scenes:     { icon:'◧', tip:'Map out your story's action scene by scene. Assign characters and a location to each scene, then generate a document to save a snapshot to the Library.' },
+  props:      { icon:'◇', tip:'Track significant objects across your story. Props can be linked from the screenplay editor using the 🔗 Link button.' },
+  world:      { icon:'◎', tip:'Define the rules of your story's world. These notes feed into the full-project PDF export.' },
+  outline:    { icon:'≡', tip:'Organize your story's structure. Use the templates for common formats (Three-Act, Hero's Journey, etc.). Items are auto-synced to the Beat Board.' },
+  beatboard:  { icon:'▦', tip:'A visual card layout synced from your Outline. Drag cards to reorder. Add detail — location, characters, notes — to each beat.' },
+  library:    { icon:'📁', tip:'Every document you generate is versioned and stored here. Use Preview to view, Download to save as a printable PDF.' },
+  writing:    { icon:'✦', tip:'Your writing workspace. Create narrative documents or feature-length screenplays with autofill, CONT'D tagging, and entity linking.' },
+};
+
+function toolHintBanner(toolId){
+  const info = TOOL_TIPS[toolId];
+  if(!info) return null;
+  const banner = el('div',{class:'tool-hint'});
+  const iconEl = el('span',{class:'tool-hint-icon'});iconEl.textContent=info.icon;
+  const textEl = el('span',{class:'tool-hint-text'});textEl.textContent=info.tip;
+  const closeBtn = el('button',{class:'tool-hint-close',onclick:()=>banner.remove()});closeBtn.textContent='✕';
+  banner.append(iconEl,textEl,closeBtn);
+  return banner;
+}
 function confirmDelete(msg,onConfirm){
   const overlay=el('div',{class:'modal-overlay',onclick:e=>{if(e.target===overlay)overlay.remove();}});
   const modal=el('div',{class:'modal'});
@@ -2782,6 +2838,10 @@ window.toast = toast;
 window.generateFullProjectPdf = generateFullProjectPdf;
 window.generateWritingDeskPdf = generateWritingDeskPdf;
 window.openLinkedCard = openLinkedCard;
+window.openCreateClassroomModal = openCreateClassroomModal;
+window.openStudentWorkspace = openStudentWorkspace;
+window.removeStudentFromClass = removeStudentFromClass;
+window.navigateClassView = navigateClassView;
 
 // ══════════════════════════════════════════════
 //  PDF ENGINE
@@ -3170,6 +3230,7 @@ async function renderDocumentLibrary(container,projectId){
   exportBtn.textContent='◈ Export Full Project';
   header.appendChild(exportBtn);
   wrap.appendChild(header);
+  const _hintLib=toolHintBanner('library'); if(_hintLib) wrap.appendChild(_hintLib);
   if(!generatedDocs.length){
     wrap.appendChild(emptyState('📁','No Documents Yet','Generate PDFs from any tool page, or click Export Full Project above.'));
   } else {
@@ -3231,6 +3292,7 @@ async function renderProps(container,projectId){
   header.innerHTML='<div><div class="page-title">Props</div><div class="page-subtitle">'+props.length+' prop'+(props.length!==1?'s':'')+' · Linkable from the screenplay and outline editors</div></div>';
   const addBtn=el('button',{class:'btn btn-primary',onclick:()=>openPropDrawer(null,projectId)});addBtn.textContent='+ Add Prop';
   header.appendChild(addBtn);wrap.appendChild(header);
+  const _hintP=toolHintBanner('props'); if(_hintP) wrap.appendChild(_hintP);
   if(!props.length){wrap.appendChild(emptyState('◇','No Props Yet','Track significant objects — weapons, vehicles, MacGuffins, anything that recurs across scenes.'));}
   else{
     const grid=el('div',{class:'items-grid'});
@@ -3463,34 +3525,38 @@ async function renderBeatBoard(container,projectId){
   ]);
 
   // ── Sync from outline ──
-  // Use the first outline group (same logic as PDF export)
-  const firstGroupId = allOutlines.length ? (allOutlines[0].outlineId||'default') : 'default';
+  // Collect all unique group IDs, pick the one with the most items (robust against missing outlineId)
+  const groupCounts = {};
+  allOutlines.forEach(o=>{ const gid = o.outlineId||'default'; groupCounts[gid]=(groupCounts[gid]||0)+1; });
+  const firstGroupId = Object.keys(groupCounts).sort((a,b)=>groupCounts[b]-groupCounts[a])[0]||'default';
   const outlineItems = allOutlines
     .filter(o=>(o.outlineId||'default')===firstGroupId && o.text && o.text.trim())
     .sort((a,b)=>(a.order||0)-(b.order||0));
 
-  // Find outline items that don't yet have a beat
+  // Batch-create beats for any outline items not yet represented
   const existingSourceIds = new Set(beats.filter(b=>b.sourceOutlineId).map(b=>b.sourceOutlineId));
-  const newBeats = [];
-  for(const item of outlineItems){
+  const newBeatIds = [];
+  const createPromises = [];
+  outlineItems.forEach((item,idx)=>{
     if(!existingSourceIds.has(item.id)){
-      await fsCreate('beats',{
+      createPromises.push(fsCreate('beats',{
         storyProjectId:projectId,
         title:item.text,
         description:'',
         notes:'',
         locationId:'',
         characterIds:[],
-        order: beats.length + newBeats.length,
+        order: beats.length + idx,
         sourceOutlineId: item.id,
         outlineLevel: item.level||1,
-      });
-      newBeats.push(item.id); // track that we created this one
+      }));
+      newBeatIds.push(item.id);
     }
-  }
+  });
+  if(createPromises.length) await Promise.all(createPromises);
 
   // Reload beats if we created new ones
-  const finalBeats = newBeats.length > 0
+  const finalBeats = newBeatIds.length > 0
     ? await fsQuery('beats',where('storyProjectId','==',projectId))
     : beats;
   finalBeats.sort((a,b)=>(a.order||0)-(b.order||0));
@@ -3513,6 +3579,7 @@ async function renderBeatBoard(container,projectId){
   hbtns.append(syncBtn,addBtn);
   header.appendChild(hbtns);
   wrap.appendChild(header);
+  const _hintBB=toolHintBanner('beatboard'); if(_hintBB) wrap.appendChild(_hintBB);
 
   if(!finalBeats.length){
     wrap.appendChild(emptyState('▦','No Beats Yet','Add items to your Outline and they will appear here automatically, or click + Add Beat to create one manually.'));
