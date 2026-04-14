@@ -173,6 +173,16 @@
   .world-section{background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:20px;}
   .world-section h3{font-family:'Belleza',serif;font-size:15px;color:var(--primary);margin-bottom:10px;}
   .world-section-guide{font-size:11px;color:var(--fg3);margin-bottom:8px;line-height:1.5;padding:8px 10px;background:var(--bg3);border-radius:var(--radius-sm);border-left:2px solid var(--primary);}
+  .wb-template-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;margin-top:8px;}
+  .wb-template-card{background:var(--card-bg);border:2px solid var(--border);border-radius:var(--radius);padding:22px;cursor:pointer;transition:all 0.2s;position:relative;overflow:hidden;}
+  .wb-template-card:hover{border-color:var(--border2);box-shadow:var(--shadow);transform:translateY(-2px);}
+  .wb-template-card.selected{border-color:var(--primary);background:var(--active-bg);}
+  .wb-template-accent{position:absolute;top:0;left:0;right:0;height:3px;border-radius:var(--radius) var(--radius) 0 0;}
+  .wb-template-icon{font-size:28px;margin-bottom:10px;}
+  .wb-template-name{font-family:'Belleza',serif;font-size:18px;color:var(--fg);margin-bottom:6px;}
+  .wb-template-desc{font-size:12px;color:var(--fg3);line-height:1.55;}
+  .wb-template-tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:10px;}
+  .wb-template-tag{font-size:10px;padding:2px 8px;border-radius:10px;background:var(--bg3);color:var(--fg3);border:1px solid var(--border);}
   .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:300;display:flex;align-items:center;justify-content:center;animation:fadeIn 0.15s;}
   .modal{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:28px;width:480px;max-width:95vw;max-height:90vh;overflow-y:auto;animation:slideUp 0.2s ease;}
   .modal-title{font-family:'Belleza',serif;font-size:22px;margin-bottom:20px;}
@@ -337,6 +347,46 @@
   .class-projects-section{margin-top:32px;padding-top:24px;border-top:1px solid var(--border);}
   .class-projects-title{font-family:'Belleza',serif;font-size:20px;color:var(--fg);margin-bottom:6px;}
   .class-projects-sub{font-size:13px;color:var(--fg3);margin-bottom:18px;}
+  /* Character Builder Wizard */
+  .wizard-overlay{position:fixed;inset:0;background:var(--bg);z-index:400;display:flex;flex-direction:column;animation:fadeIn 0.2s;}
+  .wizard-topbar{display:flex;align-items:center;justify-content:space-between;padding:16px 28px;border-bottom:1px solid var(--border);background:var(--bg2);flex-shrink:0;}
+  .wizard-topbar-title{font-family:'Belleza',serif;font-size:20px;color:var(--primary);}
+  .wizard-progress{display:flex;align-items:center;gap:8px;}
+  .wizard-step-dot{width:10px;height:10px;border-radius:50%;background:var(--border2);transition:all 0.2s;}
+  .wizard-step-dot.active{background:var(--primary);transform:scale(1.3);}
+  .wizard-step-dot.done{background:var(--primary-d);}
+  .wizard-step-label{font-size:12px;color:var(--fg3);font-family:'JetBrains Mono',monospace;}
+  .wizard-body{flex:1;overflow-y:auto;display:flex;justify-content:center;padding:48px 24px;}
+  .wizard-pane{width:100%;max-width:680px;}
+  .wizard-pane-title{font-family:'Belleza',serif;font-size:32px;color:var(--fg);margin-bottom:8px;}
+  .wizard-pane-sub{font-size:14px;color:var(--fg3);margin-bottom:36px;line-height:1.6;}
+  .wizard-field{margin-bottom:28px;}
+  .wizard-field-label{font-family:'Belleza',serif;font-size:16px;color:var(--fg);margin-bottom:6px;display:block;}
+  .wizard-field-hint{font-size:12px;color:var(--fg3);margin-bottom:10px;line-height:1.55;}
+  .wizard-tip{background:var(--bg3);border-left:3px solid var(--accent);border-radius:0 var(--radius-sm) var(--radius-sm) 0;padding:10px 14px;margin-bottom:12px;font-size:12px;color:var(--fg2);line-height:1.6;}
+  .wizard-tip-label{font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:var(--accent);font-family:'JetBrains Mono',monospace;margin-bottom:4px;}
+  .wizard-tip-toggle{font-size:11px;color:var(--accent);cursor:pointer;margin-bottom:8px;display:inline-flex;align-items:center;gap:4px;opacity:0.8;}
+  .wizard-tip-toggle:hover{opacity:1;}
+  .wizard-footer{display:flex;align-items:center;justify-content:space-between;padding:18px 28px;border-top:1px solid var(--border);background:var(--bg2);flex-shrink:0;}
+  .wizard-footer-nav{display:flex;gap:10px;}
+  .wizard-review-section{background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:16px;}
+  .wizard-review-section h3{font-family:'Belleza',serif;font-size:15px;color:var(--primary);margin-bottom:12px;}
+  .wizard-review-field{margin-bottom:10px;}
+  .wizard-review-label{font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:var(--fg3);font-family:'JetBrains Mono',monospace;margin-bottom:3px;}
+  .wizard-review-value{font-size:13px;color:var(--fg2);line-height:1.6;}
+  /* Richer character cards */
+  .char-card{background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:20px;transition:all 0.2s;position:relative;overflow:hidden;}
+  .char-card:hover{border-color:var(--border2);box-shadow:var(--shadow);}
+  .char-card-accent{position:absolute;top:0;left:0;right:0;height:3px;background:var(--primary);border-radius:var(--radius) var(--radius) 0 0;}
+  .char-card-name{font-family:'Belleza',serif;font-size:19px;color:var(--fg);margin-bottom:4px;}
+  .char-card-meta{font-size:12px;color:var(--fg3);margin-bottom:10px;display:flex;gap:12px;flex-wrap:wrap;}
+  .char-card-traits{font-size:12px;color:var(--fg2);line-height:1.6;margin-bottom:10px;}
+  .char-card-section{margin-top:10px;padding-top:10px;border-top:1px solid var(--border);}
+  .char-card-section-label{font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:var(--fg3);font-family:'JetBrains Mono',monospace;margin-bottom:4px;}
+  .char-card-section-text{font-size:12px;color:var(--fg2);line-height:1.6;}
+  .char-card-tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px;}
+  .char-card-footer{margin-top:14px;display:flex;justify-content:flex-end;gap:6px;opacity:0;transition:opacity 0.15s;}
+  .char-card:hover .char-card-footer{opacity:1;}
   /* Tool hint banners */
   .tool-hint{display:flex;align-items:flex-start;gap:10px;background:var(--bg3);border:1px solid var(--border);border-left:3px solid var(--primary);border-radius:var(--radius-sm);padding:10px 14px;margin-bottom:22px;font-size:12px;color:var(--fg3);line-height:1.5;}
   .tool-hint-icon{font-size:15px;flex-shrink:0;margin-top:1px;}
@@ -1757,53 +1807,200 @@ async function renderCharacters(container, projectId){
   const wrap = el('div',{class:'page'});
   const header = el('div',{class:'page-header'});
   header.innerHTML='<div><div class="page-title">Characters</div><div class="page-subtitle">'+chars.length+' character'+(chars.length!==1?'s':'')+'</div></div>';
-  const hbtns=el('div',{style:'display:flex;gap:8px;'});
-  const addBtn=el('button',{class:'btn btn-primary',onclick:()=>openCharacterDrawer(null,projectId)});addBtn.textContent='+ Add Character';
+  const hbtns=el('div',{style:'display:flex;gap:8px;align-items:center;flex-wrap:wrap;'});
+  const buildBtn=el('button',{class:'btn btn-primary',onclick:()=>openCharacterBuilder(projectId)});
+  buildBtn.innerHTML='✦ Build from Template';
+  buildBtn.title='Guided step-by-step character creation with writing prompts';
+  const addBtn=el('button',{class:'btn btn-ghost',onclick:()=>openCharacterDrawer(null,projectId)});
+  addBtn.textContent='+ Quick Add';
+  addBtn.title='Add a character card manually';
   const pdfBtn=el('button',{class:'btn btn-ghost btn-sm',onclick:()=>generateCharactersPdf(projectId)});pdfBtn.textContent='📄 Create Document';
-  hbtns.append(addBtn,pdfBtn);
+  hbtns.append(buildBtn,addBtn,pdfBtn);
   header.appendChild(hbtns); wrap.appendChild(header);
   const _hintC=toolHintBanner('characters'); if(_hintC) wrap.appendChild(_hintC);
-  if(chars.length===0){wrap.appendChild(emptyState('◉','No Characters Yet','Create the people who inhabit your story.'));}
-  else{
+  if(chars.length===0){
+    wrap.appendChild(emptyState('◉','No Characters Yet','Use "Build from Template" for a guided walkthrough, or "Quick Add" to fill in a card directly.'));
+  } else {
     const grid = el('div',{class:'items-grid'});
-    chars.forEach(c=>{
-      const card = el('div',{class:'item-card'});
-      card.innerHTML='<h3>'+esc(c.name)+'</h3><p>'+esc(c.traits||c.occupation||'No traits defined')+'</p>'+(c.age?'<p style="margin-top:6px;font-size:11px;color:var(--fg3);">Age: '+esc(c.age)+(c.pronouns?' · '+esc(c.pronouns):'')+'</p>':'');
-      const footer = el('div',{class:'item-card-footer'});
-      const eb = el('button',{class:'btn btn-ghost btn-sm',onclick:()=>openCharacterDrawer(c,projectId)});eb.textContent='Edit';
-      const db2 = el('button',{class:'btn btn-danger btn-sm',onclick:()=>confirmDelete('Delete "'+c.name+'"?',async()=>{await fsDelete('characters',c.id);renderCharacters(container,projectId);toast('Deleted');})});db2.textContent='✕';
-      footer.append(eb,db2); card.appendChild(footer); grid.appendChild(card);
-    });
+    chars.forEach(c=>grid.appendChild(characterCard(c, projectId, container)));
     wrap.appendChild(grid);
   }
   container.appendChild(wrap);
 }
 
+function characterCard(c, projectId, container){
+  const card = el('div',{class:'char-card'});
+  card.appendChild(el('div',{class:'char-card-accent'}));
+
+  // Name + archetype
+  const nameEl = el('div',{class:'char-card-name'});nameEl.textContent=c.name||'Unnamed';
+  card.appendChild(nameEl);
+
+  // Meta row
+  const metaEl = el('div',{class:'char-card-meta'});
+  const addMeta = (t)=>{ const s=el('span');s.textContent=t;metaEl.appendChild(s); };
+  if(c.age) addMeta('Age '+c.age);
+  if(c.pronouns) addMeta(c.pronouns);
+  if(c.occupation) addMeta(c.occupation);
+  if(c.archetype) addMeta('◈ '+c.archetype);
+  if(c.nationality) addMeta(c.nationality);
+  if(metaEl.children.length) card.appendChild(metaEl);
+
+  // Summary / traits line
+  if(c.traits){ const t=el('div',{class:'char-card-traits'});t.textContent=c.traits;card.appendChild(t); }
+
+  // Appearance — built from individual fields OR composite
+  const appearParts=[];
+  if(c.height||c.build) appearParts.push([c.height,c.build].filter(Boolean).join(', '));
+  if(c.hairColor) appearParts.push('Hair: '+c.hairColor+(c.hairStyle?' ('+c.hairStyle+')':''));
+  if(c.eyeColor) appearParts.push('Eyes: '+c.eyeColor);
+  if(c.skinTone) appearParts.push('Skin: '+c.skinTone);
+  if(c.clothingStyle) appearParts.push(c.clothingStyle);
+  const appearText = appearParts.length ? appearParts.join(' · ') : (c.appearance||'');
+  if(appearText){
+    const sec=el('div',{class:'char-card-section'});
+    const lbl=el('div',{class:'char-card-section-label'});lbl.textContent='Appearance';
+    const txt=el('div',{class:'char-card-section-text'});txt.textContent=appearText;
+    sec.append(lbl,txt); card.appendChild(sec);
+  }
+  if(c.distinguishingMarks){
+    const sec=el('div',{class:'char-card-section'});
+    const lbl=el('div',{class:'char-card-section-label'});lbl.textContent='Distinguishing Marks';
+    const txt=el('div',{class:'char-card-section-text'});txt.textContent=c.distinguishingMarks;
+    sec.append(lbl,txt); card.appendChild(sec);
+  }
+  if(c.firstImpression){
+    const sec=el('div',{class:'char-card-section'});
+    const lbl=el('div',{class:'char-card-section-label'});lbl.textContent='First Impression';
+    const txt=el('div',{class:'char-card-section-text'});txt.textContent=c.firstImpression;
+    sec.append(lbl,txt); card.appendChild(sec);
+  }
+
+  // Voice
+  if(c.speakingStyle||c.speechHabit||c.humor){
+    const sec=el('div',{class:'char-card-section'});
+    const lbl=el('div',{class:'char-card-section-label'});lbl.textContent='Voice & Manner';
+    const parts=[c.speakingStyle,c.speechHabit,c.humor?'Humor: '+c.humor:''].filter(Boolean);
+    const txt=el('div',{class:'char-card-section-text'});txt.textContent=parts.join(' · ');
+    sec.append(lbl,txt); card.appendChild(sec);
+  }
+
+  // Psychology
+  if(c.personality||c.internalConflict){
+    const sec=el('div',{class:'char-card-section'});
+    const lbl=el('div',{class:'char-card-section-label'});lbl.textContent='Psychology';
+    const txt=el('div',{class:'char-card-section-text'});
+    txt.textContent=[c.personality,c.internalConflict].filter(Boolean).join(' / ');
+    sec.append(lbl,txt); card.appendChild(sec);
+  }
+  if(c.fear||c.desire){
+    const sec=el('div',{class:'char-card-section'});
+    const lbl=el('div',{class:'char-card-section-label'});lbl.textContent='Fear / Desire';
+    const txt=el('div',{class:'char-card-section-text'});
+    txt.textContent=[c.fear&&'Fear: '+c.fear, c.desire&&'Desire: '+c.desire].filter(Boolean).join('  ·  ');
+    sec.append(lbl,txt); card.appendChild(sec);
+  }
+
+  // Backstory summary
+  const bsText = c.backstory||(c.childhoodHome||c.formativeEvent ? [c.childhoodHome&&'From: '+c.childhoodHome, c.formativeEvent].filter(Boolean).join('. ') : '');
+  if(bsText){
+    const sec=el('div',{class:'char-card-section'});
+    const lbl=el('div',{class:'char-card-section-label'});lbl.textContent='Backstory';
+    const txt=el('div',{class:'char-card-section-text'});
+    // Truncate long backstories on card
+    txt.textContent=bsText.length>200?bsText.substring(0,200)+'…':bsText;
+    sec.append(lbl,txt); card.appendChild(sec);
+  }
+  if(c.wound){
+    const sec=el('div',{class:'char-card-section'});
+    const lbl=el('div',{class:'char-card-section-label'});lbl.textContent='The Wound';
+    const txt=el('div',{class:'char-card-section-text'});txt.textContent=c.wound;
+    sec.append(lbl,txt); card.appendChild(sec);
+  }
+
+  // Story role
+  if(c.wantVsNeed||c.motivation){
+    const sec=el('div',{class:'char-card-section'});
+    const lbl=el('div',{class:'char-card-section-label'});lbl.textContent='Want / Need / Motivation';
+    const txt=el('div',{class:'char-card-section-text'});
+    txt.textContent=[c.wantVsNeed,c.motivation].filter(Boolean).join(' · ');
+    sec.append(lbl,txt); card.appendChild(sec);
+  }
+  if(c.arc){
+    const sec=el('div',{class:'char-card-section'});
+    const lbl=el('div',{class:'char-card-section-label'});lbl.textContent='Character Arc';
+    const txt=el('div',{class:'char-card-section-text'});txt.textContent=c.arc;
+    sec.append(lbl,txt); card.appendChild(sec);
+  }
+  if(c.storyRole){
+    const sec=el('div',{class:'char-card-section'});
+    const lbl=el('div',{class:'char-card-section-label'});lbl.textContent='Role in Story';
+    const txt=el('div',{class:'char-card-section-text'});txt.textContent=c.storyRole;
+    sec.append(lbl,txt); card.appendChild(sec);
+  }
+
+  // Flaw / Strength tags
+  const tags=[];
+  if(c.flaw) tags.push({text:'Flaw: '+c.flaw,color:'var(--rose)'});
+  if(c.strength) tags.push({text:'Strength: '+c.strength,color:'var(--green)'});
+  if(c.secret) tags.push({text:'Has a secret',color:'var(--accent)'});
+  if(tags.length){
+    const tagsEl=el('div',{class:'char-card-tags'});
+    tags.forEach(t=>{
+      const tg=el('span',{class:'tag',style:'font-size:10px;color:'+t.color+';background:rgba(0,0,0,0.06);border-color:rgba(0,0,0,0.1);'});
+      tg.textContent=t.text;tagsEl.appendChild(tg);
+    });
+    card.appendChild(tagsEl);
+  }
+
+  // Footer
+  const footer=el('div',{class:'char-card-footer'});
+  const eb=el('button',{class:'btn btn-ghost btn-sm',onclick:()=>openCharacterDrawer(c,projectId)});eb.textContent='Edit';
+  const db2=el('button',{class:'btn btn-danger btn-sm',onclick:()=>confirmDelete('Delete "'+c.name+'"?',async()=>{await fsDelete('characters',c.id);renderCharacters(container,projectId);toast('Deleted');})});db2.textContent='✕';
+  footer.append(eb,db2);card.appendChild(footer);
+  return card;
+}
+
 function openCharacterDrawer(char, projectId){
-  const isNew=!char; const data=char||{name:'',traits:'',age:'',pronouns:'',occupation:'',backstory:''};
+  const isNew=!char;
+  const data=char||{name:'',traits:'',age:'',pronouns:'',occupation:'',backstory:'',appearance:'',personality:'',internalConflict:'',wantVsNeed:'',storyRole:'',flaw:'',strength:'',archetype:''};
   const overlay=el('div',{class:'drawer-overlay',onclick:e=>{if(e.target===overlay)overlay.remove();}});
   const drawer=el('div',{class:'drawer'});
   drawer.innerHTML=`
-    <div class="drawer-header"><div class="drawer-title">${isNew?'New Character':'Edit Character'}</div><button class="btn-icon" onclick="this.closest('.drawer-overlay').remove()">✕</button></div>
+    <div class="drawer-header">
+      <div>
+        <div class="drawer-title">${isNew?'Create Character Card':'Edit Character'}</div>
+        ${isNew?'<div style="font-size:11px;color:var(--fg3);margin-top:2px;">Quick add — fill in what you know now, edit later</div>':''}
+      </div>
+      <button class="btn-icon" onclick="this.closest('.drawer-overlay').remove()">✕</button>
+    </div>
     <div class="drawer-body">
-      <div class="field"><label class="label">Name</label><input class="input" id="cd-name" value="${esc(data.name)}" placeholder="Character name"></div>
+      <div class="field"><label class="label">Name *</label><input class="input" id="cd-name" value="${esc(data.name)}" placeholder="Character name"></div>
       <div class="field-row">
         <div class="field"><label class="label">Age</label><input class="input" id="cd-age" value="${esc(data.age||'')}" placeholder="e.g. 34"></div>
-        <div class="field"><label class="label">Pronouns</label><input class="input" id="cd-pronouns" value="${esc(data.pronouns||'')}" placeholder="they/them"></div>
+        <div class="field"><label class="label">Pronouns</label><input class="input" id="cd-pronouns" value="${esc(data.pronouns||'')}" placeholder="she/her"></div>
       </div>
-      <div class="field"><label class="label">Occupation</label><input class="input" id="cd-occ" value="${esc(data.occupation||'')}" placeholder="What do they do?"></div>
+      <div class="field-row">
+        <div class="field"><label class="label">Occupation</label><input class="input" id="cd-occ" value="${esc(data.occupation||'')}" placeholder="What do they do?"></div>
+        <div class="field"><label class="label">Archetype</label><input class="input" id="cd-arch" value="${esc(data.archetype||'')}" placeholder="e.g. The Mentor"></div>
+      </div>
       <div class="field">
         <label class="label">Traits / Summary</label>
         <div class="guide-toggle" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none';this.innerHTML=(this.nextElementSibling.style.display==='block'?'▾':'▸')+' Writing prompt'">▸ Writing prompt</div>
-        <div class="world-section-guide" style="display:none;">Consider: What is the first thing someone notices about them? What do they laugh at? What do they never talk about? What do they want people to think of them vs. what they actually are?</div>
-        <textarea class="textarea" id="cd-traits" rows="3" placeholder="Key personality traits, voice, appearance...">${esc(data.traits||'')}</textarea>
+        <div class="world-section-guide" style="display:none;">What is the first thing someone notices about them? What do they laugh at? What do they never talk about? What do they want people to think of them vs. what they actually are?</div>
+        <textarea class="textarea" id="cd-traits" rows="3" placeholder="Key personality traits, voice, summary...">${esc(data.traits||'')}</textarea>
       </div>
       <div class="field">
         <label class="label">Backstory</label>
         <div class="guide-toggle" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none';this.innerHTML=(this.nextElementSibling.style.display==='block'?'▾':'▸')+' Writing prompt'">▸ Writing prompt</div>
-        <div class="world-section-guide" style="display:none;">Consider: What is the wound they carry? What decision do they regret most? Who do they blame — correctly or incorrectly? What would they die for? What have they already given up?</div>
-        <textarea class="textarea" id="cd-back" rows="5" placeholder="Their history, motivations, secrets...">${esc(data.backstory||'')}</textarea>
+        <div class="world-section-guide" style="display:none;">What is the wound they carry? What decision do they regret most? Who do they blame — correctly or incorrectly? What would they die for?</div>
+        <textarea class="textarea" id="cd-back" rows="3" placeholder="Their history, motivations, secrets...">${esc(data.backstory||'')}</textarea>
       </div>
+      <div class="field-row">
+        <div class="field"><label class="label">Core Flaw</label><input class="input" id="cd-flaw" value="${esc(data.flaw||'')}" placeholder="e.g. Pride, Fear of loss"></div>
+        <div class="field"><label class="label">Core Strength</label><input class="input" id="cd-strength" value="${esc(data.strength||'')}" placeholder="e.g. Loyalty, Wit"></div>
+      </div>
+      <div class="field"><label class="label">Role in Story</label><input class="input" id="cd-role" value="${esc(data.storyRole||'')}" placeholder="e.g. Protagonist, Antagonist, Foil"></div>
     </div>
     <div class="drawer-footer">
       ${!isNew?`<button class="btn btn-danger" onclick="confirmDelete('Delete this character?',async()=>{await fsDelete('characters','${char.id}');document.querySelector('.drawer-overlay').remove();renderCharacters(document.getElementById('content'),'${projectId}');toast('Deleted');})">Delete</button>`:''}
@@ -1812,15 +2009,493 @@ function openCharacterDrawer(char, projectId){
     </div>`;
   document.body.appendChild(overlay); overlay.appendChild(drawer);
   drawer.querySelector('#cd-save').onclick=async()=>{
-    const up={name:v('cd-name'),traits:v('cd-traits'),age:v('cd-age'),pronouns:v('cd-pronouns'),occupation:v('cd-occ'),backstory:v('cd-back')};
+    const name=v('cd-name');
+    if(!name){document.getElementById('cd-name').focus();toast('Name is required','error');return;}
+    const up={name,traits:v('cd-traits'),age:v('cd-age'),pronouns:v('cd-pronouns'),occupation:v('cd-occ'),backstory:v('cd-back'),archetype:v('cd-arch'),flaw:v('cd-flaw'),strength:v('cd-strength'),storyRole:v('cd-role')};
     showSaving();
     if(isNew) await fsCreate('characters',{storyProjectId:projectId,...up});
     else await fsUpdate('characters',char.id,up);
     showSaved();
     overlay.remove();
     renderCharacters(document.getElementById('content'),projectId);
-    toast(isNew?'Character created':'Character saved');
+    toast(isNew?'Character card created':'Character saved');
   };
+}
+
+// ══════════════════════════════════════════════
+//  CHARACTER BUILDER WIZARD
+// ══════════════════════════════════════════════
+
+// Steps: Identity | Appearance | Voice & Mind | Backstory | Psychology | Story Role | Review
+const CB_STEPS = [
+  { id:'identity',    label:'Identity'     },
+  { id:'appearance',  label:'Appearance'   },
+  { id:'voice',       label:'Voice & Mind' },
+  { id:'backstory',   label:'Backstory'    },
+  { id:'psychology',  label:'Psychology'   },
+  { id:'role',        label:'Story Role'   },
+  { id:'review',      label:'Review'       },
+];
+
+// ── Inline exit confirm (z-index safe — lives inside the wizard, not behind it) ──
+function wizardExitConfirm(onConfirm){
+  // Remove any existing confirm banner first
+  document.getElementById('wiz-exit-banner')?.remove();
+  const banner = el('div',{id:'wiz-exit-banner',style:'position:fixed;inset:0;z-index:500;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.65);animation:fadeIn 0.15s;'});
+  const box = el('div',{style:'background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:28px;width:400px;max-width:92vw;'});
+  const title = el('div',{style:'font-family:\'Belleza\',serif;font-size:20px;margin-bottom:12px;color:var(--fg);'});
+  title.textContent = 'Exit Character Builder?';
+  const msg = el('div',{style:'font-size:14px;color:var(--fg2);margin-bottom:24px;line-height:1.6;'});
+  msg.textContent = 'Your progress will be lost. This cannot be undone.';
+  const btnRow = el('div',{style:'display:flex;justify-content:flex-end;gap:10px;'});
+  const cancel = el('button',{class:'btn btn-ghost',onclick:()=>banner.remove()});cancel.textContent = 'Keep Working';
+  const confirm = el('button',{class:'btn btn-danger',onclick:()=>{banner.remove();onConfirm();}});confirm.textContent = 'Exit & Discard';
+  btnRow.append(cancel,confirm);
+  box.append(title,msg,btnRow);
+  banner.appendChild(box);
+  document.body.appendChild(banner);
+}
+
+function openCharacterBuilder(projectId, prefill={}){
+  const data = {
+    // Identity
+    name:'', age:'', pronouns:'', occupation:'', archetype:'', nationality:'', hometown:'',
+    // Appearance — individual fields
+    height:'', build:'', weight:'', hairColor:'', hairStyle:'', eyeColor:'', skinTone:'',
+    clothingStyle:'', distinguishingMarks:'', firstImpression:'', bodyLanguage:'',
+    // Voice & Mind
+    speakingStyle:'', vocabulary:'', speechHabit:'', humor:'', intelligence:'', education:'',
+    // Backstory
+    childhoodHome:'', familyDynamic:'', formativeEvent:'', wound:'', secret:'', biggestRegret:'',
+    // Psychology
+    personality:'', internalConflict:'', fear:'', desire:'', flaw:'', strength:'', coping:'', traits:'',
+    // Story Role
+    wantVsNeed:'', storyRole:'', motivation:'', arc:'', firstScene:'',
+    // Assembled composite fields (auto-built on save)
+    appearance:'', backstory:'',
+    ...prefill
+  };
+  let step = 0;
+
+  const overlay = el('div',{class:'wizard-overlay'});
+
+  function render(){
+    overlay.innerHTML = '';
+
+    // ── Topbar ──
+    const topbar = el('div',{class:'wizard-topbar'});
+    const titleEl = el('div',{class:'wizard-topbar-title'});titleEl.textContent = 'Character Builder';
+    const progressWrap = el('div',{style:'display:flex;flex-direction:column;align-items:center;gap:6px;'});
+    const dots = el('div',{class:'wizard-progress'});
+    CB_STEPS.forEach((s,i)=>{
+      const dot = el('div',{class:'wizard-step-dot'+(i===step?' active':i<step?' done':'')});
+      dot.title = s.label; dots.appendChild(dot);
+    });
+    const stepLbl = el('div',{class:'wizard-step-label'});
+    stepLbl.textContent = `Step ${step+1} of ${CB_STEPS.length} — ${CB_STEPS[step].label}`;
+    progressWrap.append(dots, stepLbl);
+    const closeBtn = el('button',{class:'btn btn-ghost btn-sm',onclick:()=>{
+      collectStep();
+      if(step < CB_STEPS.length-1){
+        wizardExitConfirm(()=>overlay.remove());
+      } else { overlay.remove(); }
+    }});closeBtn.textContent = '✕ Exit';
+    topbar.append(titleEl, progressWrap, closeBtn);
+
+    // ── Body ──
+    const body = el('div',{class:'wizard-body'});
+    const pane = el('div',{class:'wizard-pane'});
+    body.appendChild(pane);
+
+    // ── Footer ──
+    const footer = el('div',{class:'wizard-footer'});
+    const backBtn = el('button',{class:'btn btn-ghost',onclick:()=>{collectStep();step--;render();}});
+    backBtn.textContent = '← Back';
+    if(step===0) backBtn.style.visibility='hidden';
+    const nav = el('div',{class:'wizard-footer-nav'});
+
+    if(step < CB_STEPS.length-1){
+      const nextBtn = el('button',{class:'btn btn-primary',onclick:()=>{
+        if(!collectStep()) return;
+        step++; render();
+      }});
+      nextBtn.textContent = step===CB_STEPS.length-2 ? 'Review →' : 'Next →';
+      nav.appendChild(nextBtn);
+    } else {
+      const saveBtn = el('button',{class:'btn btn-primary',onclick:async()=>{
+        if(!data.name.trim()){toast('Give your character a name first','error');return;}
+        saveBtn.disabled=true; saveBtn.textContent='Saving…';
+        // Assemble composite appearance string for search/display compatibility
+        const appearParts = [
+          data.height&&'Height: '+data.height, data.build&&'Build: '+data.build,
+          data.hairColor&&'Hair: '+data.hairColor+(data.hairStyle?' ('+data.hairStyle+')':''),
+          data.eyeColor&&'Eyes: '+data.eyeColor, data.skinTone&&'Skin: '+data.skinTone,
+          data.clothingStyle&&'Style: '+data.clothingStyle,
+          data.distinguishingMarks&&'Marks: '+data.distinguishingMarks,
+          data.firstImpression, data.bodyLanguage,
+        ].filter(Boolean);
+        data.appearance = appearParts.join(' · ');
+        // Assemble backstory composite
+        const bsParts = [
+          data.childhoodHome&&'Grew up: '+data.childhoodHome,
+          data.familyDynamic&&'Family: '+data.familyDynamic,
+          data.formativeEvent&&'Formative event: '+data.formativeEvent,
+          data.wound&&'Wound: '+data.wound,
+          data.biggestRegret&&'Regret: '+data.biggestRegret,
+        ].filter(Boolean);
+        data.backstory = bsParts.join(' · ');
+        showSaving();
+        await fsCreate('characters',{storyProjectId:projectId,...data});
+        showSaved();
+        overlay.remove();
+        renderCharacters(document.getElementById('content'), projectId);
+        toast('Character "'+data.name+'" created');
+      }});
+      saveBtn.textContent = '✦ Save Character';
+      nav.appendChild(saveBtn);
+    }
+    footer.append(backBtn, nav);
+    overlay.append(topbar, body, footer);
+
+    switch(CB_STEPS[step].id){
+      case 'identity':   cbIdentity(pane, data); break;
+      case 'appearance': cbAppearance(pane, data); break;
+      case 'voice':      cbVoice(pane, data); break;
+      case 'backstory':  cbBackstory(pane, data); break;
+      case 'psychology': cbPsychology(pane, data); break;
+      case 'role':       cbRole(pane, data); break;
+      case 'review':     cbReview(pane, data); break;
+    }
+
+    // Scroll body to top on step change
+    body.scrollTop = 0;
+  }
+
+  function collectStep(){
+    const s = CB_STEPS[step].id;
+    const g = (id)=>{ const e=document.getElementById('cb-'+id); return e?(e.value||'').trim():''; };
+    if(s==='identity'){
+      if(!g('name')){ document.getElementById('cb-name')?.focus(); toast('Give your character a name to continue','error'); return false; }
+      data.name=g('name'); data.age=g('age'); data.pronouns=g('pronouns');
+      data.occupation=g('occupation'); data.archetype=g('archetype');
+      data.nationality=g('nationality'); data.hometown=g('hometown');
+    }
+    if(s==='appearance'){
+      data.height=g('height'); data.build=g('build'); data.weight=g('weight');
+      data.hairColor=g('hairColor'); data.hairStyle=g('hairStyle');
+      data.eyeColor=g('eyeColor'); data.skinTone=g('skinTone');
+      data.clothingStyle=g('clothingStyle'); data.distinguishingMarks=g('distinguishingMarks');
+      data.firstImpression=g('firstImpression'); data.bodyLanguage=g('bodyLanguage');
+    }
+    if(s==='voice'){
+      data.speakingStyle=g('speakingStyle'); data.vocabulary=g('vocabulary');
+      data.speechHabit=g('speechHabit'); data.humor=g('humor');
+      data.intelligence=g('intelligence'); data.education=g('education');
+    }
+    if(s==='backstory'){
+      data.childhoodHome=g('childhoodHome'); data.familyDynamic=g('familyDynamic');
+      data.formativeEvent=g('formativeEvent'); data.wound=g('wound');
+      data.secret=g('secret'); data.biggestRegret=g('biggestRegret');
+    }
+    if(s==='psychology'){
+      data.personality=g('personality'); data.internalConflict=g('internalConflict');
+      data.fear=g('fear'); data.desire=g('desire');
+      data.flaw=g('flaw'); data.strength=g('strength');
+      data.coping=g('coping'); data.traits=g('traits');
+    }
+    if(s==='role'){
+      data.wantVsNeed=g('wantVsNeed'); data.storyRole=g('storyRole');
+      data.motivation=g('motivation'); data.arc=g('arc'); data.firstScene=g('firstScene');
+    }
+    return true;
+  }
+
+  document.body.appendChild(overlay);
+  render();
+}
+
+// ── Shared helper functions ──
+
+function cbTitle(pane, title, sub){
+  const t=el('div',{class:'wizard-pane-title'});t.textContent=title;
+  const s=el('div',{class:'wizard-pane-sub'});s.textContent=sub;
+  pane.append(t,s);
+}
+
+function cbRow(...fields){
+  const row=el('div',{style:'display:grid;grid-template-columns:repeat('+fields.length+',1fr);gap:14px;margin-bottom:4px;'});
+  fields.forEach(f=>row.appendChild(f));
+  return row;
+}
+
+function cbF(id, label, placeholder, value, rows=1, hint=null, tipLines=null){
+  const wrap=el('div',{class:'wizard-field'});
+  const lbl=el('label',{class:'wizard-field-label'});lbl.textContent=label;lbl.htmlFor='cb-'+id;
+  wrap.appendChild(lbl);
+  if(hint){const h=el('div',{class:'wizard-field-hint'});h.textContent=hint;wrap.appendChild(h);}
+  if(tipLines && tipLines.length){
+    const toggle=el('div',{class:'wizard-tip-toggle'});toggle.innerHTML='▸ Stuck? Try this';
+    const tipBox=el('div',{class:'wizard-tip',style:'display:none;'});
+    const tipLbl=el('div',{class:'wizard-tip-label'});tipLbl.textContent="Writer's Block?";
+    tipBox.appendChild(tipLbl);
+    tipLines.forEach(line=>{const p=el('p',{style:'margin:0 0 4px;'});p.textContent=line;tipBox.appendChild(p);});
+    toggle.onclick=()=>{
+      const open=tipBox.style.display==='none';
+      tipBox.style.display=open?'block':'none';
+      toggle.innerHTML=(open?'▾':'▸')+' Stuck? Try this';
+    };
+    wrap.append(toggle,tipBox);
+  }
+  if(rows===1){
+    const inp=el('input',{class:'input',id:'cb-'+id,placeholder,value:value||''});
+    wrap.appendChild(inp);
+  } else {
+    const ta=el('textarea',{class:'textarea',id:'cb-'+id,placeholder,rows:String(rows)});
+    ta.value=value||'';
+    wrap.appendChild(ta);
+  }
+  return wrap;
+}
+
+function cbDivider(label){
+  const d=el('div',{style:'display:flex;align-items:center;gap:12px;margin:24px 0 20px;'});
+  const line1=el('div',{style:'flex:1;height:1px;background:var(--border);'});
+  const lbl=el('div',{style:'font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:var(--fg3);font-family:\'JetBrains Mono\',monospace;white-space:nowrap;'});
+  lbl.textContent=label;
+  const line2=el('div',{style:'flex:1;height:1px;background:var(--border);'});
+  d.append(line1,lbl,line2);
+  return d;
+}
+
+// ── Step builders ──
+
+function cbIdentity(pane, data){
+  cbTitle(pane,'Who are they?','Start with the basics. The only required field is their name — fill in what you know now and come back to the rest later.');
+  pane.appendChild(cbF('name','Full Name *','e.g. Elena Vasquez, "Razor," Marcus Webb',data.name,1,'The name they go by in your story. Could be a nickname, a code name, or a full formal name.'));
+  pane.appendChild(cbRow(
+    cbF('age','Age','e.g. 34',data.age),
+    cbF('pronouns','Pronouns','she/her, they/them…',data.pronouns)
+  ));
+  pane.appendChild(cbF('occupation','Occupation','e.g. Homicide detective, failed musician, corporate lawyer',data.occupation,1,'What do they do for work — or how do they spend most of their time?',[
+    'Try starting with what they do, then ask: is this what they wanted?',
+    'A job often says more about where someone came from than where they are going.',
+  ]));
+  pane.appendChild(cbRow(
+    cbF('nationality','Nationality / Ethnicity','e.g. Cuban-American, Nigerian, Korean',data.nationality),
+    cbF('hometown','Hometown / Where They\'re From','e.g. Rural Mississippi, East London',data.hometown)
+  ));
+  pane.appendChild(cbF('archetype','Character Archetype','e.g. The Reluctant Hero, The Trickster, The Mentor',data.archetype,1,'Optional — a shorthand for their role or energy in the story.',[
+    'Common archetypes: The Hero, The Shadow, The Mentor, The Herald, The Trickster, The Shapeshifter, The Guardian, The Ally.',
+    'Don\'t force it — write a description in your own words if nothing fits.',
+  ]));
+}
+
+function cbAppearance(pane, data){
+  cbTitle(pane,'What do they look like?','Appearance is the first language a character speaks. Answer what you know — every field is optional, but specifics are more useful than vague descriptions.');
+  pane.appendChild(cbDivider('Physical Build'));
+  pane.appendChild(cbRow(
+    cbF('height','Height','e.g. 5\'9", tall, short',data.height),
+    cbF('build','Build / Body Type','e.g. Lean, stocky, athletic, lanky',data.build),
+    cbF('weight','Weight (optional)','e.g. 160 lbs, heavyset',data.weight)
+  ));
+  pane.appendChild(cbDivider('Facial Features & Coloring'));
+  pane.appendChild(cbRow(
+    cbF('hairColor','Hair Color','e.g. Dark brown, bleached blonde, silver',data.hairColor),
+    cbF('hairStyle','Hair Style','e.g. Short and neat, long braids, shaved',data.hairStyle)
+  ));
+  pane.appendChild(cbRow(
+    cbF('eyeColor','Eye Color','e.g. Brown, pale gray, green',data.eyeColor),
+    cbF('skinTone','Skin Tone','e.g. Light brown, pale, deep brown, olive',data.skinTone)
+  ));
+  pane.appendChild(cbDivider('Style & Presence'));
+  pane.appendChild(cbF('clothingStyle','Clothing Style / How They Dress','e.g. Always in a suit regardless of occasion. Thrift store layers. Practical work clothes.',data.clothingStyle,2,'How they dress tells us what they want people to think of them — or what they don\'t bother thinking about.',[
+    'Are they trying to blend in, stand out, or simply not thinking about it at all?',
+    'Does their clothing match their personality, or is there a mismatch that says something?',
+  ]));
+  pane.appendChild(cbF('distinguishingMarks','Distinguishing Marks or Features','e.g. A scar across the chin. Tattoo on the left forearm. Always wears the same silver ring.',data.distinguishingMarks,2,'Physical details that are specific and memorable — scars, tattoos, unusual features.',[
+    'The best physical details carry meaning — an old injury, something they hide, something they display on purpose.',
+    'A detail that comes up again later in the story is worth noting here.',
+  ]));
+  pane.appendChild(cbF('firstImpression','First Impression','How does a stranger react the first time they see this character?',data.firstImpression,2,'What someone notices and feels before this character says a word.',[
+    'Try: write it from the POV of another character meeting them for the first time.',
+    'Is the first impression accurate? Or is it misleading?',
+  ]));
+  pane.appendChild(cbF('bodyLanguage','Body Language & How They Carry Themselves','e.g. Quiet and controlled. Never stops moving. Takes up space deliberately.',data.bodyLanguage,2,'How they occupy a room — posture, movement, eye contact, energy.',[
+    'Body language is personality made physical — how a shy person stands is different from how a confident one does.',
+    'Try: what does this character do with their hands when they\'re nervous?',
+  ]));
+}
+
+function cbVoice(pane, data){
+  cbTitle(pane,'How do they think and speak?','Voice is one of the most powerful tools in character writing. A reader should be able to identify your character from a single line of dialogue.');
+  pane.appendChild(cbF('speakingStyle','Speaking Style','e.g. Clipped and direct. Rambles when nervous. Speaks in questions. Formal, never uses contractions.',data.speakingStyle,2,'The rhythm and manner of how they talk.',[
+    'Try writing one line of dialogue this character would say in a tense moment.',
+    'Do they talk too much, or too little? Why?',
+    'Do they say what they mean, or do they always say something slightly different from what they mean?',
+  ]));
+  pane.appendChild(cbF('vocabulary','Vocabulary & Word Choice','e.g. Uses technical jargon. Lots of sports metaphors. Swears constantly. Unusually precise.',data.vocabulary,2,'The specific words and phrases they reach for.',[
+    'What does their vocabulary reveal about their background, education, or upbringing?',
+    'Do they have a pet phrase or expression that\'s uniquely theirs?',
+  ]));
+  pane.appendChild(cbF('speechHabit','Speech Habit or Verbal Tic','e.g. Always qualifies statements ("I think," "maybe"). Interrupts. Long pauses before answering.',data.speechHabit,1,'A small, consistent verbal behavior that makes them recognizable.'));
+  pane.appendChild(cbF('humor','Sense of Humor','e.g. Dry and deadpan. Self-deprecating. Dark. Slapstick. No sense of humor at all.',data.humor,1,'What they find funny — and what they don\'t.',[
+    'Humor reveals character: what someone laughs at tells you a lot about what they value.',
+    'Is their humor a defense mechanism, a social tool, or just genuine?',
+  ]));
+  pane.appendChild(cbDivider('Mind & Background'));
+  pane.appendChild(cbRow(
+    cbF('intelligence','Intelligence / How They Think','e.g. Highly analytical, emotionally intelligent, street-smart, book-smart',data.intelligence),
+    cbF('education','Education','e.g. Self-taught, college dropout, PhD, military training',data.education)
+  ));
+}
+
+function cbBackstory(pane, data){
+  cbTitle(pane,'Where did they come from?','You don\'t need a complete biography — just enough to explain why they are who they are. A character\'s past explains their present without excusing it.');
+  pane.appendChild(cbF('childhoodHome','Childhood Home','e.g. Small town in rural Tennessee. A crowded apartment in Mumbai. Foster care in Detroit.',data.childhoodHome,1,'Where and what kind of environment did they grow up in?'));
+  pane.appendChild(cbF('familyDynamic','Family Dynamic','e.g. Raised by a single mother. Estranged from parents. Close-knit immigrant family. Only child.',data.familyDynamic,2,'Who raised them and what was the household like?',[
+    'The family we grow up in is the first world we learn to navigate — it shapes everything.',
+    'Did they feel loved? Safe? Like a burden? Like the responsible one?',
+    'What did they learn about relationships from watching the adults around them?',
+  ]));
+  pane.appendChild(cbF('formativeEvent','Formative Event','e.g. A death in the family at age 9. A scholarship that changed everything. A moment of public humiliation.',data.formativeEvent,3,'A specific event or period that shaped who they became.',[
+    'It doesn\'t have to be dramatic — sometimes a small moment lands hard and changes everything.',
+    'Ask: what did this teach them about how the world works?',
+  ]));
+  pane.appendChild(cbF('wound','The Wound','e.g. Abandoned by a parent. Failed at the one thing they worked hardest for. Witnessed something they can\'t unsee.',data.wound,3,'The specific past hurt that still affects their behavior today.',[
+    'The wound is not the same as the formative event — it\'s the belief the event created.',
+    'Try: "Because of what happened, they now believe ___."',
+    'What behavior do they engage in today that is secretly about managing this old pain?',
+  ]));
+  pane.appendChild(cbF('biggestRegret','Biggest Regret','Something they did — or didn\'t do — that they still carry.',data.biggestRegret,2,'Not the worst thing that happened to them, but the worst thing they chose.',[
+    'Regret implies agency — it\'s about a choice, not just a loss.',
+    'Would they make the same choice again? Why or why not?',
+  ]));
+  pane.appendChild(cbF('secret','A Secret They Keep','Something no one — or almost no one — knows about them.',data.secret,2,'What are they hiding, and why?',[
+    'The best secrets are ones where keeping them costs the character something.',
+    'Is it a shameful secret, a protective one, or something they\'ve simply never been asked about?',
+  ]));
+}
+
+function cbPsychology(pane, data){
+  cbTitle(pane,'How do they work on the inside?','Psychology is the engine beneath behavior. This step digs into what drives your character, what breaks them, and what they\'re capable of.');
+  pane.appendChild(cbF('personality','Personality in One Paragraph','How do they move through the world? What\'s their baseline — before anything goes wrong?',data.personality,3,'Their default mode: optimistic or guarded, curious or closed, warm or cool.',[
+    'Describe them at a dinner party — a setting where personality is impossible to hide.',
+    'What do people like about them immediately? What takes time to appreciate?',
+  ]));
+  pane.appendChild(cbRow(
+    cbF('flaw','Core Flaw','e.g. Pride, jealousy, self-deception, cowardice',data.flaw,1,'Their deepest weakness — one that actively damages them or others.',[
+      'A flaw is not a bad habit. It\'s a fundamental crack in how they see themselves or the world.',
+      'The flaw should be something that makes sense given their wound.',
+    ]),
+    cbF('strength','Core Strength','e.g. Loyalty, persistence, empathy, wit',data.strength,1,'What is genuinely good or admirable about them?')
+  ));
+  pane.appendChild(cbF('fear','What Do They Fear Most?','e.g. Being abandoned. Being found out. Becoming their father. Losing control.',data.fear,2,'Their deepest fear — the thing that shapes their decisions even when they don\'t realize it.',[
+    'Fear is often the inverse of the wound — what they\'re afraid will happen again.',
+    'Is this fear conscious (they know about it) or unconscious (they\'d deny it)?',
+  ]));
+  pane.appendChild(cbF('desire','What Do They Want More Than Anything?','e.g. To be understood. To prove they\'re worthy. To protect someone. To finally feel safe.',data.desire,2,'Their deepest desire — which may be different from their stated goal in the story.',[
+    'This is the want beneath the want. It\'s rarely about money or success — it\'s about what they think those things will give them.',
+  ]));
+  pane.appendChild(cbF('internalConflict','Internal Conflict','The tension they carry inside — a belief they can\'t reconcile, a desire that contradicts their values.',data.internalConflict,3,'What is the war happening inside them?',[
+    'The best internal conflicts can\'t be fixed by outside events — they require the character to change.',
+    'Try: "They believe ___, but they also believe ___, and those two things can\'t both be true."',
+  ]));
+  pane.appendChild(cbF('coping','How Do They Cope Under Pressure?','e.g. Goes quiet. Gets sarcastic. Overworks. Drinks. Cleans obsessively. Calls the one person who can talk them down.',data.coping,2,'Their default stress response — constructive or destructive.',[
+    'Coping mechanisms usually start as reasonable responses to hard situations, then become habits.',
+    'What\'s the thing they do that they know they shouldn\'t, but keeps working in the short term?',
+  ]));
+  pane.appendChild(cbF('traits','Three Words / Short Summary','e.g. Stubborn, brilliant, deeply lonely. Or: charming on the surface, terrified underneath.',data.traits,1,'A quick-reference summary of who they are at their core.'));
+}
+
+function cbRole(pane, data){
+  cbTitle(pane,'What do they want — and need?','A character\'s want is what they\'re consciously chasing. Their need is what would actually make them whole. The gap between the two is where the story lives.');
+  pane.appendChild(cbF('wantVsNeed','Want vs. Need','e.g. WANT: to solve the murder and restore order. NEED: to forgive herself for the partner she couldn\'t save.',data.wantVsNeed,4,'What do they think they want? What do they actually need — even if they\'d never admit it?',[
+    'The WANT is usually external and concrete: a goal, a person, a status, a thing.',
+    'The NEED is usually internal and invisible: acceptance, courage, forgiveness, belonging.',
+    'A satisfying arc often ends with the character getting the NEED — and sometimes giving up the WANT to get it.',
+    'Try: "They think they need ___, but what they actually need is ___."',
+  ]));
+  pane.appendChild(cbF('motivation','Core Motivation','What is the engine driving them through this specific story?',data.motivation,2,'Not their want or their need — but the emotional fuel that keeps them moving forward.',[
+    'Motivation answers "why do they keep going when it gets hard?"',
+    'Is their motivation something they\'re proud of, or something they\'d be embarrassed to admit?',
+  ]));
+  pane.appendChild(cbF('storyRole','Role in This Story','e.g. Protagonist, Antagonist, Mentor, Foil, Love Interest, Comic Relief, Catalyst',data.storyRole,1,'How do they function in your specific narrative?'));
+  pane.appendChild(cbF('arc','Character Arc','e.g. Learns to trust others. Goes from cynical to hopeful. Crosses a moral line and can\'t go back.',data.arc,2,'How do they change — or refuse to change — over the course of the story?',[
+    'Not every character needs a full arc — some are foils, some are catalysts for others.',
+    'If they do change: what do they gain, and what do they lose?',
+    'If they don\'t change: why not — and what does that cost them?',
+  ]));
+  pane.appendChild(cbF('firstScene','First Scene','Describe the moment we first meet them. What are they doing?',data.firstScene,3,'Their entrance sets every expectation the audience will have about them.',[
+    'A great entrance shows the character in their natural element — just before something disrupts it.',
+    'The best first scenes contain something that will mean something different at the end of the story.',
+    'Try: what is the most revealing thing they could be doing when we first see them?',
+  ]));
+}
+
+function cbReview(pane, data){
+  cbTitle(pane,'Review your character.','Here is everything you\'ve built. Go back to any step to make changes, or save now and edit from the character card at any time.');
+
+  function revSec(heading, fields){
+    const hasContent = fields.some(({key})=>data[key] && data[key].trim());
+    if(!hasContent) return null;
+    const sec=el('div',{class:'wizard-review-section'});
+    const h=el('h3');h.textContent=heading;sec.appendChild(h);
+    fields.forEach(({label,key})=>{
+      if(!data[key]||!data[key].trim()) return;
+      const f=el('div',{class:'wizard-review-field'});
+      const l=el('div',{class:'wizard-review-label'});l.textContent=label;
+      const v2=el('div',{class:'wizard-review-value'});v2.textContent=data[key];
+      f.append(l,v2);sec.appendChild(f);
+    });
+    return sec;
+  }
+
+  if(!data.name){
+    const warn=el('div',{class:'wizard-tip',style:'border-color:var(--red);margin-bottom:16px;'});
+    warn.innerHTML='<div class="wizard-tip-label" style="color:var(--red);">Missing name</div><p style="margin:0;">Go back to Step 1 and give your character a name before saving.</p>';
+    pane.appendChild(warn);
+  }
+
+  const sections=[
+    {heading:'Identity', fields:[
+      {label:'Name',key:'name'},{label:'Age',key:'age'},{label:'Pronouns',key:'pronouns'},
+      {label:'Occupation',key:'occupation'},{label:'Archetype',key:'archetype'},
+      {label:'Nationality',key:'nationality'},{label:'Hometown',key:'hometown'},
+    ]},
+    {heading:'Appearance', fields:[
+      {label:'Height',key:'height'},{label:'Build',key:'build'},{label:'Weight',key:'weight'},
+      {label:'Hair',key:'hairColor'},{label:'Hair Style',key:'hairStyle'},
+      {label:'Eyes',key:'eyeColor'},{label:'Skin Tone',key:'skinTone'},
+      {label:'Clothing Style',key:'clothingStyle'},{label:'Distinguishing Marks',key:'distinguishingMarks'},
+      {label:'First Impression',key:'firstImpression'},{label:'Body Language',key:'bodyLanguage'},
+    ]},
+    {heading:'Voice & Mind', fields:[
+      {label:'Speaking Style',key:'speakingStyle'},{label:'Vocabulary',key:'vocabulary'},
+      {label:'Speech Habit',key:'speechHabit'},{label:'Humor',key:'humor'},
+      {label:'Intelligence',key:'intelligence'},{label:'Education',key:'education'},
+    ]},
+    {heading:'Backstory', fields:[
+      {label:'Childhood Home',key:'childhoodHome'},{label:'Family Dynamic',key:'familyDynamic'},
+      {label:'Formative Event',key:'formativeEvent'},{label:'The Wound',key:'wound'},
+      {label:'Biggest Regret',key:'biggestRegret'},{label:'Secret',key:'secret'},
+    ]},
+    {heading:'Psychology', fields:[
+      {label:'Personality',key:'personality'},{label:'Core Flaw',key:'flaw'},
+      {label:'Core Strength',key:'strength'},{label:'Greatest Fear',key:'fear'},
+      {label:'Deepest Desire',key:'desire'},{label:'Internal Conflict',key:'internalConflict'},
+      {label:'Coping Under Pressure',key:'coping'},{label:'Summary',key:'traits'},
+    ]},
+    {heading:'Story Role', fields:[
+      {label:'Want vs. Need',key:'wantVsNeed'},{label:'Core Motivation',key:'motivation'},
+      {label:'Role in Story',key:'storyRole'},{label:'Character Arc',key:'arc'},
+      {label:'First Scene',key:'firstScene'},
+    ]},
+  ];
+
+  sections.forEach(s=>{
+    const sec=revSec(s.heading, s.fields);
+    if(sec) pane.appendChild(sec);
+  });
 }
 
 // ══════════════════════════════════════════════
@@ -2002,12 +2677,15 @@ async function renderWorld(container, projectId){
   ];
 
   const header = el('div',{class:'page-header'});
-  header.innerHTML='<div><div class="page-title">World Building</div><div class="page-subtitle">Define the rules, tone, and fabric of your world. Click the guide prompt for each section if you need a starting point.</div></div>';
-  const worldBtns = el('div',{style:'display:flex;gap:8px;'});
+  header.innerHTML='<div><div class="page-title">World Building</div><div class="page-subtitle">Define the rules, tone, and fabric of your world. Use the wizard for guided creation, or fill in sections directly.</div></div>';
+  const worldBtns = el('div',{style:'display:flex;gap:8px;align-items:center;flex-wrap:wrap;'});
+  const wizardBtn = el('button',{class:'btn btn-primary',onclick:()=>openWorldBuilder(projectId, world)});
+  wizardBtn.innerHTML='&#10022; Build from Template';
+  wizardBtn.title='Guided step-by-step world building with template options';
   const pdfWorldBtn = el('button',{class:'btn btn-ghost btn-sm'});pdfWorldBtn.textContent='📄 Create Document';
   pdfWorldBtn.onclick = ()=>generateWorldPdf(projectId);
-  const saveBtn = el('button',{class:'btn btn-primary'});saveBtn.textContent='Save World';
-  worldBtns.append(pdfWorldBtn,saveBtn);
+  const saveBtn = el('button',{class:'btn btn-ghost'});saveBtn.textContent='Save World';
+  worldBtns.append(wizardBtn,saveBtn,pdfWorldBtn);
   header.appendChild(worldBtns);
   wrap.appendChild(header);
   const _hintW=toolHintBanner('world'); if(_hintW) wrap.appendChild(_hintW);
@@ -2046,6 +2724,442 @@ async function renderWorld(container, projectId){
     else await fsCreate('worlds',{storyProjectId:projectId,...data});
     showSaved(); toast('World saved');
   };
+}
+
+// ══════════════════════════════════════════════
+//  WORLD BUILDER WIZARD
+// ══════════════════════════════════════════════
+// WORLD BUILDER WIZARD — inserted before OUTLINE section
+// Uses double-quoted strings throughout to avoid apostrophe issues
+
+const WB_TEMPLATES = {
+  grounded: {
+    name: "Grounded World",
+    icon: "🌍",
+    color: "#2d6a4f",
+    desc: "Physical laws match our world. Focus on the specific atmosphere, power dynamics, history, and culture of this place and time.",
+    tags: ["Contemporary","Historical","Crime","Literary","Romance"],
+    steps: ["template","atmosphere","geography","society","history","conflict","review"],
+  },
+  speculative: {
+    name: "Speculative World",
+    icon: "🪐",
+    color: "#6893ef",
+    desc: "Reality has been altered — magic, science, biology, or physics work differently here. Nothing is assumed.",
+    tags: ["Fantasy","Sci-Fi","Horror","Alternate History"],
+    steps: ["template","atmosphere","geography","rules","society","history","conflict","religion","language","review"],
+  },
+  mythic: {
+    name: "Mythic / Symbolic World",
+    icon: "✦",
+    color: "#9378ca",
+    desc: "The world operates on dream logic, archetype, or allegory. Atmosphere and symbolic meaning are primary; mechanical rules are secondary.",
+    tags: ["Fabulism","Fairy Tale","Magical Realism","Surrealism"],
+    steps: ["template","atmosphere","symbolism","society","history","conflict","review"],
+  },
+  micro: {
+    name: "Micro World",
+    icon: "◧",
+    color: "#e5b86e",
+    desc: "The story unfolds in a confined setting — a building, a ship, a small town. Focus on the ecology, hierarchy, and unspoken rules of that space.",
+    tags: ["Ensemble","Thriller","Workplace","Prison","School"],
+    steps: ["template","atmosphere","microgeo","hierarchy","microhistory","conflict","review"],
+  },
+  blank: {
+    name: "Blank Canvas",
+    icon: "◈",
+    color: "#52b788",
+    desc: "Every question from every template is available. Nothing is assumed, nothing is skipped. Full control.",
+    tags: ["Any Genre","Experimental","Cross-Genre"],
+    steps: ["template","atmosphere","geography","rules","society","history","conflict","religion","language","symbolism","review"],
+  }
+};
+
+function openWorldBuilder(projectId, existingWorld){
+  existingWorld = existingWorld || {};
+  let selectedTemplate = null;
+  let step = 0;
+
+  const data = {
+    w_atm_emotion: existingWorld.w_atm_emotion||"",
+    w_atm_sky: existingWorld.w_atm_sky||"",
+    w_atm_tuesday: existingWorld.w_atm_tuesday||"",
+    w_atm_senses: existingWorld.w_atm_senses||"",
+    w_atm_outsider: existingWorld.w_atm_outsider||"",
+    w_geo_landscape: existingWorld.w_geo_landscape||"",
+    w_geo_borders: existingWorld.w_geo_borders||"",
+    w_geo_dangerous: existingWorld.w_geo_dangerous||"",
+    w_geo_beyond: existingWorld.w_geo_beyond||"",
+    w_geo_keyplaces: existingWorld.w_geo_keyplaces||"",
+    w_rules_altered: existingWorld.w_rules_altered||"",
+    w_rules_system: existingWorld.w_rules_system||"",
+    w_rules_cost: existingWorld.w_rules_cost||"",
+    w_rules_access: existingWorld.w_rules_access||"",
+    w_rules_broken: existingWorld.w_rules_broken||"",
+    w_rules_tech: existingWorld.w_rules_tech||"",
+    w_soc_power: existingWorld.w_soc_power||"",
+    w_soc_howgot: existingWorld.w_soc_howgot||"",
+    w_soc_fear: existingWorld.w_soc_fear||"",
+    w_soc_celebrate: existingWorld.w_soc_celebrate||"",
+    w_soc_taboo: existingWorld.w_soc_taboo||"",
+    w_soc_mobility: existingWorld.w_soc_mobility||"",
+    w_soc_punishment: existingWorld.w_soc_punishment||"",
+    w_hist_event: existingWorld.w_hist_event||"",
+    w_hist_wrong: existingWorld.w_hist_wrong||"",
+    w_hist_forgotten: existingWorld.w_hist_forgotten||"",
+    w_hist_wound: existingWorld.w_hist_wound||"",
+    w_hist_calendar: existingWorld.w_hist_calendar||"",
+    w_conf_worldwant: existingWorld.w_conf_worldwant||"",
+    w_conf_collision: existingWorld.w_conf_collision||"",
+    w_conf_winning: existingWorld.w_conf_winning||"",
+    w_conf_cost: existingWorld.w_conf_cost||"",
+    w_conf_sides: existingWorld.w_conf_sides||"",
+    w_rel_worship: existingWorld.w_rel_worship||"",
+    w_rel_role: existingWorld.w_rel_role||"",
+    w_rel_faithless: existingWorld.w_rel_faithless||"",
+    w_rel_sacred: existingWorld.w_rel_sacred||"",
+    w_lang_multiple: existingWorld.w_lang_multiple||"",
+    w_lang_unique: existingWorld.w_lang_unique||"",
+    w_lang_untranslatable: existingWorld.w_lang_untranslatable||"",
+    w_lang_swearing: existingWorld.w_lang_swearing||"",
+    w_sym_register: existingWorld.w_sym_register||"",
+    w_sym_archetype: existingWorld.w_sym_archetype||"",
+    w_sym_meaning: existingWorld.w_sym_meaning||"",
+    w_sym_recurring: existingWorld.w_sym_recurring||"",
+    w_micro_setting: existingWorld.w_micro_setting||"",
+    w_micro_rooms: existingWorld.w_micro_rooms||"",
+    w_micro_rules: existingWorld.w_micro_rules||"",
+    w_micro_top: existingWorld.w_micro_top||"",
+    w_micro_bottom: existingWorld.w_micro_bottom||"",
+    w_micro_history: existingWorld.w_micro_history||"",
+    w_micro_secret: existingWorld.w_micro_secret||"",
+    moodAndTone: existingWorld.moodAndTone||"",
+    lawsOfPhysics: existingWorld.lawsOfPhysics||"",
+    society: existingWorld.society||"",
+    history: existingWorld.history||"",
+    technology: existingWorld.technology||"",
+    conflicts: existingWorld.conflicts||"",
+    geography: existingWorld.geography||"",
+    religion: existingWorld.religion||"",
+    language: existingWorld.language||"",
+    economy: existingWorld.economy||"",
+  };
+
+  const overlay = el("div",{class:"wizard-overlay"});
+
+  function getSteps(){ return selectedTemplate ? WB_TEMPLATES[selectedTemplate].steps.filter(s=>s!=="template") : []; }
+
+  function render(){
+    overlay.innerHTML="";
+    if(step===0){ renderTemplatePicker(); return; }
+    renderWizardStep();
+  }
+
+  function renderTemplatePicker(){
+    const topbar = el("div",{class:"wizard-topbar"});
+    const titleEl = el("div",{class:"wizard-topbar-title"});titleEl.textContent="World Builder";
+    const closeBtn = el("button",{class:"btn btn-ghost btn-sm",onclick:()=>wizardExitConfirm(()=>overlay.remove())});
+    closeBtn.textContent="Exit";
+    topbar.append(titleEl,closeBtn);
+
+    const body = el("div",{class:"wizard-body"});
+    const pane = el("div",{class:"wizard-pane"});
+    const title=el("div",{class:"wizard-pane-title"});title.textContent="Choose a template.";
+    const sub=el("div",{class:"wizard-pane-sub"});
+    sub.textContent="Templates set the default emphasis and question order. You can always access sections from any template once inside the wizard — nothing is locked.";
+    pane.append(title,sub);
+
+    const grid=el("div",{class:"wb-template-grid"});
+    Object.entries(WB_TEMPLATES).forEach(([key,tmpl])=>{
+      const card=el("div",{class:"wb-template-card"+(selectedTemplate===key?" selected":"")});
+      const acc=el("div",{class:"wb-template-accent",style:"background:"+tmpl.color});
+      const icon=el("div",{class:"wb-template-icon"});icon.textContent=tmpl.icon;
+      const name=el("div",{class:"wb-template-name"});name.textContent=tmpl.name;
+      const desc=el("div",{class:"wb-template-desc"});desc.textContent=tmpl.desc;
+      const tags=el("div",{class:"wb-template-tags"});
+      tmpl.tags.forEach(t=>{const tg=el("span",{class:"wb-template-tag"});tg.textContent=t;tags.appendChild(tg);});
+      card.append(acc,icon,name,desc,tags);
+      card.onclick=()=>{
+        selectedTemplate=key;
+        grid.querySelectorAll(".wb-template-card").forEach(c=>c.classList.remove("selected"));
+        card.classList.add("selected");
+      };
+      grid.appendChild(card);
+    });
+    pane.appendChild(grid);
+    body.appendChild(pane);
+
+    const footer=el("div",{class:"wizard-footer"});
+    const left=el("div");
+    const right=el("div",{class:"wizard-footer-nav"});
+    const beginBtn=el("button",{class:"btn btn-primary",onclick:()=>{
+      if(!selectedTemplate){toast("Choose a template to continue","error");return;}
+      step=1; render();
+    }});beginBtn.textContent="Begin \u2192";
+    right.appendChild(beginBtn);
+    footer.append(left,right);
+    overlay.append(topbar,body,footer);
+  }
+
+  function renderWizardStep(){
+    const steps = getSteps();
+    const si = step - 1;
+    const currentStepId = steps[si];
+    const tmpl = WB_TEMPLATES[selectedTemplate];
+
+    const topbar=el("div",{class:"wizard-topbar"});
+    const titleEl=el("div",{class:"wizard-topbar-title"});titleEl.textContent="World Builder \u2014 "+tmpl.name;
+    const progressWrap=el("div",{style:"display:flex;flex-direction:column;align-items:center;gap:5px;"});
+    const dots=el("div",{class:"wizard-progress"});
+    steps.filter(s=>s!=="review").forEach((s,i)=>{
+      const dot=el("div",{class:"wizard-step-dot"+(i===si?" active":i<si?" done":"")});
+      dot.title=wbStepLabel(s); dots.appendChild(dot);
+    });
+    const lbl=el("div",{class:"wizard-step-label"});
+    lbl.textContent="Step "+(si+1)+" of "+steps.length+" \u2014 "+wbStepLabel(currentStepId);
+    progressWrap.append(dots,lbl);
+    const closeBtn=el("button",{class:"btn btn-ghost btn-sm",onclick:()=>{
+      collectStep(currentStepId);
+      wizardExitConfirm(()=>overlay.remove());
+    }});closeBtn.textContent="Exit";
+    topbar.append(titleEl,progressWrap,closeBtn);
+
+    const body=el("div",{class:"wizard-body"});
+    const pane=el("div",{class:"wizard-pane"});
+    body.appendChild(pane);
+
+    const footer=el("div",{class:"wizard-footer"});
+    const backBtn=el("button",{class:"btn btn-ghost",onclick:()=>{collectStep(currentStepId);step--;render();}});
+    backBtn.textContent="\u2190 Back";
+    if(si===0) backBtn.style.visibility="hidden";
+    const nav=el("div",{class:"wizard-footer-nav"});
+
+    if(si < steps.length-1){
+      const nextBtn=el("button",{class:"btn btn-primary",onclick:()=>{
+        collectStep(currentStepId); step++; render();
+      }});
+      nextBtn.textContent=si===steps.length-2?"Review \u2192":"Next \u2192";
+      nav.appendChild(nextBtn);
+    } else {
+      const saveBtn=el("button",{class:"btn btn-primary",onclick:async()=>{
+        assembleCompositeFields();
+        saveBtn.disabled=true; saveBtn.textContent="Saving\u2026";
+        showSaving();
+        if(existingWorld.id) await fsUpdate("worlds",existingWorld.id,data);
+        else {
+          const newId = await fsCreate("worlds",{storyProjectId:projectId,...data});
+          existingWorld.id = newId;
+        }
+        showSaved();
+        overlay.remove();
+        renderWorld(document.getElementById("content"),projectId);
+        toast("World saved");
+      }});
+      saveBtn.textContent="\u2726 Save World";
+      nav.appendChild(saveBtn);
+    }
+    footer.append(backBtn,nav);
+    overlay.append(topbar,body,footer);
+    buildWbStep(pane, currentStepId);
+    body.scrollTop=0;
+  }
+
+  function wbStepLabel(id){
+    const m={atmosphere:"Atmosphere",geography:"Geography",rules:"Rules of the World",
+      society:"Society & Power",history:"History",conflict:"Conflict & Stakes",
+      religion:"Religion & Belief",language:"Language",symbolism:"Symbolism",
+      microgeo:"The Space",hierarchy:"Hierarchy & Roles",microhistory:"History of This Place",review:"Review"};
+    return m[id]||id;
+  }
+
+  function collectStep(sid){
+    const g=(id)=>{const e=document.getElementById("wb-"+id);return e?(e.value||"").trim():"";};
+    if(sid==="atmosphere"){data.w_atm_emotion=g("atm_emotion");data.w_atm_sky=g("atm_sky");data.w_atm_tuesday=g("atm_tuesday");data.w_atm_senses=g("atm_senses");data.w_atm_outsider=g("atm_outsider");}
+    if(sid==="geography"){data.w_geo_landscape=g("geo_landscape");data.w_geo_borders=g("geo_borders");data.w_geo_dangerous=g("geo_dangerous");data.w_geo_beyond=g("geo_beyond");data.w_geo_keyplaces=g("geo_keyplaces");}
+    if(sid==="rules"){data.w_rules_altered=g("rules_altered");data.w_rules_system=g("rules_system");data.w_rules_cost=g("rules_cost");data.w_rules_access=g("rules_access");data.w_rules_broken=g("rules_broken");data.w_rules_tech=g("rules_tech");}
+    if(sid==="society"){data.w_soc_power=g("soc_power");data.w_soc_howgot=g("soc_howgot");data.w_soc_fear=g("soc_fear");data.w_soc_celebrate=g("soc_celebrate");data.w_soc_taboo=g("soc_taboo");data.w_soc_mobility=g("soc_mobility");data.w_soc_punishment=g("soc_punishment");}
+    if(sid==="history"){data.w_hist_event=g("hist_event");data.w_hist_wrong=g("hist_wrong");data.w_hist_forgotten=g("hist_forgotten");data.w_hist_wound=g("hist_wound");data.w_hist_calendar=g("hist_calendar");}
+    if(sid==="conflict"){data.w_conf_worldwant=g("conf_worldwant");data.w_conf_collision=g("conf_collision");data.w_conf_winning=g("conf_winning");data.w_conf_cost=g("conf_cost");data.w_conf_sides=g("conf_sides");}
+    if(sid==="religion"){data.w_rel_worship=g("rel_worship");data.w_rel_role=g("rel_role");data.w_rel_faithless=g("rel_faithless");data.w_rel_sacred=g("rel_sacred");}
+    if(sid==="language"){data.w_lang_multiple=g("lang_multiple");data.w_lang_unique=g("lang_unique");data.w_lang_untranslatable=g("lang_untranslatable");data.w_lang_swearing=g("lang_swearing");}
+    if(sid==="symbolism"){data.w_sym_register=g("sym_register");data.w_sym_archetype=g("sym_archetype");data.w_sym_meaning=g("sym_meaning");data.w_sym_recurring=g("sym_recurring");}
+    if(sid==="microgeo"){data.w_micro_setting=g("micro_setting");data.w_micro_rooms=g("micro_rooms");data.w_micro_rules=g("micro_rules");}
+    if(sid==="hierarchy"){data.w_micro_top=g("micro_top");data.w_micro_bottom=g("micro_bottom");}
+    if(sid==="microhistory"){data.w_micro_history=g("micro_history");data.w_micro_secret=g("micro_secret");}
+  }
+
+  function assembleCompositeFields(){
+    const join=(...parts)=>parts.filter(Boolean).join("\n");
+    data.moodAndTone=join(data.w_atm_emotion,data.w_atm_sky&&"Sky/environment: "+data.w_atm_sky,data.w_atm_tuesday&&"A normal day: "+data.w_atm_tuesday,data.w_atm_senses&&"Sensory details: "+data.w_atm_senses,data.w_atm_outsider&&"First impression: "+data.w_atm_outsider,data.w_sym_register&&"Symbolic register: "+data.w_sym_register,data.w_sym_meaning&&"What this world means: "+data.w_sym_meaning)||data.moodAndTone;
+    data.geography=join(data.w_geo_landscape,data.w_geo_borders&&"Borders: "+data.w_geo_borders,data.w_geo_dangerous&&"Dangerous places: "+data.w_geo_dangerous,data.w_geo_beyond&&"Beyond: "+data.w_geo_beyond,data.w_geo_keyplaces&&"Key locations: "+data.w_geo_keyplaces,data.w_micro_setting&&"Setting: "+data.w_micro_setting,data.w_micro_rooms&&"Key spaces: "+data.w_micro_rooms)||data.geography;
+    data.lawsOfPhysics=join(data.w_rules_altered&&"What is different: "+data.w_rules_altered,data.w_rules_system&&"How it works: "+data.w_rules_system,data.w_rules_cost&&"Cost: "+data.w_rules_cost,data.w_rules_access&&"Access: "+data.w_rules_access,data.w_rules_broken&&"When broken: "+data.w_rules_broken,data.w_rules_tech&&"Technology: "+data.w_rules_tech)||data.lawsOfPhysics;
+    data.society=join(data.w_soc_power&&"Power: "+data.w_soc_power,data.w_soc_howgot&&"How obtained: "+data.w_soc_howgot,data.w_soc_fear&&"What people fear: "+data.w_soc_fear,data.w_soc_celebrate&&"Celebrations: "+data.w_soc_celebrate,data.w_soc_taboo&&"Taboos: "+data.w_soc_taboo,data.w_soc_mobility&&"Social mobility: "+data.w_soc_mobility,data.w_soc_punishment&&"Punishment: "+data.w_soc_punishment,data.w_micro_top&&"Top of hierarchy: "+data.w_micro_top,data.w_micro_bottom&&"Bottom: "+data.w_micro_bottom,data.w_micro_rules&&"Unwritten rules: "+data.w_micro_rules)||data.society;
+    data.history=join(data.w_hist_event&&"Formative event: "+data.w_hist_event,data.w_hist_wrong&&"Misremembered: "+data.w_hist_wrong,data.w_hist_forgotten&&"Forgotten: "+data.w_hist_forgotten,data.w_hist_wound&&"Collective wound: "+data.w_hist_wound,data.w_hist_calendar&&"Calendar: "+data.w_hist_calendar,data.w_micro_history&&"History: "+data.w_micro_history,data.w_micro_secret&&"Buried secret: "+data.w_micro_secret,data.w_sym_archetype&&"Archetypes: "+data.w_sym_archetype,data.w_sym_recurring&&"Recurring symbols: "+data.w_sym_recurring)||data.history;
+    data.conflicts=join(data.w_conf_worldwant&&"What the world wants: "+data.w_conf_worldwant,data.w_conf_collision&&"Where conflict lives: "+data.w_conf_collision,data.w_conf_sides&&"The sides: "+data.w_conf_sides,data.w_conf_winning&&"Winning looks like: "+data.w_conf_winning,data.w_conf_cost&&"Cost: "+data.w_conf_cost)||data.conflicts;
+    data.religion=join(data.w_rel_worship&&"Objects of devotion: "+data.w_rel_worship,data.w_rel_role&&"Role of faith: "+data.w_rel_role,data.w_rel_faithless&&"The faithless: "+data.w_rel_faithless,data.w_rel_sacred&&"Sacred: "+data.w_rel_sacred)||data.religion;
+    data.language=join(data.w_lang_multiple&&"Languages: "+data.w_lang_multiple,data.w_lang_unique&&"Unique words: "+data.w_lang_unique,data.w_lang_untranslatable&&"Untranslatable: "+data.w_lang_untranslatable,data.w_lang_swearing&&"Swearing: "+data.w_lang_swearing)||data.language;
+    if(!data.technology && data.w_rules_tech) data.technology = data.w_rules_tech;
+  }
+
+  document.body.appendChild(overlay);
+  render();
+}
+
+// ── Step content builders ──
+
+function wbTitle(pane, title, sub){
+  const t=el("div",{class:"wizard-pane-title"});t.textContent=title;
+  const s=el("div",{class:"wizard-pane-sub"});s.textContent=sub;
+  pane.append(t,s);
+}
+
+function wbF(id, label, placeholder, value, rows, hint, tipLines){
+  return cbF(id, label, placeholder, value, rows, hint, tipLines);
+}
+
+function buildWbStep(pane, stepId){
+  if(stepId==="atmosphere"){
+    wbTitle(pane,"What does this world feel like?","Atmosphere is the emotional contract between writer and reader. Before anything happens, the world has already made a promise about how things work here.");
+    pane.appendChild(wbF("atm_emotion","Dominant Emotional Register","e.g. Dread and dark humor. Wonder with undertones of loss. Hard-edged cynicism. Warm but precarious.",data.w_atm_emotion,2,"The feeling that underlies every scene — even the quiet ones.",["Try: if this world were a song, what genre would it be?","What emotion does a new reader feel in their first paragraph?","What emotion are you, the writer, trying to feel while you write it?"]));
+    pane.appendChild(wbF("atm_sky","The Sky / The Environment","e.g. Low gray clouds that never fully break. A second moon that only rises in winter. The coast, always.",data.w_atm_sky,2,"What the physical environment looks and feels like at a glance.",["Describe the sky specifically — it is one of the fastest ways to establish a world.","What does the weather do to people here? What does it mean?"]));
+    pane.appendChild(wbF("atm_tuesday","A Normal Tuesday","What does an ordinary person in this world do on an average unremarkable day?",data.w_atm_tuesday,3,"The texture of daily life — the baseline before your story disrupts it.",["Mundane detail creates believability. What do they eat for breakfast? How do they commute?","What does having a good day look like for an ordinary person here?","What do people complain about that they take for granted?"]));
+    pane.appendChild(wbF("atm_senses","Sensory Details","What are the sounds, smells, textures of this world?",data.w_atm_senses,2,"Specific sensory anchors that make the world feel physical and real.",["Smell is the most memory-linked sense — what does this world smell like?","What sound is uniquely this world? What sound is conspicuously absent?"]));
+    pane.appendChild(wbF("atm_outsider","An Outsider First Impression","Someone arrives here for the first time. What do they immediately notice?",data.w_atm_outsider,2,"What stands out to fresh eyes — which reveals what locals have stopped seeing.",["The outsider notices what residents have normalized. That gap is useful.","What would make a stranger feel welcome? Unsafe? Confused?"]));
+    return;
+  }
+  if(stepId==="geography"){
+    wbTitle(pane,"What does this world look like?","Geography shapes politics, culture, and story logistics. It is not just scenery — it is the terrain your characters have to navigate.");
+    pane.appendChild(wbF("geo_landscape","Physical Landscape","Terrain, climate, scale — continent, country, city, neighborhood?",data.w_geo_landscape,2,"The broad physical shape of the world, or the part of it your story inhabits.",["Your story only needs the geography relevant to it.","What does the terrain force people to do or prevent them from doing?"]));
+    pane.appendChild(wbF("geo_keyplaces","Key Locations","The specific places your story will return to — the bar, the palace, the station, the apartment.",data.w_geo_keyplaces,2,"Named, important places that characters will inhabit repeatedly.",["Think of your key locations as characters — each should have a personality.","What does each location represent thematically, beyond its function?"]));
+    pane.appendChild(wbF("geo_borders","Borders, Walls and Divisions","What physical or political lines divide this world? Who can cross them?",data.w_geo_borders,2,"Separation and access are core dramatic engines — who is kept out, and by what?",["Borders can be literal (walls, checkpoints) or social (neighborhoods, class lines).","What happens to people who try to cross a border they are not supposed to?"]));
+    pane.appendChild(wbF("geo_dangerous","The Dangerous Places","What do people call the places they avoid? What happens there?",data.w_geo_dangerous,2,"Where the world dark edges live — and what they say about the center.",["Every world has a wrong side of the tracks. What is it, and who lives there?","Is the danger real, exaggerated, or a lie told by people in power?"]));
+    pane.appendChild(wbF("geo_beyond","Beyond the Map","What lies beyond the known parts of this world? What do people believe is out there?",data.w_geo_beyond,1,"The unknown generates tension and possibility — even if the story never goes there.",null));
+    return;
+  }
+  if(stepId==="rules"){
+    wbTitle(pane,"How does this world work?","The rules of reality in your world. What is possible, what is impossible, and most importantly — what does it cost to push those limits?");
+    pane.appendChild(wbF("rules_altered","What Is Different From Our World","Magic exists. Faster-than-light travel is real. The dead can speak. Everyone is born with a number visible above their head.",data.w_rules_altered,2,"State the core difference(s) between this world and ours clearly and specifically.",["Be specific. Magic exists is not a rule. People can take pain from others into their own bodies is a rule.","What is the single most important way this world differs from ours?"]));
+    pane.appendChild(wbF("rules_system","How The System Works","The mechanics — how does the altered element function? What are its parameters?",data.w_rules_system,3,"The internal logic that makes the world consistent and believable.",["Readers will accept almost anything if it is consistent. Inconsistency breaks the spell.","You do not have to explain everything — but you should know the rules even if readers do not.","What does this system look like in practice? Describe it in action."]));
+    pane.appendChild(wbF("rules_cost","What Does It Cost?","Using it, having it, or knowing about it — what does it cost the person involved?",data.w_rules_cost,2,"Cost is what makes magic and power dramatically interesting. Free power is boring.",["The cost does not have to be physical — it can be social, moral, temporal, or psychological.","Is the cost worth it? To whom? What do people sacrifice to use this?"]));
+    pane.appendChild(wbF("rules_access","Who Has Access?","Is it rare or common? Inherited, learned, bought, or stolen?",data.w_rules_access,2,"Access creates inequality, which creates conflict.",["Unequal access to power is the engine of most speculative fiction.","What would someone do to get access if they did not have it?"]));
+    pane.appendChild(wbF("rules_broken","What Happens When The Rules Break?","What does a violation look like? Who enforces the rules? What is the punishment?",data.w_rules_broken,2,"Rules only mean something if breaking them has consequences.",null));
+    pane.appendChild(wbF("rules_tech","Technology Level and Key Technologies","What can people do that we cannot? What can they not do that we can?",data.w_rules_tech,2,"The technological context — how advanced, and what does it change?",["Technology shapes daily life, warfare, medicine, communication, and class.","What is the most important piece of technology in this world — and who controls it?"]));
+    return;
+  }
+  if(stepId==="society"){
+    wbTitle(pane,"Who holds power — and who does not?","Society is the human operating system. Who wrote the rules, who benefits from them, and who is trying to change them?");
+    pane.appendChild(wbF("soc_power","Who Holds Power?","An individual, a class, a corporation, a council, a god, a system?",data.w_soc_power,2,"The current distribution of power in this world.",["Power can be political, economic, military, religious, or cultural — often several at once.","Is power concentrated or distributed? Is it stable or contested?"]));
+    pane.appendChild(wbF("soc_howgot","How Did They Get It?","Conquest, inheritance, election, magic, money, violence, divine right?",data.w_soc_howgot,2,"The origin of power tells you about its legitimacy and its vulnerabilities.",["Power obtained by violence must be maintained by threat of violence.","Is the origin story of power true, or is it a myth that serves the powerful?"]));
+    pane.appendChild(wbF("soc_fear","What Do Ordinary People Fear?","Not abstract danger — the specific things that keep a normal person up at night.",data.w_soc_fear,2,"The texture of everyday anxiety — what does insecurity feel like here?",["Fear reveals what the social contract is, and where it is fraying.","Is what people fear rational, or have they been trained to fear the wrong things?"]));
+    pane.appendChild(wbF("soc_celebrate","What Do Ordinary People Celebrate?","Holidays, rituals, victories, milestones — what does joy look like here?",data.w_soc_celebrate,2,"Celebration reveals values — what a society says it is, even if that is aspirational.",null));
+    pane.appendChild(cbRow(
+      wbF("soc_taboo","What Is Taboo?","Things forbidden to say or do — formally or by unspoken rule.",data.w_soc_taboo,1,null,null),
+      wbF("soc_mobility","Social Mobility","Can people move between classes? How? Is it common or exceptional?",data.w_soc_mobility,1,null,null)
+    ));
+    pane.appendChild(wbF("soc_punishment","What Happens to People Who Break the Rules?","The formal and informal mechanisms of enforcement and punishment.",data.w_soc_punishment,2,"Punishment reveals what a society actually values, as opposed to what it claims to value.",["Who has discretion in applying punishment? That is where real power lives."]));
+    return;
+  }
+  if(stepId==="history"){
+    wbTitle(pane,"Where did this world come from?","History is the weight your world carries. What happened, what people think happened, and what has been buried are often three different things.");
+    pane.appendChild(wbF("hist_event","The Event That Shaped Everything","The war, the revolution, the disaster, the discovery — the thing that made the world what it is today.",data.w_hist_event,3,"One event or period that is the hinge of this world present.",["This does not have to be ancient history — it can be within living memory.","How does the present-day world still live in the shadow of this event?","What would have been different if it had not happened?"]));
+    pane.appendChild(wbF("hist_wrong","What Do People Remember Wrong?","The official story of history vs. what actually happened.",data.w_hist_wrong,2,"Collective misremembering is one of the most powerful forces in any society.",["Who benefits from the false version of events? Who is harmed by it?","Is the truth recoverable? Is anyone looking for it?"]));
+    pane.appendChild(wbF("hist_forgotten","What Has Been Deliberately Forgotten?","Things that were purged, suppressed, or simply allowed to fade.",data.w_hist_forgotten,2,"Active erasure implies someone had something to hide.",["What would change if people remembered?","Who still knows? What do they do with that knowledge?"]));
+    pane.appendChild(wbF("hist_wound","The Collective Wound","The shared trauma that has not healed — that still shapes behavior, policy, and emotion today.",data.w_hist_wound,2,"Collective wounds explain irrational behavior at a societal scale.",["Is the wound acknowledged, or is it politely avoided?","Different groups often have very different versions of the same wound."]));
+    pane.appendChild(wbF("hist_calendar","Calendar and Rituals","Holidays, commemorations, anniversaries — the scheduled moments when the world values are performed.",data.w_hist_calendar,2,"What a society chooses to remember on a calendar reveals its identity.",null));
+    return;
+  }
+  if(stepId==="conflict"){
+    wbTitle(pane,"What is this world fighting over?","Conflict at the world level is the container your story lives in. Your characters individual conflicts should rhyme with the world larger tensions.");
+    pane.appendChild(wbF("conf_worldwant","What Does the World Want?","The dominant force, ideology, or momentum — what is the world current direction?",data.w_conf_worldwant,2,"Not what any one character wants — what the world itself seems to be pushing toward.",["Is the world expanding, contracting, stabilizing, or collapsing?","What does progress look like here? Who defines it?"]));
+    pane.appendChild(wbF("conf_collision","Where Does Your Story Conflict Live?","The specific fault line — class, belief, identity, survival, power — where your story takes place.",data.w_conf_collision,2,"The pressure point your characters are standing on.",["Your story does not need to address all the world conflicts — just the ones that pressure your characters.","What would have to change in the world for your protagonist problem to disappear?"]));
+    pane.appendChild(wbF("conf_sides","The Sides","The factions, forces, or ideologies in opposition.",data.w_conf_sides,2,"Not necessarily good vs. evil — often two different visions of the same good.",["The most interesting conflicts are ones where both sides have a point.","What does each side think the other side is wrong about?"]));
+    pane.appendChild(cbRow(
+      wbF("conf_winning","What Does Winning Look Like?","For the side your story follows — what is victory?",data.w_conf_winning,2,null,null),
+      wbF("conf_cost","What Does It Cost?","What does winning — or losing — take from the people involved?",data.w_conf_cost,2,null,null)
+    ));
+    return;
+  }
+  if(stepId==="religion"){
+    wbTitle(pane,"What do people believe in?","Religion, faith, and collective belief shape behavior, architecture, calendar, and the stories people tell about themselves — even in worlds without gods.");
+    pane.appendChild(wbF("rel_worship","What Do People Pray To, Fear, or Revere?","Gods, ancestors, machines, the market, the party, nature — formal or informal.",data.w_rel_worship,2,"The objects of devotion — what people organize their spiritual lives around.",["You do not need a fully invented religion — the market or science can function as religion.","Is this faith official (organized, institutional) or personal and informal?"]));
+    pane.appendChild(wbF("rel_role","Role of Faith in Daily Life","Is faith a comfort, a weapon, a social obligation, a private matter, or a source of conflict?",data.w_rel_role,2,"How religion functions practically — not theologically.",["In many worlds, religion and politics are inseparable. In others they are in open conflict.","Who uses faith to control others? Who finds genuine solace in it?"]));
+    pane.appendChild(cbRow(
+      wbF("rel_faithless","What Happens to the Faithless?","Tolerance, persecution, pity, invisibility?",data.w_rel_faithless,2,null,null),
+      wbF("rel_sacred","What Is Sacred?","Objects, places, times, words — what cannot be touched?",data.w_rel_sacred,2,null,null)
+    ));
+    return;
+  }
+  if(stepId==="language"){
+    wbTitle(pane,"How do people communicate?","Language reveals culture. What a society has words for — and what it does not — tells you what it notices, what it values, and what it suppresses.");
+    pane.appendChild(wbF("lang_multiple","Languages, Dialects and Registers","How many languages are spoken? By whom? Is any of them a marker of status or exclusion?",data.w_lang_multiple,2,"The linguistic landscape — who speaks to whom in what.",["Even in a one-language world, there are registers: how your character speaks to their boss vs. their grandmother.","Is there a prestige dialect that signals education or class?"]));
+    pane.appendChild(wbF("lang_unique","Words That Only Exist Here","Invented words, concepts, or terms that do not translate into our world.",data.w_lang_unique,2,"The vocabulary gap reveals what this culture thinks about that our culture does not.",["You do not need a constructed language — one or two untranslatable words can do a lot of work.","What concept is so central to this world that it needed its own word?"]));
+    pane.appendChild(cbRow(
+      wbF("lang_untranslatable","Untranslatable Concepts","Ideas that do not translate because our world does not have them.",data.w_lang_untranslatable,2,null,null),
+      wbF("lang_swearing","Swearing and Insults","What do people swear by? What is the worst thing you can call someone?",data.w_lang_swearing,2,"Swearing reveals the sacred and the profane in any culture.",null)
+    ));
+    return;
+  }
+  if(stepId==="symbolism"){
+    wbTitle(pane,"What does this world mean?","Mythic and symbolic worlds run on a different logic — pattern, resonance, and archetype matter more than consistency. These questions ask about meaning rather than mechanics.");
+    pane.appendChild(wbF("sym_register","Emotional and Symbolic Register","Is this a world of grief? Of transformation? Of the in-between? Of things that will not stay dead?",data.w_sym_register,2,"The emotional and symbolic key the world is written in.",["Fairy tales have a register. So do myths. So does magical realism. What is yours?","What emotion should a reader carry with them after finishing your story?"]));
+    pane.appendChild(wbF("sym_archetype","Archetypes Present","What timeless figures inhabit this world? The trickster? The crone? The sacrifice? The child who sees truth?",data.w_sym_archetype,2,"The archetypal characters who give the story mythic weight.",["Archetypes do not need to be obvious — they can be subverted, hidden, or shared across multiple characters."]));
+    pane.appendChild(wbF("sym_meaning","What Is This World An Expression Of?","An emotion? A question? A political condition? A stage of grief?",data.w_sym_meaning,2,"The allegorical or thematic subtext — what the world is really about beneath its surface.",["Narnia is about faith. The Handmaid Tale is about control of the body. What is yours about?","You do not have to have an answer yet — but having one makes every decision easier."]));
+    pane.appendChild(wbF("sym_recurring","Recurring Symbols or Images","Objects, colors, weather patterns, animals that carry meaning through the story.",data.w_sym_recurring,2,"The symbolic vocabulary you will return to repeatedly.",["Symbols work by repetition — the first time is decoration, the third time is meaning."]));
+    return;
+  }
+  if(stepId==="microgeo"){
+    wbTitle(pane,"What is this space?","In a micro world, the setting is the world. Its geography is the layout of rooms, territories, and zones — and who controls each one.");
+    pane.appendChild(wbF("micro_setting","The Setting","Name and describe the confined space: the building, the ship, the institution, the town.",data.w_micro_setting,2,"What is this place? What is it officially for?",["Give it a name. A specific name immediately makes it feel real.","What was it built for? What is it actually used for?"]));
+    pane.appendChild(wbF("micro_rooms","Key Zones and Spaces","The specific rooms, floors, areas, or territories that will matter in your story.",data.w_micro_rooms,3,"The geography of the micro world — where things happen and what they mean.",["Every key space should have a function and a feeling.","Which spaces are contested? Which are safe? Which are forbidden?"]));
+    pane.appendChild(wbF("micro_rules","The Unwritten Rules","What does everyone here know but no one says out loud?",data.w_micro_rules,2,"The informal code that governs behavior — often more powerful than official rules.",["What happens to people who do not know the rules yet?"]));
+    return;
+  }
+  if(stepId==="hierarchy"){
+    wbTitle(pane,"Who is in charge — and who is at the bottom?","In a confined world, hierarchy is everything. Who has power over whom, and how is that maintained moment to moment?");
+    pane.appendChild(wbF("micro_top","Who Is At the Top?","The person, role, or force that controls this space.",data.w_micro_top,2,"The apex of the micro world power structure — and how they exercise it.",["Is the person at the top officially the most powerful, or is the real power held by someone else?","How visible is their power? Do they use it openly or quietly?"]));
+    pane.appendChild(wbF("micro_bottom","Who Is At the Bottom?","The least powerful — invisible, expendable, or exploited.",data.w_micro_bottom,2,"The people the system relies on and treats as interchangeable.",["Stories often find their most interesting perspectives at the bottom of a hierarchy.","What would happen to the whole system if the people at the bottom simply stopped?"]));
+    return;
+  }
+  if(stepId==="microhistory"){
+    wbTitle(pane,"What happened here before your story began?","Every place has a history that lives in its walls. What your characters inherit from the past shapes what is possible now.");
+    pane.appendChild(wbF("micro_history","The History of This Place","What events shaped this space into what it is today?",data.w_micro_history,3,"The specific past of this setting — before your characters arrived.",["What was this place before it was what it is now?","What happened here that people still feel, even if they do not talk about it?"]));
+    pane.appendChild(wbF("micro_secret","The Buried Secret","Something about this place that most people do not know — or choose not to see.",data.w_micro_secret,2,"Every institution has a secret. The secret reveals what the place actually is beneath its official version.",["Is the secret about what happened here? About who built it? About what it is really for?","Who knows? What do they do to keep it buried?"]));
+    return;
+  }
+  if(stepId==="review"){
+    wbTitle(pane,"Review your world.","Everything you have built so far. Go back to any step to edit, or save now and continue filling in the grid directly.");
+    const tmpl=WB_TEMPLATES[selectedTemplate];
+    const badge=el("div",{style:"display:inline-flex;align-items:center;gap:8px;background:var(--active-bg);border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px 14px;margin-bottom:20px;font-size:13px;color:var(--fg2);"});
+    badge.innerHTML="<span style=\"font-size:18px;\">"+tmpl.icon+"</span><span>"+tmpl.name+"</span>";
+    pane.appendChild(badge);
+
+    const reviewGroups=[
+      {label:"Atmosphere", keys:[["w_atm_emotion","Emotional Register"],["w_atm_sky","Environment"],["w_atm_tuesday","A Normal Day"],["w_atm_senses","Sensory Details"],["w_atm_outsider","First Impression"]]},
+      {label:"Geography",  keys:[["w_geo_landscape","Landscape"],["w_geo_keyplaces","Key Locations"],["w_geo_borders","Borders"],["w_geo_dangerous","Dangerous Places"],["w_geo_beyond","Beyond the Map"],["w_micro_setting","The Setting"],["w_micro_rooms","Key Spaces"]]},
+      {label:"Rules of the World", keys:[["w_rules_altered","What Is Different"],["w_rules_system","How It Works"],["w_rules_cost","Cost"],["w_rules_access","Access"],["w_rules_broken","When Broken"],["w_rules_tech","Technology"]]},
+      {label:"Society",    keys:[["w_soc_power","Who Holds Power"],["w_soc_howgot","How Obtained"],["w_soc_fear","What People Fear"],["w_soc_celebrate","Celebrations"],["w_soc_taboo","Taboos"],["w_soc_mobility","Social Mobility"],["w_soc_punishment","Punishment"],["w_micro_top","Top of Hierarchy"],["w_micro_bottom","Bottom"],["w_micro_rules","Unwritten Rules"]]},
+      {label:"History",    keys:[["w_hist_event","Formative Event"],["w_hist_wrong","Misremembered"],["w_hist_forgotten","Forgotten"],["w_hist_wound","Collective Wound"],["w_hist_calendar","Calendar"],["w_micro_history","History of This Place"],["w_micro_secret","Buried Secret"]]},
+      {label:"Conflict",   keys:[["w_conf_worldwant","What the World Wants"],["w_conf_collision","Where Conflict Lives"],["w_conf_sides","The Sides"],["w_conf_winning","Winning"],["w_conf_cost","Cost"]]},
+      {label:"Religion",   keys:[["w_rel_worship","Objects of Devotion"],["w_rel_role","Role of Faith"],["w_rel_faithless","The Faithless"],["w_rel_sacred","Sacred"]]},
+      {label:"Language",   keys:[["w_lang_multiple","Languages"],["w_lang_unique","Unique Words"],["w_lang_untranslatable","Untranslatable"],["w_lang_swearing","Swearing"]]},
+      {label:"Symbolism",  keys:[["w_sym_register","Symbolic Register"],["w_sym_archetype","Archetypes"],["w_sym_meaning","What It Means"],["w_sym_recurring","Recurring Symbols"]]},
+    ];
+
+    reviewGroups.forEach(g=>{
+      const hasContent=g.keys.some(([k])=>data[k]&&data[k].trim());
+      if(!hasContent) return;
+      const sec=el("div",{class:"wizard-review-section"});
+      const h=el("h3");h.textContent=g.label;sec.appendChild(h);
+      g.keys.forEach(([k,l])=>{
+        if(!data[k]||!data[k].trim()) return;
+        const f=el("div",{class:"wizard-review-field"});
+        const lbl=el("div",{class:"wizard-review-label"});lbl.textContent=l;
+        const val=el("div",{class:"wizard-review-value"});val.textContent=data[k];
+        f.append(lbl,val);sec.appendChild(f);
+      });
+      pane.appendChild(sec);
+    });
+  }
 }
 
 // ══════════════════════════════════════════════
@@ -2913,18 +4027,53 @@ function pdfFooter(projectName){
 function buildCharactersPdf(project, chars){
   let body = chars.length ? '' : '<p style="color:#7a9070;font-style:italic;">No characters have been added yet.</p>';
   chars.forEach(c=>{
+    // Build appearance string from individual fields or composite
+    const appearParts=[
+      c.height&&'Height: '+c.height, c.build&&'Build: '+c.build, c.weight&&'Weight: '+c.weight,
+      c.hairColor&&'Hair: '+c.hairColor+(c.hairStyle?' ('+c.hairStyle+')':''),
+      c.eyeColor&&'Eyes: '+c.eyeColor, c.skinTone&&'Skin: '+c.skinTone,
+    ].filter(Boolean);
+    const appearLine = appearParts.length ? appearParts.join('  ·  ') : (c.appearance||'');
+    const pdfField = (label,val)=>val?`<div class="pdf-field"><div class="pdf-field-label">${label}</div><div class="pdf-field-value">${escHtml(val)}</div></div>`:'';
     body += `<div class="pdf-card">
-      <div class="pdf-card-title">${escHtml(c.name)}</div>
+      <div class="pdf-card-title">${escHtml(c.name)}${c.storyRole?` <span style="font-size:11px;color:#7a9070;font-family:'JetBrains Mono',monospace;margin-left:8px;">${escHtml(c.storyRole)}</span>`:''}</div>
       <div class="pdf-meta-row">
         ${c.age?`<span class="pdf-meta-item"><strong>Age:</strong> ${escHtml(c.age)}</span>`:''}
         ${c.pronouns?`<span class="pdf-meta-item"><strong>Pronouns:</strong> ${escHtml(c.pronouns)}</span>`:''}
         ${c.occupation?`<span class="pdf-meta-item"><strong>Occupation:</strong> ${escHtml(c.occupation)}</span>`:''}
+        ${c.archetype?`<span class="pdf-meta-item"><strong>Archetype:</strong> ${escHtml(c.archetype)}</span>`:''}
+        ${c.nationality?`<span class="pdf-meta-item">${escHtml(c.nationality)}</span>`:''}
       </div>
-      ${c.traits?`<div class="pdf-field" style="margin-top:10px;"><div class="pdf-field-label">Traits & Summary</div><div class="pdf-field-value">${escHtml(c.traits)}</div></div>`:''}
-      ${c.backstory?`<div class="pdf-field"><div class="pdf-field-label">Backstory</div><div class="pdf-field-value">${escHtml(c.backstory)}</div></div>`:''}
+      ${c.traits?`<div class="pdf-field" style="margin-top:10px;"><div class="pdf-field-label">Summary</div><div class="pdf-field-value">${escHtml(c.traits)}</div></div>`:''}
+      ${appearLine?`<div class="pdf-field"><div class="pdf-field-label">Appearance</div><div class="pdf-field-value">${escHtml(appearLine)}</div></div>`:''}
+      ${pdfField('Clothing Style',c.clothingStyle)}
+      ${pdfField('Distinguishing Marks',c.distinguishingMarks)}
+      ${pdfField('First Impression',c.firstImpression)}
+      ${pdfField('Body Language',c.bodyLanguage)}
+      ${pdfField('Speaking Style',c.speakingStyle)}
+      ${pdfField('Vocabulary',c.vocabulary)}
+      ${pdfField('Speech Habit',c.speechHabit)}
+      ${pdfField('Sense of Humor',c.humor)}
+      ${pdfField('Intelligence',c.intelligence)} ${pdfField('Education',c.education)}
+      ${pdfField('Personality',c.personality)}
+      ${pdfField('Core Flaw',c.flaw)} ${pdfField('Core Strength',c.strength)}
+      ${pdfField('Greatest Fear',c.fear)}
+      ${pdfField('Deepest Desire',c.desire)}
+      ${pdfField('Internal Conflict',c.internalConflict)}
+      ${pdfField('Coping Under Pressure',c.coping)}
+      ${pdfField('Childhood Home',c.childhoodHome)}
+      ${pdfField('Family Dynamic',c.familyDynamic)}
+      ${pdfField('Formative Event',c.formativeEvent)}
+      ${pdfField('The Wound',c.wound)}
+      ${pdfField('Biggest Regret',c.biggestRegret)}
+      ${pdfField('Secret',c.secret)}
+      ${pdfField('Want vs. Need',c.wantVsNeed)}
+      ${pdfField('Core Motivation',c.motivation)}
+      ${pdfField('Character Arc',c.arc)}
+      ${pdfField('First Scene',c.firstScene)}
     </div>`;
   });
-  return `<!DOCTYPE html><html><head><meta charset="UTF-8">${pdfBaseStyles()}</head><body><div class="pdf-page">${pdfHeader(project.name,'Characters',chars.length+' character'+(chars.length!==1?'s':''))}${body}${pdfFooter(project.name)}</div></body></html>`;
+  return `<!DOCTYPE html><html><head><meta charset="UTF-8">${pdfBaseStyles()}</head><body><div class="pdf-page">${pdfHeader(project.name,'Character Cards',chars.length+' character'+(chars.length!==1?'s':''))}${body}${pdfFooter(project.name)}</div></body></html>`;
 }
 
 function buildLocationsPdf(project, locs){
