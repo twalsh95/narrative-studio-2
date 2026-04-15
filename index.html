@@ -2498,6 +2498,447 @@ function cbReview(pane, data){
   });
 }
 
+
+// ══════════════════════════════════════════════
+//  LOCATION BUILDER WIZARD
+// ══════════════════════════════════════════════
+
+// Steps: Identity | Atmosphere | Geography | History | Story Role | Sensory Detail | Review
+const LB_STEPS = [
+  { id:'identity',  label:'Identity'       },
+  { id:'atmosphere',label:'Atmosphere'     },
+  { id:'geography', label:'Geography'      },
+  { id:'history',   label:'History'        },
+  { id:'role',      label:'Story Role'     },
+  { id:'sensory',   label:'Sensory Detail' },
+  { id:'review',    label:'Review'         },
+];
+
+function openLocationBuilder(projectId, prefill={}){
+  const data = {
+    // Identity
+    name:'', locationType:'', region:'', climate:'',
+    // Atmosphere
+    emotionalRegister:'', dominantMood:'', lightQuality:'', soundscape:'', smell:'', firstImpression:'',
+    // Geography
+    physicalDescription:'', keyFeatures:'', borders:'', dangerousAreas:'', hiddenAreas:'', scale:'',
+    // History
+    origin:'', formativeEvent:'', whatPeopleRememberWrong:'', whatHasBeenForgotten:'', currentTension:'',
+    // Story Role
+    storyRole:'', scenesItSupports:'', whoControls:'', whoIsExcluded:'', symbolism:'',
+    // Sensory Detail
+    touchTextures:'', tasteSmell:'', soundsAtNight:'', weatherBehavior:'', uniqueDetail:'',
+    // Composite fields (assembled on save, compatible with existing PDF/search)
+    description:'', atmosphere:'',
+    ...prefill
+  };
+  let step = 0;
+
+  const overlay = el('div',{class:'wizard-overlay'});
+
+  function render(){
+    overlay.innerHTML = '';
+
+    const topbar = el('div',{class:'wizard-topbar'});
+    const titleEl = el('div',{class:'wizard-topbar-title'});titleEl.textContent = 'Location Builder';
+    const progressWrap = el('div',{style:'display:flex;flex-direction:column;align-items:center;gap:6px;'});
+    const dots = el('div',{class:'wizard-progress'});
+    LB_STEPS.forEach((s,i)=>{
+      const dot = el('div',{class:'wizard-step-dot'+(i===step?' active':i<step?' done':'')});
+      dot.title = s.label; dots.appendChild(dot);
+    });
+    const stepLbl = el('div',{class:'wizard-step-label'});
+    stepLbl.textContent = 'Step '+(step+1)+' of '+LB_STEPS.length+' — '+LB_STEPS[step].label;
+    progressWrap.append(dots, stepLbl);
+    const closeBtn = el('button',{class:'btn btn-ghost btn-sm',onclick:()=>{
+      collectStep();
+      if(step < LB_STEPS.length-1){ wizardExitConfirm(()=>overlay.remove()); }
+      else { overlay.remove(); }
+    }});closeBtn.textContent = '✕ Exit';
+    topbar.append(titleEl, progressWrap, closeBtn);
+
+    const body = el('div',{class:'wizard-body'});
+    const pane = el('div',{class:'wizard-pane'});
+    body.appendChild(pane);
+
+    const footer = el('div',{class:'wizard-footer'});
+    const backBtn = el('button',{class:'btn btn-ghost',onclick:()=>{collectStep();step--;render();}});
+    backBtn.textContent = '← Back';
+    if(step===0) backBtn.style.visibility='hidden';
+    const nav = el('div',{class:'wizard-footer-nav'});
+
+    if(step < LB_STEPS.length-1){
+      const nextBtn = el('button',{class:'btn btn-primary',onclick:()=>{
+        if(!collectStep()) return;
+        step++; render();
+      }});
+      nextBtn.textContent = step===LB_STEPS.length-2 ? 'Review →' : 'Next →';
+      nav.appendChild(nextBtn);
+    } else {
+      const saveBtn = el('button',{class:'btn btn-primary',onclick:async()=>{
+        if(!data.name.trim()){toast('Give your location a name first','error');return;}
+        saveBtn.disabled=true; saveBtn.textContent='Saving…';
+        // Assemble composite description for PDF/search/display compatibility
+        const descParts = [
+          data.physicalDescription,
+          data.keyFeatures && 'Key features: '+data.keyFeatures,
+          data.borders && 'Borders: '+data.borders,
+          data.scale && 'Scale: '+data.scale,
+        ].filter(Boolean);
+        data.description = descParts.join(' · ');
+        // Assemble composite atmosphere
+        const atmParts = [
+          data.emotionalRegister,
+          data.dominantMood && 'Mood: '+data.dominantMood,
+          data.lightQuality && 'Light: '+data.lightQuality,
+          data.soundscape && 'Sound: '+data.soundscape,
+          data.smell && 'Smell: '+data.smell,
+          data.firstImpression,
+        ].filter(Boolean);
+        data.atmosphere = atmParts.join(' · ');
+        showSaving();
+        await fsCreate('locations',{storyProjectId:projectId,...data});
+        showSaved();
+        overlay.remove();
+        renderLocations(document.getElementById('content'), projectId);
+        toast('Location "'+data.name+'" created');
+      }});
+      saveBtn.textContent = '♦ Save Location';
+      nav.appendChild(saveBtn);
+    }
+    footer.append(backBtn, nav);
+    overlay.append(topbar, body, footer);
+
+    switch(LB_STEPS[step].id){
+      case 'identity':   lbIdentity(pane, data); break;
+      case 'atmosphere': lbAtmosphere(pane, data); break;
+      case 'geography':  lbGeography(pane, data); break;
+      case 'history':    lbHistory(pane, data); break;
+      case 'role':       lbRole(pane, data); break;
+      case 'sensory':    lbSensory(pane, data); break;
+      case 'review':     lbReview(pane, data); break;
+    }
+    body.scrollTop = 0;
+  }
+
+  function collectStep(){
+    const s = LB_STEPS[step].id;
+    const g = (id)=>{ const e=document.getElementById('lb-'+id); return e?(e.value||'').trim():''; };
+    if(s==='identity'){
+      if(!g('name')){ document.getElementById('lb-name')?.focus(); toast('Give your location a name to continue','error'); return false; }
+      data.name=g('name'); data.locationType=g('locationType');
+      data.region=g('region'); data.climate=g('climate');
+    }
+    if(s==='atmosphere'){
+      data.emotionalRegister=g('emotionalRegister'); data.dominantMood=g('dominantMood');
+      data.lightQuality=g('lightQuality'); data.soundscape=g('soundscape');
+      data.smell=g('smell'); data.firstImpression=g('firstImpression');
+    }
+    if(s==='geography'){
+      data.physicalDescription=g('physicalDescription'); data.keyFeatures=g('keyFeatures');
+      data.borders=g('borders'); data.dangerousAreas=g('dangerousAreas');
+      data.hiddenAreas=g('hiddenAreas'); data.scale=g('scale');
+    }
+    if(s==='history'){
+      data.origin=g('origin'); data.formativeEvent=g('formativeEvent');
+      data.whatPeopleRememberWrong=g('whatPeopleRememberWrong');
+      data.whatHasBeenForgotten=g('whatHasBeenForgotten'); data.currentTension=g('currentTension');
+    }
+    if(s==='role'){
+      data.storyRole=g('storyRole'); data.scenesItSupports=g('scenesItSupports');
+      data.whoControls=g('whoControls'); data.whoIsExcluded=g('whoIsExcluded');
+      data.symbolism=g('symbolism');
+    }
+    if(s==='sensory'){
+      data.touchTextures=g('touchTextures'); data.tasteSmell=g('tasteSmell');
+      data.soundsAtNight=g('soundsAtNight'); data.weatherBehavior=g('weatherBehavior');
+      data.uniqueDetail=g('uniqueDetail');
+    }
+    return true;
+  }
+
+  document.body.appendChild(overlay);
+  render();
+}
+
+// ── Shared helpers (lb- prefix, reuse cb/sb pattern) ──
+function lbF(id, label, placeholder, value, rows=1, hint=null, tipLines=null){
+  const wrap=el('div',{class:'wizard-field'});
+  const lbl=el('label',{class:'wizard-field-label'});lbl.textContent=label;lbl.htmlFor='lb-'+id;
+  wrap.appendChild(lbl);
+  if(hint){const h=el('div',{class:'wizard-field-hint'});h.textContent=hint;wrap.appendChild(h);}
+  if(tipLines && tipLines.length){
+    const toggle=el('div',{class:'wizard-tip-toggle'});toggle.innerHTML='▸ Stuck? Try this';
+    const tipBox=el('div',{class:'wizard-tip',style:'display:none;'});
+    const tipLbl=el('div',{class:'wizard-tip-label'});tipLbl.textContent="Writer’s Block?";
+    tipBox.appendChild(tipLbl);
+    tipLines.forEach(line=>{const p=el('p',{style:'margin:0 0 4px;'});p.textContent=line;tipBox.appendChild(p);});
+    toggle.onclick=()=>{
+      const open=tipBox.style.display==='none';
+      tipBox.style.display=open?'block':'none';
+      toggle.innerHTML=(open?'▾':'▸')+' Stuck? Try this';
+    };
+    wrap.append(toggle,tipBox);
+  }
+  if(rows===1){
+    const inp=el('input',{class:'input',id:'lb-'+id,placeholder,value:value||''});
+    wrap.appendChild(inp);
+  } else {
+    const ta=el('textarea',{class:'textarea',id:'lb-'+id,placeholder,rows:String(rows)});
+    ta.value=value||'';
+    wrap.appendChild(ta);
+  }
+  return wrap;
+}
+
+function lbSelect(id, label, options, value, hint=null){
+  const wrap=el('div',{class:'wizard-field'});
+  const lbl=el('label',{class:'wizard-field-label'});lbl.textContent=label;lbl.htmlFor='lb-'+id;
+  wrap.appendChild(lbl);
+  if(hint){const h=el('div',{class:'wizard-field-hint'});h.textContent=hint;wrap.appendChild(h);}
+  const sel=el('select',{class:'select',id:'lb-'+id});
+  options.forEach(opt=>{
+    const o=el('option',{value:opt.val||(typeof opt==='string'?opt:'')});
+    o.textContent=opt.label||(typeof opt==='string'?opt:'');
+    if((opt.val||opt)===value) o.selected=true;
+    sel.appendChild(o);
+  });
+  wrap.appendChild(sel);
+  return wrap;
+}
+
+function lbCallout(icon, text){
+  const box=el('div',{style:'background:rgba(94,202,200,0.06);border:1px solid rgba(94,202,200,0.2);border-radius:var(--radius-sm);padding:14px 16px;margin-bottom:18px;display:flex;gap:12px;align-items:flex-start;'});
+  const ic=el('div',{style:'font-size:18px;flex-shrink:0;margin-top:2px;'});ic.textContent=icon;
+  const tx=el('div',{style:'font-size:13px;color:var(--fg2);line-height:1.6;'});tx.textContent=text;
+  box.append(ic,tx);
+  return box;
+}
+
+// ── Step 1: Identity ──
+function lbIdentity(pane, data){
+  const t=el('div',{class:'wizard-pane-title'});t.textContent='What is this place?';
+  const s=el('div',{class:'wizard-pane-sub'});s.textContent='Start with the basics. Every location in a story does work beyond providing a backdrop. A well-built location has character of its own.';
+  pane.append(t,s);
+  pane.appendChild(lbCallout('⊕','A location is not just a setting. It is a container for conflict, a reflection of theme, and a force in the story. The best locations are characters in their own right.'));
+
+  pane.appendChild(lbF('name','Location Name *','e.g. The Bellamy Hotel, The Eastern Checkpoint, Crater Lake',data.name,1,'The name used in your story. Could be a proper name, a nickname, or a descriptive label.'));
+  pane.appendChild(lbSelect('locationType','Location Type',[
+    {val:'',label:'— Choose one —'},
+    {val:'interior-private',label:'Interior — Private (home, bedroom, office, safe house)'},
+    {val:'interior-public',label:'Interior — Public (bar, hospital, courtroom, station)'},
+    {val:'exterior-urban',label:'Exterior — Urban (street, rooftop, alley, plaza)'},
+    {val:'exterior-natural',label:'Exterior — Natural (forest, coast, mountain, desert)'},
+    {val:'liminal',label:'Liminal — In-between space (corridor, stairwell, train, threshold)'},
+    {val:'institutional',label:'Institutional (school, prison, government building, hospital)'},
+    {val:'ruin-abandoned',label:'Ruin or Abandoned (derelict building, ghost town, wreck)'},
+    {val:'symbolic',label:'Symbolic / Mythic (a place with heightened meaning in the world)'},
+    {val:'imagined',label:'Imagined / Fantastical (does not exist in the physical world)'},
+  ],data.locationType,'The type of location shapes its energy, who has access, and what kinds of scenes work there.'));
+  pane.appendChild(cbRow(
+    lbF('region','Region or Country','e.g. Southeast London, rural Mississippi, orbital station',data.region),
+    lbF('climate','Climate or Season','e.g. Humid summer. Permanent winter. Artificial atmosphere.',data.climate)
+  ));
+  pane.appendChild(lbF('scale','Scale and Scope','e.g. A single room. A city block. A continent. An entire world.',data.scale,1,'How large is this location? Scale affects how characters move through it and what relationships form within it.',[
+    'Scale shapes who can be alone and who is always watched.',
+    'A small location creates claustrophobia; a vast one creates isolation. Both are useful.',
+  ]));
+}
+
+// ── Step 2: Atmosphere ──
+function lbAtmosphere(pane, data){
+  const t=el('div',{class:'wizard-pane-title'});t.textContent='Atmosphere: What does it feel like to be here?';
+  const s=el('div',{class:'wizard-pane-sub'});s.textContent='Atmosphere is what the audience experiences before anyone speaks. It is the emotional pressure of the environment — invisible but always present.';
+  pane.append(t,s);
+  pane.appendChild(lbCallout('◎','Consider: What is the dominant emotional register of this place? What does the sky look like? What do people do on a Tuesday? What is the smell of the air?'));
+
+  pane.appendChild(lbF('emotionalRegister','Emotional register — what feeling does this place carry?','e.g. Dread just beneath the surface. A kind of exhausted hope. Oppressive calm. Barely suppressed violence.',data.emotionalRegister,2,'The emotional weather of the location — what the audience feels before anything dramatic happens.',[
+    'Try: if you walked in off the street, what would your body know before your mind processed it?',
+    'The register does not have to match the events that happen there. A massacre in a cheerful place lands differently than one in a dark one.',
+  ]));
+  pane.appendChild(cbRow(
+    lbF('dominantMood','Dominant mood in one word or phrase','e.g. Watchful. Suffocating. Elegiac. Feverish.',data.dominantMood),
+    lbF('lightQuality','Quality of light','e.g. Flat fluorescent. Golden and slow. Perpetual grey overcast. No natural light.',data.lightQuality)
+  ));
+  pane.appendChild(lbF('soundscape','Soundscape — what does this place sound like?','e.g. Always a low hum. Traffic that never stops. Silence except for wind. The sound of money.',data.soundscape,2,'Sound is often the most atmospheric sense and the one most writers forget.',[
+    'What sounds are always present? What sounds are conspicuously absent?',
+    'Ask: what would someone hear if they stood still here for five minutes?',
+  ]));
+  pane.appendChild(cbRow(
+    lbF('smell','Dominant smell or scent','e.g. Damp concrete. Pine and diesel. Antiseptic. Old paper and wood.',data.smell),
+    lbF('firstImpression','A stranger’s first impression','e.g. Too quiet. Too clean. Like something happened here once.',data.firstImpression)
+  ));
+}
+
+// ── Step 3: Geography ──
+function lbGeography(pane, data){
+  const t=el('div',{class:'wizard-pane-title'});t.textContent='Geography: How is this place laid out?';
+  const s=el('div',{class:'wizard-pane-sub'});s.textContent='Geography determines who can go where, who is visible to whom, and where danger lives. The layout of a space is often its most dramatic feature.';
+  pane.append(t,s);
+
+  pane.appendChild(lbF('physicalDescription','Physical description — what does it look like?','e.g. A converted warehouse on three levels. The ground floor is open. The upper walkways are narrow and dark.',data.physicalDescription,4,'Describe the space as a director would brief a production designer. What is actually here?',[
+    'Think about levels, openings, sight lines, and dead ends. These are what create tension in physical space.',
+    'Try: describe it from the perspective of someone entering for the first time.',
+    'You do not need to cover everything — focus on the features that will matter for scenes.',
+  ]));
+  pane.appendChild(lbF('keyFeatures','Key features or landmarks within this location','e.g. The bar at the back that everyone faces. The single window. The locked door no one mentions.',data.keyFeatures,3,'Specific elements that characters will interact with, hide behind, use as weapons, or return to.',[
+    'The best location details become dramatic assets. A locked drawer. A broken railing. A back exit.',
+    'What physical feature of this space will recur across scenes?',
+  ]));
+  pane.appendChild(cbRow(
+    lbF('borders','Borders and thresholds — how do you get in and out?','e.g. One entrance. Three exits only staff know. A checkpoint at the gate.',data.borders),
+    lbF('dangerousAreas','Dangerous or contested areas within the space','e.g. The blind corridor behind the kitchen. The roof access. The basement.',data.dangerousAreas)
+  ));
+  pane.appendChild(lbF('hiddenAreas','Hidden, secret, or restricted areas','e.g. The room behind the bookcase. The maintenance tunnels. The private floor.',data.hiddenAreas,2,'Places within the location that not everyone knows about or has access to. These often become dramatically crucial.',[
+    'Hidden areas create information asymmetry — who knows about this place and who does not?',
+    'A hidden area is often where the truth lives.',
+  ]));
+}
+
+// ── Step 4: History ──
+function lbHistory(pane, data){
+  const t=el('div',{class:'wizard-pane-title'});t.textContent='History: What happened here?';
+  const s=el('div',{class:'wizard-pane-sub'});s.textContent='Every significant location carries its history in its walls. What a place used to be shapes what it is now — even when nobody talks about it.';
+  pane.append(t,s);
+  pane.appendChild(lbCallout('✶','Consider: What war, catastrophe, or founding shaped this place? What do people remember wrong? What has been deliberately forgotten? What wound has never healed?'));
+
+  pane.appendChild(lbF('origin','Origin — how did this place come to be?','e.g. Built as a transit hub, repurposed after the evacuation. Founded by a family who fled north. Grew up around a mine that closed.',data.origin,3,'The original purpose of a location often haunts its present function.',[
+    'A place built for one purpose and used for another carries a kind of dissonance.',
+    'Ask: what was this place designed to do, and does it still do that?',
+  ]));
+  pane.appendChild(lbF('formativeEvent','The formative event — what happened here that people do not forget?','e.g. A murder. A fire that killed twelve. A famous trial. A riot that nobody talks about anymore.',data.formativeEvent,3,'The event that defines this location in collective memory — or that some want to erase.',[
+    'The best location histories leave a mark on the physical space and on the people who use it.',
+    'Ask: what would a long-time resident say if you asked them about the worst thing that ever happened here?',
+  ]));
+  pane.appendChild(cbRow(
+    lbF('whatPeopleRememberWrong','What do people remember wrong about this place?','e.g. They say it burned once, but it never did. The founder is celebrated, but was actually a thief.',data.whatPeopleRememberWrong,3),
+    lbF('whatHasBeenForgotten','What has been deliberately forgotten or buried?','e.g. Who owned the land before. What the building was used for during the occupation.',data.whatHasBeenForgotten,3)
+  ));
+  pane.appendChild(lbF('currentTension','Current unresolved tension or conflict tied to this place','e.g. A disputed ownership claim. A community still divided over what happened. A renovation that will erase everything.',data.currentTension,2,'What is the ongoing wound? What argument or conflict is this location still hosting?',[
+    'A location with unresolved tension is a location that is still alive in the story.',
+    'Ask: who wants this place to stay the same, and who wants to change it?',
+  ]));
+}
+
+// ── Step 5: Story Role ──
+function lbRole(pane, data){
+  const t=el('div',{class:'wizard-pane-title'});t.textContent='Story Role: What does this place DO in the narrative?';
+  const s=el('div',{class:'wizard-pane-sub'});s.textContent='A location earns its place in a story the same way a scene does — it must DO something. Every significant location has a function, a relationship to power, and a meaning beyond its walls.';
+  pane.append(t,s);
+
+  pane.appendChild(lbF('storyRole','What role does this location play in the story?','e.g. The protagonist’s only refuge. The place where all evidence converges. The threshold between the old life and the new.',data.storyRole,2,'Not what it is — what it DOES for the narrative.',[
+    'Try finishing this sentence: "This location exists in the story because..."',
+    'A location that only provides backdrop can be replaced with any other location. A location with a story role cannot.',
+  ]));
+  pane.appendChild(lbF('scenesItSupports','What kinds of scenes does this location naturally support?','e.g. Confrontations that cannot be overheard. Chance encounters. Secrets that need to be hidden. A place where people lower their guard.',data.scenesItSupports,3,'The physical and atmospheric properties of a location shape what scenes work there.',[
+    'Ask: what does the layout or atmosphere of this place make easier or harder for characters?',
+    'A narrow corridor makes escape difficult. A public space makes honesty dangerous. Use the location as a dramatic tool.',
+  ]));
+  pane.appendChild(cbRow(
+    lbF('whoControls','Who controls or owns this place?','e.g. The mayor’s office. An absent landlord. No one — that is the problem.',data.whoControls,2),
+    lbF('whoIsExcluded','Who is excluded or unwelcome here?','e.g. Anyone without a clearance. The old neighborhood. Women after dark.',data.whoIsExcluded,2)
+  ));
+  pane.appendChild(lbF('symbolism','What does this location symbolize or represent thematically?','e.g. The cost of ambition. A world that is ending. Everything the protagonist is trying to escape — or return to.',data.symbolism,3,'Optional but powerful. The best locations carry meaning beyond their physical description.',[
+    'Ask: if this location appeared in a dream, what would it mean?',
+    'Does this place mirror a character’s internal state? Does it represent a theme of the story?',
+    'Symbolism does not have to be explicit — it can live in the architecture, the weather, or the color of the walls.',
+  ]));
+}
+
+// ── Step 6: Sensory Detail ──
+function lbSensory(pane, data){
+  const t=el('div',{class:'wizard-pane-title'});t.textContent='Sensory Detail: Make it real on the page';
+  const s=el('div',{class:'wizard-pane-sub'});s.textContent='Sensory detail is what makes a reader feel present in a location. These are the small, specific things that cannot be faked. Specificity is the difference between a backdrop and a world.';
+  pane.append(t,s);
+  pane.appendChild(lbCallout('❧','The best sensory details are specific, unexpected, and accurate. "It smelled like a hospital" is a backdrop. "Antiseptic, and underneath it something sweet that nobody explains" is a world.'));
+
+  pane.appendChild(lbF('touchTextures','Touch and texture — what do surfaces feel like here?','e.g. The banister is sticky. The floor is cold through your shoes. The walls sweat in summer.',data.touchTextures,2,'Physical texture grounds a reader in space more effectively than visual description alone.',[
+    'Ask: if a character ran their hand along the wall, what would they feel?',
+  ]));
+  pane.appendChild(lbF('tasteSmell','Taste and smell — what lingers in the air?','e.g. Cigarette smoke from thirty years ago. Wet wool and cheap coffee. Salt and exhaust.',data.tasteSmell,2,'Smell is the sense most strongly linked to memory. What does this place taste like at the back of the throat?',[
+    'A smell can carry an entire emotional history. Use it to smuggle in backstory.',
+    'Ask: what smell does a character associate with this place that they never mention out loud?',
+  ]));
+  pane.appendChild(lbF('soundsAtNight','What does this place sound like at night, or when empty?','e.g. Pipes knock. The building settles. You can hear the highway from everywhere.',data.soundsAtNight,2,'Empty spaces tell us things about occupied ones. What does this location sound like at its quietest?',[
+    'What sounds persist even when the characters are gone?',
+  ]));
+  pane.appendChild(lbF('weatherBehavior','How does weather or time of day change this place?','e.g. In rain, the street floods and the drains back up. At noon, every surface burns. The fog makes it feel like a different city.',data.weatherBehavior,2,'Locations that behave differently at different times of day or in different weather have depth.',[
+    'Think about how lighting, temperature, and weather change who has power in a space.',
+    'A location that is safe in daylight and threatening at night has built-in dramatic range.',
+  ]));
+  pane.appendChild(lbF('uniqueDetail','One detail that belongs only to this place','e.g. The clock that stopped at 4:17 and was never repaired. The mural on the east wall that everyone pretends not to see. The staircase that skips the 13th step.',data.uniqueDetail,3,'The single most specific, irreplaceable detail of this location. The thing that could not exist anywhere else.',[
+    'This is the detail that will recur in your story. The one that means something.',
+    'Ask: what is the one thing about this place that a character would mention years later when trying to describe it?',
+    'The best unique details feel inevitable in retrospect — exactly right, exactly specific.',
+  ]));
+}
+
+// ── Step 7: Review ──
+function lbReview(pane, data){
+  const t=el('div',{class:'wizard-pane-title'});t.textContent='Review your location.';
+  const s=el('div',{class:'wizard-pane-sub'});s.textContent='Here is everything you have built. Go back to any step to make changes, or save now and edit from the location card at any time.';
+  pane.append(t,s);
+
+  if(!data.name){
+    const warn=el('div',{class:'wizard-tip',style:'border-color:var(--red);margin-bottom:16px;'});
+    warn.innerHTML='<div class="wizard-tip-label" style="color:var(--red);">Missing name</div><p style="margin:0;">Go back to Step 1 and give your location a name before saving.</p>';
+    pane.appendChild(warn);
+  }
+
+  function revSec(heading, icon, fields){
+    const hasContent = fields.some(({key})=>data[key]&&String(data[key]).trim());
+    if(!hasContent) return null;
+    const sec=el('div',{class:'wizard-review-section'});
+    const h=el('h3');h.textContent=icon+' '+heading;sec.appendChild(h);
+    fields.forEach(({label,key})=>{
+      if(!data[key]||!String(data[key]).trim()) return;
+      const f=el('div',{class:'wizard-review-field'});
+      const l=el('div',{class:'wizard-review-label'});l.textContent=label;
+      const v2=el('div',{class:'wizard-review-value'});v2.textContent=data[key];
+      f.append(l,v2); sec.appendChild(f);
+    });
+    return sec;
+  }
+
+  const sections=[
+    {heading:'Identity', icon:'⊕', fields:[
+      {label:'Name',key:'name'},{label:'Type',key:'locationType'},
+      {label:'Region',key:'region'},{label:'Climate',key:'climate'},{label:'Scale',key:'scale'},
+    ]},
+    {heading:'Atmosphere', icon:'◎', fields:[
+      {label:'Emotional Register',key:'emotionalRegister'},{label:'Dominant Mood',key:'dominantMood'},
+      {label:'Light Quality',key:'lightQuality'},{label:'Soundscape',key:'soundscape'},
+      {label:'Smell',key:'smell'},{label:'First Impression',key:'firstImpression'},
+    ]},
+    {heading:'Geography', icon:'⧭', fields:[
+      {label:'Physical Description',key:'physicalDescription'},{label:'Key Features',key:'keyFeatures'},
+      {label:'Borders & Access',key:'borders'},{label:'Dangerous Areas',key:'dangerousAreas'},
+      {label:'Hidden Areas',key:'hiddenAreas'},
+    ]},
+    {heading:'History', icon:'✶', fields:[
+      {label:'Origin',key:'origin'},{label:'Formative Event',key:'formativeEvent'},
+      {label:'What People Remember Wrong',key:'whatPeopleRememberWrong'},
+      {label:'What Has Been Forgotten',key:'whatHasBeenForgotten'},
+      {label:'Current Tension',key:'currentTension'},
+    ]},
+    {heading:'Story Role', icon:'◈', fields:[
+      {label:'Role in Story',key:'storyRole'},{label:'Scenes It Supports',key:'scenesItSupports'},
+      {label:'Who Controls It',key:'whoControls'},{label:'Who Is Excluded',key:'whoIsExcluded'},
+      {label:'Symbolism',key:'symbolism'},
+    ]},
+    {heading:'Sensory Detail', icon:'❧', fields:[
+      {label:'Touch & Texture',key:'touchTextures'},{label:'Taste & Smell',key:'tasteSmell'},
+      {label:'Sounds at Night',key:'soundsAtNight'},{label:'Weather Behavior',key:'weatherBehavior'},
+      {label:'Unique Detail',key:'uniqueDetail'},
+    ]},
+  ];
+
+  sections.forEach(s=>{
+    const sec=revSec(s.heading, s.icon, s.fields);
+    if(sec) pane.appendChild(sec);
+  });
+}
+
 // ══════════════════════════════════════════════
 //  LOCATIONS
 // ══════════════════════════════════════════════
@@ -2508,10 +2949,13 @@ async function renderLocations(container, projectId){
   const wrap = el('div',{class:'page'});
   const header = el('div',{class:'page-header'});
   header.innerHTML='<div><div class="page-title">Locations</div><div class="page-subtitle">'+locs.length+' location'+(locs.length!==1?'s':'')+'</div></div>';
-  const hbtns=el('div',{style:'display:flex;gap:8px;'});
-  const addBtn=el('button',{class:'btn btn-primary',onclick:()=>openLocationDrawer(null,projectId)});addBtn.textContent='+ Add Location';
+  const hbtns=el('div',{style:'display:flex;gap:8px;align-items:center;flex-wrap:wrap;'});
+  const wizBtn=el('button',{class:'btn btn-primary',onclick:()=>openLocationBuilder(projectId)});
+  wizBtn.innerHTML='&#10022; Build Location from Template';
+  wizBtn.title='Guided location builder — atmosphere, geography, history, and story role';
+  const addBtn=el('button',{class:'btn btn-ghost',onclick:()=>openLocationDrawer(null,projectId)});addBtn.textContent='+ Create Blank Location';
   const pdfBtn=el('button',{class:'btn btn-ghost btn-sm',onclick:()=>generateLocationsPdf(projectId)});pdfBtn.textContent='📄 Create Document';
-  hbtns.append(addBtn,pdfBtn);
+  hbtns.append(wizBtn,addBtn,pdfBtn);
   header.appendChild(hbtns); wrap.appendChild(header);
   const _hintL=toolHintBanner('locations'); if(_hintL) wrap.appendChild(_hintL);
   if(locs.length===0){wrap.appendChild(emptyState('⬡','No Locations Yet','Define the places your story unfolds.'));}
@@ -2558,6 +3002,502 @@ function openLocationDrawer(loc, projectId){
   };
 }
 
+
+// ══════════════════════════════════════════════
+//  SCENE BUILDER WIZARD  (SCTR Framework)
+// ══════════════════════════════════════════════
+
+// Steps: Setup | Confrontation | Turn | Resolution | Craft | Review
+const SB_STEPS = [
+  { id:'setup',         label:'S — Setup'         },
+  { id:'confrontation', label:'C — Confrontation'  },
+  { id:'turn',          label:'T — Turn'           },
+  { id:'resolution',    label:'R — Resolution'     },
+  { id:'craft',         label:'Craft & Context'    },
+  { id:'review',        label:'Review'             },
+];
+
+function openSceneBuilder(projectId, chars, locs, nextSeq){
+  const data = {
+    // Identity / logistics
+    title:'', sequenceNumber: nextSeq||1, locationId:'', characterIds:[],
+    // S — Setup
+    sceneGoal:'', charAWant:'', charBWant:'', stakesDescription:'', tensionType:'',
+    // C — Confrontation
+    confrontationType:'', confrontationDesc:'', obstacleType:'', obstacleDesc:'',
+    // T — Turn
+    turnLine:'', turnType:'', turnDescription:'', turnQuiet:'',
+    // R — Resolution
+    resolutionChange:'', changeType:'', whoChanges:'', newStatus:'',
+    // Craft
+    subtext:'', openingImage:'', closingImage:'', sceneTest:'', toneNotes:'',
+    // Assembled composite for display/search
+    description:'',
+  };
+  let step = 0;
+
+  const overlay = el('div',{class:'wizard-overlay'});
+
+  function render(){
+    overlay.innerHTML = '';
+
+    // ── Topbar ──
+    const topbar = el('div',{class:'wizard-topbar'});
+    const titleEl = el('div',{class:'wizard-topbar-title'});titleEl.textContent = 'Scene Builder — SCTR Framework';
+    const progressWrap = el('div',{style:'display:flex;flex-direction:column;align-items:center;gap:6px;'});
+    const dots = el('div',{class:'wizard-progress'});
+    SB_STEPS.forEach((s,i)=>{
+      const dot = el('div',{class:'wizard-step-dot'+(i===step?' active':i<step?' done':'')});
+      dot.title = s.label; dots.appendChild(dot);
+    });
+    const stepLbl = el('div',{class:'wizard-step-label'});
+    stepLbl.textContent = 'Step '+(step+1)+' of '+SB_STEPS.length+' — '+SB_STEPS[step].label;
+    progressWrap.append(dots, stepLbl);
+    const closeBtn = el('button',{class:'btn btn-ghost btn-sm',onclick:()=>{
+      collectStep();
+      if(step < SB_STEPS.length-1){
+        wizardExitConfirm(()=>overlay.remove());
+      } else { overlay.remove(); }
+    }});closeBtn.textContent = '✕ Exit';
+    topbar.append(titleEl, progressWrap, closeBtn);
+
+    // ── Body ──
+    const body = el('div',{class:'wizard-body'});
+    const pane = el('div',{class:'wizard-pane'});
+    body.appendChild(pane);
+
+    // ── Footer ──
+    const footer = el('div',{class:'wizard-footer'});
+    const backBtn = el('button',{class:'btn btn-ghost',onclick:()=>{collectStep();step--;render();}});
+    backBtn.textContent = '← Back';
+    if(step===0) backBtn.style.visibility='hidden';
+    const nav = el('div',{class:'wizard-footer-nav'});
+
+    if(step < SB_STEPS.length-1){
+      const nextBtn = el('button',{class:'btn btn-primary',onclick:()=>{
+        if(!collectStep()) return;
+        step++; render();
+      }});
+      nextBtn.textContent = step===SB_STEPS.length-2 ? 'Review →' : 'Next →';
+      nav.appendChild(nextBtn);
+    } else {
+      const saveBtn = el('button',{class:'btn btn-primary',onclick:async()=>{
+        if(!data.title.trim()){toast('Give your scene a title first','error');return;}
+        saveBtn.disabled=true; saveBtn.textContent='Saving…';
+        // Assemble composite description for display/search
+        const parts = [
+          data.sceneGoal && 'Goal: '+data.sceneGoal,
+          data.charAWant && 'Setup: '+data.charAWant,
+          data.confrontationDesc && 'Confrontation: '+data.confrontationDesc,
+          data.turnLine && 'Turn: '+data.turnLine,
+          data.resolutionChange && 'Resolution: '+data.resolutionChange,
+          data.subtext && 'Subtext: '+data.subtext,
+        ].filter(Boolean);
+        data.description = parts.join(' · ');
+        showSaving();
+        await fsCreate('scenes',{storyProjectId:projectId, ...data});
+        showSaved();
+        overlay.remove();
+        renderScenes(document.getElementById('content'), projectId);
+        toast('Scene "'+data.title+'" created');
+      }});
+      saveBtn.textContent = '♦ Save Scene';
+      nav.appendChild(saveBtn);
+    }
+    footer.append(backBtn, nav);
+    overlay.append(topbar, body, footer);
+
+    switch(SB_STEPS[step].id){
+      case 'setup':         sbSetup(pane, data, chars, locs); break;
+      case 'confrontation': sbConfrontation(pane, data); break;
+      case 'turn':          sbTurn(pane, data); break;
+      case 'resolution':    sbResolution(pane, data); break;
+      case 'craft':         sbCraft(pane, data); break;
+      case 'review':        sbReview(pane, data, chars, locs); break;
+    }
+
+    body.scrollTop = 0;
+  }
+
+  function collectStep(){
+    const s = SB_STEPS[step].id;
+    const g = (id)=>{ const e=document.getElementById('sb-'+id); return e?(e.value||'').trim():''; };
+    if(s==='setup'){
+      if(!g('title')){ document.getElementById('sb-title')?.focus(); toast('Give your scene a title to continue','error'); return false; }
+      data.title=g('title'); data.sequenceNumber=parseInt(g('seq'))||1;
+      data.locationId=g('loc');
+      data.sceneGoal=g('sceneGoal'); data.stakesDescription=g('stakesDescription'); data.tensionType=g('tensionType');
+      data.charAWant=g('charAWant'); data.charBWant=g('charBWant');
+      // character checkboxes
+      const cbs = Array.from(overlay.querySelectorAll('input[data-sb-char]:checked')).map(c=>c.value);
+      data.characterIds = cbs;
+    }
+    if(s==='confrontation'){
+      data.confrontationType=g('confrontationType'); data.confrontationDesc=g('confrontationDesc');
+      data.obstacleType=g('obstacleType'); data.obstacleDesc=g('obstacleDesc');
+    }
+    if(s==='turn'){
+      data.turnLine=g('turnLine'); data.turnType=g('turnType');
+      data.turnDescription=g('turnDescription'); data.turnQuiet=g('turnQuiet');
+    }
+    if(s==='resolution'){
+      data.resolutionChange=g('resolutionChange'); data.changeType=g('changeType');
+      data.whoChanges=g('whoChanges'); data.newStatus=g('newStatus');
+    }
+    if(s==='craft'){
+      data.subtext=g('subtext'); data.openingImage=g('openingImage');
+      data.closingImage=g('closingImage'); data.sceneTest=g('sceneTest'); data.toneNotes=g('toneNotes');
+    }
+    return true;
+  }
+
+  document.body.appendChild(overlay);
+  render();
+}
+
+// ── Shared field helper (reuses cbF pattern with sb- prefix) ──
+function sbF(id, label, placeholder, value, rows=1, hint=null, tipLines=null){
+  const wrap=el('div',{class:'wizard-field'});
+  const lbl=el('label',{class:'wizard-field-label'});lbl.textContent=label;lbl.htmlFor='sb-'+id;
+  wrap.appendChild(lbl);
+  if(hint){const h=el('div',{class:'wizard-field-hint'});h.textContent=hint;wrap.appendChild(h);}
+  if(tipLines && tipLines.length){
+    const toggle=el('div',{class:'wizard-tip-toggle'});toggle.innerHTML='▸ Stuck? Try this';
+    const tipBox=el('div',{class:'wizard-tip',style:'display:none;'});
+    const tipLbl=el('div',{class:'wizard-tip-label'});tipLbl.textContent="Writer's Block?";
+    tipBox.appendChild(tipLbl);
+    tipLines.forEach(line=>{const p=el('p',{style:'margin:0 0 4px;'});p.textContent=line;tipBox.appendChild(p);});
+    toggle.onclick=()=>{
+      const open=tipBox.style.display==='none';
+      tipBox.style.display=open?'block':'none';
+      toggle.innerHTML=(open?'▾':'▸')+' Stuck? Try this';
+    };
+    wrap.append(toggle,tipBox);
+  }
+  if(rows===1){
+    const inp=el('input',{class:'input',id:'sb-'+id,placeholder,value:value||''});
+    wrap.appendChild(inp);
+  } else {
+    const ta=el('textarea',{class:'textarea',id:'sb-'+id,placeholder,rows:String(rows)});
+    ta.value=value||'';
+    wrap.appendChild(ta);
+  }
+  return wrap;
+}
+
+function sbSelect(id, label, options, value, hint=null){
+  const wrap=el('div',{class:'wizard-field'});
+  const lbl=el('label',{class:'wizard-field-label'});lbl.textContent=label;lbl.htmlFor='sb-'+id;
+  wrap.appendChild(lbl);
+  if(hint){const h=el('div',{class:'wizard-field-hint'});h.textContent=hint;wrap.appendChild(h);}
+  const sel=el('select',{class:'select',id:'sb-'+id});
+  options.forEach(opt=>{
+    const o=el('option',{value:opt.val||(typeof opt==='string'?opt:'')});
+    o.textContent=opt.label||(typeof opt==='string'?opt:'');
+    if((opt.val||opt)===value) o.selected=true;
+    sel.appendChild(o);
+  });
+  wrap.appendChild(sel);
+  return wrap;
+}
+
+function sbCallout(icon, text){
+  const box=el('div',{style:'background:rgba(82,183,136,0.06);border:1px solid rgba(82,183,136,0.18);border-radius:var(--radius-sm);padding:14px 16px;margin-bottom:18px;display:flex;gap:12px;align-items:flex-start;'});
+  const ic=el('div',{style:'font-size:18px;flex-shrink:0;margin-top:2px;'});ic.textContent=icon;
+  const tx=el('div',{style:'font-size:13px;color:var(--fg2);line-height:1.6;'});tx.textContent=text;
+  box.append(ic,tx);
+  return box;
+}
+
+function sbWarning(text){
+  const box=el('div',{style:'background:rgba(229,184,110,0.08);border:1px solid rgba(229,184,110,0.25);border-radius:var(--radius-sm);padding:12px 16px;margin-bottom:18px;font-size:13px;color:var(--gold);line-height:1.6;'});
+  box.textContent='⚠ '+text;
+  return box;
+}
+
+// ── Step 1: S — Setup ──
+function sbSetup(pane, data, chars, locs){
+  const t=el('div',{class:'wizard-pane-title'});t.textContent='S — Setup: Who wants what?';
+  const s=el('div',{class:'wizard-pane-sub'});s.textContent='The Setup is not the situation — it is the desire behind it. Every character entering this scene must want something specific. That want is the engine of the scene.';
+  pane.append(t,s);
+  pane.appendChild(sbCallout('◎','A scene in which nothing changes is not a scene — it is description. Before you write a single line, know what each character wants going IN.'));
+
+  pane.appendChild(cbDivider('Scene Identity'));
+  pane.appendChild(sbF('title','Scene Title *','e.g. "The Confession", "Last Meal", "The Interview"',data.title,1,'A working title that captures the essential action or pressure of the scene.'));
+  pane.appendChild(cbRow(
+    sbF('seq','Sequence Number','e.g. 4',String(data.sequenceNumber)),
+    sbSelect('loc','Location (optional)',[{val:'',label:'— No Location —'},...locs.map(l=>({val:l.id,label:l.name}))],data.locationId,'Which location in your project does this scene take place in?')
+  ));
+  pane.appendChild(sbF('sceneGoal','What is this scene trying to accomplish in the story?','e.g. The protagonist learns the antagonist’s true motive. The relationship breaks beyond repair.',data.sceneGoal,2,'Not what happens, but what the scene DOES for the story. What would be missing if you cut it?',[
+    'If you removed this scene from the script, would the story be identical? If yes, the scene is dead weight.',
+    'Try finishing this sentence: "After this scene, the story can never go back to..."',
+    'A scene earns its place by changing something: status, knowledge, relationship, or intention.',
+  ]));
+
+  pane.appendChild(cbDivider('Character Wants'));
+  pane.appendChild(sbF('charAWant','What does Character A (or the protagonist) want entering this scene?','e.g. To get a straight answer. To leave without a confrontation. To be forgiven.',data.charAWant,2,'Want is the invisible pressure a character carries into the room. Not the situation — the desire behind it.',[
+    'Wants can be small and immediate ("I need them to say yes") or large and unconscious ("I need them to see me as I am").',
+    'Try: what does this character need from THIS scene, in THIS moment?',
+    'A want does not have to be villainous. Even kindness can be a want with stakes.',
+  ]));
+  pane.appendChild(sbF('charBWant','What does Character B (or the opposing force) want?','e.g. To keep the secret. To buy time. To make Character A feel responsible.',data.charBWant,2,'The opposing want creates tension — even when characters appear to be on the same side.',[
+    'Tension does not require conflict. Two people who want the same thing can still be in tension if their methods are incompatible.',
+    'Ask: what would Character B need this scene to accomplish for them?',
+  ]));
+  pane.appendChild(sbF('stakesDescription','What are the stakes of this scene?','e.g. If they do not reconcile now, the window is closed. The mission fails if this lie is uncovered.',data.stakesDescription,2,'What does each character stand to gain or lose? Stakes are what make the audience lean forward.',[
+    'No stakes = no tension. Even a quiet scene needs something at risk.',
+    'Stakes can be emotional ("she will never trust him again") or external ("the deal falls apart").',
+  ]));
+  pane.appendChild(sbSelect('tensionType','Type of tension in this scene',[
+    {val:'',label:'— Choose one —'},
+    {val:'conflict',label:'Conflict — Characters want opposite things (one stays, the other leaves)'},
+    {val:'tension-method',label:'Tension — Same want, incompatible methods (both want to win, one is cheating)'},
+    {val:'tension-knowledge',label:'Tension — Information asymmetry (one character knows something the other does not)'},
+    {val:'tension-stakes',label:'Tension — Unequal stakes (one character cares far more than the other)'},
+    {val:'internal',label:'Internal conflict — One character is at war with themselves'},
+    {val:'atmospheric',label:'Atmospheric tension — Dread, unease, or suspense without direct confrontation'},
+  ],data.tensionType,'Is this CONFLICT (opposite wants) or TENSION (same want, incompatible methods)? Both are valid — knowing which you have shapes how you write it.'));
+
+  if(chars.length){
+    pane.appendChild(cbDivider('Characters in this Scene'));
+    const charGrid=el('div',{style:'display:flex;flex-direction:column;gap:8px;padding:12px;background:var(--bg3);border-radius:var(--radius-sm);border:1px solid var(--border);'});
+    chars.forEach(c=>{
+      const lbl2=el('label',{style:'display:flex;align-items:center;gap:10px;font-size:13px;color:var(--fg2);cursor:pointer;'});
+      const cb2=el('input',{type:'checkbox',value:c.id,'data-sb-char':'1'});
+      if((data.characterIds||[]).includes(c.id)) cb2.checked=true;
+      const span=el('span');span.textContent=c.name;
+      lbl2.append(cb2,span); charGrid.appendChild(lbl2);
+    });
+    const charWrap=el('div',{class:'wizard-field'});
+    const charLbl=el('label',{class:'wizard-field-label'});charLbl.textContent='Select characters present in this scene';
+    charWrap.append(charLbl,charGrid);
+    pane.appendChild(charWrap);
+  }
+}
+
+// ── Step 2: C — Confrontation ──
+function sbConfrontation(pane, data){
+  const t=el('div',{class:'wizard-pane-title'});t.textContent='C — Confrontation: Where wants collide';
+  const s=el('div',{class:'wizard-pane-sub'});s.textContent='Confrontation is where the wants from your Setup come into tension. Conflict is NOT required — tension always is. A silence, an unanswered question, or a polite exchange can all be confrontation.';
+  pane.append(t,s);
+  pane.appendChild(sbCallout('◉','Two characters can want the SAME thing and still be in confrontation — if their methods, timelines, or costs are incompatible. A negotiation. A truce. A proposal. These are all confrontations.'));
+
+  pane.appendChild(sbSelect('confrontationType','What kind of confrontation is this?',[
+    {val:'',label:'— Choose one —'},
+    {val:'direct-conflict',label:'Direct conflict — Characters openly oppose each other'},
+    {val:'verbal-tension',label:'Verbal tension — Words as weapons, subtext doing the work'},
+    {val:'silent',label:'Silent confrontation — Avoidance, absence, unanswered questions'},
+    {val:'one-sided',label:'One-sided — One character does not know there is a confrontation'},
+    {val:'internal-external',label:'Internal/External — A character confronts both themselves and another'},
+    {val:'cooperative-tension',label:'Cooperative tension — Working toward the same goal but methods clash'},
+    {val:'atmospheric',label:'Atmospheric — Environment or situation creates pressure, not another character'},
+  ],data.confrontationType,'The confrontation type shapes how you write dialogue, pacing, and staging.'));
+  pane.appendChild(sbF('confrontationDesc','Describe how the confrontation plays out','e.g. She asks him directly where he was. He deflects. She finds a different angle. He stalls. Neither is saying what they mean.',data.confrontationDesc,4,'What does the middle of this scene look like? How do the two wants push against each other?',[
+    'The confrontation is not the dramatic peak — it is the ongoing pressure between Setup and Turn.',
+    'Try writing it in beats: A does X. B responds with Y. A escalates to Z.',
+    'Remember: a silence can be a confrontation. An unanswered question is pressure.',
+    'Ask: what is each character trying NOT to say, and how does that shape what they actually say?',
+  ]));
+
+  pane.appendChild(cbDivider('The Obstacle'));
+  pane.appendChild(sbSelect('obstacleType','What is the primary obstacle standing between the characters and what they want?',[
+    {val:'',label:'— Choose one —'},
+    {val:'interpersonal',label:'Interpersonal — The other character is the obstacle'},
+    {val:'internal',label:'Internal — A character’s own fear, pride, guilt, or denial'},
+    {val:'external',label:'External — A situation, rule, deadline, or circumstance'},
+    {val:'informational',label:'Informational — Someone is missing knowledge they need'},
+    {val:'moral',label:'Moral — A character cannot do what they need to without crossing a line'},
+  ],data.obstacleType));
+  pane.appendChild(sbF('obstacleDesc','Describe the obstacle in specific terms','e.g. He cannot tell her the truth without implicating himself. She cannot leave without making it worse.',data.obstacleDesc,3,'Be specific. The more concrete the obstacle, the more pressure the scene has.',[
+    'An obstacle that is too vague is not an obstacle — it is a feeling. Name the specific thing in the way.',
+    'The obstacle and the want together create the confrontation. Both must be specific.',
+  ]));
+}
+
+// ── Step 3: T — Turn ──
+function sbTurn(pane, data){
+  const t=el('div',{class:'wizard-pane-title'});t.textContent='T — The Turn: Find the pivot';
+  const s=el('div',{class:'wizard-pane-sub'});s.textContent='The Turn is the most important element of the scene. It is NOT the climax and NOT the loudest moment. It is the exact beat where the scene changes direction — often a single line, a look, or a silence.';
+  pane.append(t,s);
+  pane.appendChild(sbWarning('Common mistake: picking the most dramatic moment as the Turn. The Turn is often the QUIETEST — a confession, a word said differently, a door that closes. Find the pivot, not the peak.'));
+  pane.appendChild(sbCallout('⚡','Ask yourself: which specific line, action, or silence is the exact moment this scene changes direction? Not the section — the moment. Find the line. Find the beat.'));
+
+  pane.appendChild(sbF('turnLine','Write the Turn — the exact line, action, or silence','e.g. She stops. She looks at him differently. She says: "I already know." / He sets his keys on the table and does not pick them up. / Silence. Neither of them moves.',data.turnLine,3,'The Turn is a SPECIFIC moment. Not "when things get tense." Not "around the middle." The exact beat where the scene changes direction.',[
+    'Try starting with the word "When" — "When she says X" or "When he does Y."',
+    'If you cannot pin it to a single line or action, you may not have a Turn yet.',
+    'The Turn often works because of what has been withheld up to this point.',
+    'Ask: what is the moment AFTER which the scene is different? That is your Turn.',
+  ]));
+  pane.appendChild(sbSelect('turnType','What kind of Turn is this?',[
+    {val:'',label:'— Choose one —'},
+    {val:'revelation',label:'Revelation — Something hidden is exposed (a truth, a lie, a decision)'},
+    {val:'reversal',label:'Reversal — Power or position flips unexpectedly'},
+    {val:'decision',label:'Decision — A character makes a choice that closes off another path'},
+    {val:'silence',label:'Silence or absence — What is NOT said changes everything'},
+    {val:'action',label:'Physical action — A gesture, movement, or object that pivots the scene'},
+    {val:'emotional-shift',label:'Emotional shift — A the character feeling visibly changes'},
+    {val:'exit',label:'Exit or refusal — A character leaves or refuses to continue'},
+  ],data.turnType,'Naming the type helps you see if the Turn is working the way you intend.'));
+  pane.appendChild(sbF('turnDescription','What changes BECAUSE of the Turn?','e.g. She now knows he was lying. He realizes she was never going to help him. The alliance is over.',data.turnDescription,3,'The Turn must cause something. What is different in the scene after the Turn hits?',[
+    'If nothing changes because of the Turn, it is not a Turn — it is just a moment.',
+    'The change can be in knowledge, in power, in relationship, or in intention.',
+  ]));
+  pane.appendChild(sbF('turnQuiet','How can you make the Turn QUIETER or more specific?','e.g. Instead of a speech, she just sets down her glass. He does not answer. The camera stays on his hands.',data.turnQuiet,2,'Optional: a note to yourself about how to execute the Turn with restraint. The best Turns are often underwritten.',[
+    'Silence is a form of action on the page. "She does not answer" can hit harder than a speech.',
+    'Ask: can you cut three lines and trust the actor to land this?',
+    'Details that are already in the room (an object, a sound, a physical action) are often stronger than new dialogue.',
+  ]));
+}
+
+// ── Step 4: R — Resolution ──
+function sbResolution(pane, data){
+  const t=el('div',{class:'wizard-pane-title'});t.textContent='R — Resolution: Something must change';
+  const s=el('div',{class:'wizard-pane-sub'});s.textContent='The Resolution is not the ending — it is the answer to the question the Setup created. Something must be different when the scene ends. A scene where nothing changes is not a scene.';
+  pane.append(t,s);
+  pane.appendChild(sbCallout('◈','Four things can change: STATUS (who has power now?), KNOWLEDGE (who knows something they did not?), RELATIONSHIP (how do they see each other differently?), INTENTION (what does someone now plan to do that they would not have before?). At least one must change.'));
+
+  pane.appendChild(sbSelect('changeType','What kind of change does this scene produce?',[
+    {val:'',label:'— Choose one —'},
+    {val:'status',label:'Status — Who has power now? The power dynamic has shifted.'},
+    {val:'knowledge',label:'Knowledge — Someone knows something they did not at the start of the scene.'},
+    {val:'relationship',label:'Relationship — How these characters see or feel about each other has changed.'},
+    {val:'intention',label:'Intention — A character now plans to do something they would not have before.'},
+    {val:'multiple',label:'Multiple — More than one of the above has changed.'},
+  ],data.changeType,'If none of the above applies, the scene may not have a Resolution yet. Ask: what is different?'));
+  pane.appendChild(sbF('whoChanges','Who changes, and how?','e.g. She leaves with information she did not have before. He leaves with a decision made that he cannot unmake.',data.whoChanges,3,'Name the character(s) and describe specifically how they are different when the scene ends.',[
+    'Try: "At the start of the scene, [character] believed/planned/felt X. At the end, they believe/plan/feel Y."',
+    'Even a small internal shift counts — but it must be specific.',
+    'If both characters are identical when the scene ends, the scene may not be earning its place.',
+  ]));
+  pane.appendChild(sbF('resolutionChange','Describe the Resolution in full','e.g. The truce is agreed but both of them know it will not hold. She has what she came for. He has lost something he cannot name.',data.resolutionChange,4,'What does the end of the scene look like? What is the emotional and narrative state as we cut away?',[
+    'The Resolution does not need to be resolved in the comfortable sense — it needs to be different from the Setup.',
+    'Ask: what is the LAST IMAGE of this scene? What do we see or hear before the cut?',
+    'The end of a scene should be a closed door or an open question — not a rest stop.',
+  ]));
+  pane.appendChild(sbF('newStatus','What is the new status quo after this scene?','e.g. He now knows she is investigating him. She owes him a favor she will regret. The plan has changed.',data.newStatus,2,'A brief note on what the story looks like after this scene — what has shifted in the larger narrative.',[
+    'This is a writerly note, not dialogue. It helps you track causality across scenes.',
+    'Ask: what can now happen in your story that could not happen before this scene?',
+  ]));
+
+  pane.appendChild(cbDivider('The Scene Test'));
+  const testBox=el('div',{style:'background:rgba(104,147,239,0.06);border:1px solid rgba(104,147,239,0.18);border-radius:var(--radius-sm);padding:16px;margin-bottom:8px;'});
+  const _tbH=el('div',{style:"font-family:'Belleza',serif;font-size:15px;color:var(--accent);margin-bottom:8px;"});_tbH.textContent='The Scene Test';
+  const _tbT=el('div',{style:'font-size:13px;color:var(--fg2);line-height:1.7;'});
+  const _tbQ=document.createTextNode('“If I removed this scene from the script, would anything be different?” ');
+  const _tbY=el('strong',{style:'color:var(--fg);'});_tbY.textContent='YES';
+  const _tbM1=document.createTextNode(' — scene earns its place. ');
+  const _tbN=el('strong',{style:'color:var(--fg);'});_tbN.textContent='NO';
+  const _tbM2=document.createTextNode(' — dead weight. Cut or rewrite.');
+  _tbT.append(_tbQ,_tbY,_tbM1,_tbN,_tbM2);
+  testBox.append(_tbH,_tbT);
+  pane.appendChild(testBox);
+  pane.appendChild(sbF('sceneTest','Does this scene pass the Scene Test? Why?','e.g. Yes — without this scene, the audience never learns that she knows, and the third act does not work.',data.sceneTest,2,'Be honest with yourself here. If the answer is no, you may need to revise the Resolution or rethink the scene`s purpose.',[
+    'Ask: if a future reader or audience member never saw this scene, would they be missing something essential?',
+    'A scene that provides only information can often be replaced by a line of dialogue in the next scene.',
+    'A scene earns its place by changing something that matters to the story.',
+  ]));
+}
+
+// ── Step 5: Craft & Context ──
+function sbCraft(pane, data){
+  const t=el('div',{class:'wizard-pane-title'});t.textContent='Craft & Context';
+  const s=el('div',{class:'wizard-pane-sub'});s.textContent='Optional craft layer. These questions help you think about subtext, tone, and staging — the difference between a scene that works and one that resonates.';
+  pane.append(t,s);
+
+  pane.appendChild(cbDivider('Subtext'));
+  pane.appendChild(sbCallout('❯','Subtext is what the scene is REALLY about underneath the dialogue. The surface is what characters appear to be talking about. The subtext is what they actually mean or are afraid to say.'));
+  pane.appendChild(sbF('subtext','What is this scene really about? (The subtext)','e.g. On the surface: two colleagues discuss the project timeline. Underneath: she is deciding whether to trust him after what he did.',data.subtext,3,'What are the characters NOT saying, and how does that shape every line they DO say?',[
+    'Ask: what does each character want to say but cannot? What would they never say out loud?',
+    'Subtext is created by withholding — letting the audience feel what the characters cannot express.',
+    'If your dialogue says exactly what the scene is about, there may be no subtext yet.',
+  ]));
+
+  pane.appendChild(cbDivider('Opening & Closing Images'));
+  pane.appendChild(sbF('openingImage','Opening image — how does the scene begin?','e.g. She is already there when he arrives, reading, not looking up. The room is too bright.',data.openingImage,2,'The first moment of the scene — what the audience sees or hears before anything is said.',[
+    'A strong opening image carries information before dialogue begins.',
+    'Ask: what does the physical world of this scene feel like before anyone speaks?',
+  ]));
+  pane.appendChild(sbF('closingImage','Closing image — how does the scene end?','e.g. He walks out. She does not watch him go. We hold on the door for a beat too long.',data.closingImage,2,'The last moment of the scene before the cut. What does the audience leave with?',[
+    'The closing image should FEEL different from the opening image, even if nothing has explicitly changed.',
+    'Ask: what is the emotional residue of this scene? What image holds that feeling?',
+  ]));
+
+  pane.appendChild(cbDivider('Tone & Notes'));
+  pane.appendChild(sbF('toneNotes','Tone, pacing, and director/production notes','e.g. This scene should move fast — no pauses. Claustrophobic. Handheld camera. No score.',data.toneNotes,3,'Optional: any notes about how this scene should FEEL in terms of pacing, visual language, sound, or performance direction.',[
+    'Tone notes are not dialogue. They are your instincts about atmosphere and execution.',
+    'These can be as short as two words: "Quiet. Unbearable."',
+  ]));
+}
+
+// ── Step 6: Review ──
+function sbReview(pane, data, chars, locs){
+  const t=el('div',{class:'wizard-pane-title'});t.textContent='Review your scene.';
+  const s=el('div',{class:'wizard-pane-sub'});s.textContent='Here is everything you have built. Go back to any step to make changes, or save now and edit from the scene card at any time.';
+  pane.append(t,s);
+
+  if(!data.title){
+    const warn=el('div',{class:'wizard-tip',style:'border-color:var(--red);margin-bottom:16px;'});
+    warn.innerHTML='<div class="wizard-tip-label" style="color:var(--red);">Missing title</div><p style="margin:0;">Go back to Step 1 and give your scene a title before saving.</p>';
+    pane.appendChild(warn);
+  }
+
+  const loc = locs.find(l=>l.id===data.locationId);
+  const scChars = chars.filter(c=>(data.characterIds||[]).includes(c.id));
+
+  function revSec(heading, icon, fields){
+    const hasContent = fields.some(({key})=>data[key]&&data[key].trim());
+    if(!hasContent) return null;
+    const sec=el('div',{class:'wizard-review-section'});
+    const h=el('h3');h.textContent=icon+' '+heading;sec.appendChild(h);
+    fields.forEach(({label,key})=>{
+      if(!data[key]||!data[key].trim()) return;
+      const f=el('div',{class:'wizard-review-field'});
+      const l=el('div',{class:'wizard-review-label'});l.textContent=label;
+      const v2=el('div',{class:'wizard-review-value'});v2.textContent=data[key];
+      f.append(l,v2); sec.appendChild(f);
+    });
+    return sec;
+  }
+
+  const sections=[
+    {heading:'Setup', icon:'S —', fields:[
+      {label:'Title',key:'title'},{label:'Sequence #',key:'sequenceNumber'},
+      {label:'Scene Goal',key:'sceneGoal'},{label:'Character A Wants',key:'charAWant'},
+      {label:'Character B Wants',key:'charBWant'},{label:'Stakes',key:'stakesDescription'},
+      {label:'Tension Type',key:'tensionType'},
+    ]},
+    {heading:'Confrontation', icon:'C —', fields:[
+      {label:'Type',key:'confrontationType'},{label:'How it plays out',key:'confrontationDesc'},
+      {label:'Obstacle Type',key:'obstacleType'},{label:'The Obstacle',key:'obstacleDesc'},
+    ]},
+    {heading:'Turn', icon:'T —', fields:[
+      {label:'The Turn',key:'turnLine'},{label:'Type',key:'turnType'},
+      {label:'What changes',key:'turnDescription'},{label:'Execution note',key:'turnQuiet'},
+    ]},
+    {heading:'Resolution', icon:'R —', fields:[
+      {label:'Change Type',key:'changeType'},{label:'Who changes & how',key:'whoChanges'},
+      {label:'Resolution',key:'resolutionChange'},{label:'New status quo',key:'newStatus'},
+      {label:'Scene Test',key:'sceneTest'},
+    ]},
+    {heading:'Craft', icon:'❯', fields:[
+      {label:'Subtext',key:'subtext'},{label:'Opening image',key:'openingImage'},
+      {label:'Closing image',key:'closingImage'},{label:'Tone notes',key:'toneNotes'},
+    ]},
+  ];
+
+  // Identity block (non-text fields handled separately)
+  const idSec=el('div',{class:'wizard-review-section'});
+  const idH=el('h3');idH.textContent='Scene Identity';idSec.appendChild(idH);
+  if(loc){const f=el('div',{class:'wizard-review-field'});const l=el('div',{class:'wizard-review-label'});l.textContent='Location';const v2=el('div',{class:'wizard-review-value'});v2.textContent=loc.name;f.append(l,v2);idSec.appendChild(f);}
+  if(scChars.length){const f=el('div',{class:'wizard-review-field'});const l=el('div',{class:'wizard-review-label'});l.textContent='Characters';const v2=el('div',{class:'wizard-review-value'});v2.textContent=scChars.map(c=>c.name).join(', ');f.append(l,v2);idSec.appendChild(f);}
+  if(idSec.children.length>1) pane.appendChild(idSec);
+
+  sections.forEach(s=>{
+    const sec=revSec(s.heading, s.icon, s.fields);
+    if(sec) pane.appendChild(sec);
+  });
+}
+
 // ══════════════════════════════════════════════
 //  SCENES
 // ══════════════════════════════════════════════
@@ -2573,10 +3513,13 @@ async function renderScenes(container, projectId){
   const wrap = el('div',{class:'page'});
   const header = el('div',{class:'page-header'});
   header.innerHTML='<div><div class="page-title">Scenes</div><div class="page-subtitle">'+scenes.length+' scene'+(scenes.length!==1?'s':'')+'</div></div>';
-  const hbtns=el('div',{style:'display:flex;gap:8px;'});
-  const addBtn=el('button',{class:'btn btn-primary',onclick:()=>openSceneDrawer(null,projectId,chars,locs,scenes.length+1)});addBtn.textContent='+ Add Scene';
+  const hbtns=el('div',{style:'display:flex;gap:8px;align-items:center;flex-wrap:wrap;'});
+  const wizBtn=el('button',{class:'btn btn-primary',onclick:()=>openSceneBuilder(projectId,chars,locs,scenes.length+1)});
+  wizBtn.innerHTML='&#10022; Build Scene from Template';
+  wizBtn.title='Guided scene builder using SCTR structure';
+  const addBtn=el('button',{class:'btn btn-ghost',onclick:()=>openSceneDrawer(null,projectId,chars,locs,scenes.length+1)});addBtn.textContent='+ Create Blank Scene';
   const pdfBtn=el('button',{class:'btn btn-ghost btn-sm',onclick:()=>generateScenesPdf(projectId)});pdfBtn.textContent='📄 Create Document';
-  hbtns.append(addBtn,pdfBtn);
+  hbtns.append(wizBtn,addBtn,pdfBtn);
   header.appendChild(hbtns); wrap.appendChild(header);
   const _hintSc=toolHintBanner('scenes'); if(_hintSc) wrap.appendChild(_hintSc);
   if(scenes.length===0){wrap.appendChild(emptyState('◧','No Scenes Yet','Break your story into scenes and keep track of the action.'));}
