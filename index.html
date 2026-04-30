@@ -140,6 +140,12 @@
   .editor-divider{width:1px;height:20px;background:var(--border);margin:0 4px;flex-shrink:0;}
   .toolbar-btn{padding:5px 8px;border-radius:5px;background:transparent;border:none;cursor:pointer;color:var(--fg2);font-size:13px;transition:all 0.15s;font-family:'Lora',serif;}
   .toolbar-btn:hover{background:var(--bg3);color:var(--fg);} .toolbar-btn.active{background:var(--toolbar-active-bg);color:var(--primary);}
+  /* Compact toolbar mode — hides text labels on type-selector buttons to save ~120px on Chromebooks */
+  .editor-topbar.compact .type-btn{font-size:0;padding:5px 7px;min-width:24px;}
+  .editor-topbar.compact .type-btn::before{font-size:10px;font-family:'JetBrains Mono',monospace;content:attr(data-short);}
+  .editor-topbar.compact .toolbar-compact-toggle{opacity:1;}
+  .toolbar-compact-toggle{background:transparent;border:none;cursor:pointer;color:var(--fg3);font-size:14px;padding:4px 6px;border-radius:4px;margin-left:auto;flex-shrink:0;transition:color 0.15s;}
+  .toolbar-compact-toggle:hover{color:var(--fg);}
   .editor-body{flex:1;padding:40px;overflow-y:auto;}
   .editor-content{max-width:700px;margin:0 auto;min-height:400px;outline:none;font-size:16px;line-height:1.85;color:var(--fg);}
   .editor-content:empty::before{content:attr(data-placeholder);color:var(--fg3);pointer-events:none;}
@@ -302,6 +308,7 @@
   /* Phase 4 — Linking */
   .link-btn{display:inline-flex;align-items:center;gap:3px;padding:1px 6px;border-radius:4px;font-size:11px;font-family:'JetBrains Mono',monospace;cursor:pointer;border:1px solid;text-decoration:none;transition:opacity 0.15s;}
   .link-btn:hover{opacity:0.75;}
+  .link-btn.pinned::after{content:' 📌';font-size:9px;opacity:0.7;vertical-align:middle;}
   .link-char{background:rgba(82,183,136,0.12);color:var(--primary);border-color:rgba(82,183,136,0.25);}
   .link-loc{background:rgba(94,202,200,0.1);color:var(--teal);border-color:rgba(94,202,200,0.25);}
   .link-scene{background:rgba(104,147,239,0.1);color:var(--accent);border-color:rgba(104,147,239,0.25);}
@@ -807,6 +814,7 @@ function navigate(page, projectId, sub, subId){
   document.getElementById('feedback-fab')?.remove();
   document.getElementById('comment-sidebar')?.remove();
   destroyAllPinWorkspaces();
+  _sessionLocNames = null; // clear session loc Set so next editor load re-fetches
   currentRoute = {page:page||'home', projectId:projectId||null, sub:sub||null, subId:subId||null};
   render();
 }
@@ -3510,6 +3518,46 @@ function lbReview(pane, data){
 // ══════════════════════════════════════════════
 //  LOCATIONS
 // ══════════════════════════════════════════════
+
+// Scan every screenplay document in the project, extract location names from
+// all sluglines using extractLocationFromSlug(), and create Location records
+// for any names not already in the collection. Returns the count of new records
+// created. This is the one-time backfill path for scripts written before
+// autoAddLocationsFromBlocks was introduced in 4-1.
+async function backfillLocationsFromAllDocs(projectId){
+  // Load all documents in this project that have sceneBlocks (v2 screenplays)
+  const [docs, existing] = await Promise.all([
+    fsQuery('documents', where('storyProjectId','==',projectId)),
+    fsQuery('locations', where('storyProjectId','==',projectId)),
+  ]);
+  const existingNames = new Set(existing.map(l => l.name.trim().toUpperCase()));
+  // Collect unique location names from all blocks across all docs
+  const found = new Set();
+  docs.forEach(doc => {
+    const blocks = doc.sceneBlocks || [];
+    blocks.forEach(b => {
+      const slug = getBlockSlug(b);
+      const name = extractLocationFromSlug(slug);
+      if(name) found.add(name);
+    });
+  });
+  // Filter to those not already in the collection
+  const toCreate = [...found].filter(n => !existingNames.has(n.toUpperCase()));
+  if(!toCreate.length) return 0;
+  await Promise.all(toCreate.map(name => fsCreate('locations', {
+    storyProjectId: projectId,
+    name,
+    description: '',
+    atmosphere: '',
+    storyRole: '',
+    autoCreated: true,
+  })));
+  // Sync session set and autofill cache so subsequent saves stay fast
+  if(_sessionLocNames) toCreate.forEach(n => _sessionLocNames.add(n.toUpperCase()));
+  loadAutofillNames(projectId);
+  return toCreate.length;
+}
+
 async function renderLocations(container, projectId){
   container.innerHTML='<div style="padding:60px;text-align:center;color:var(--fg3);">Loading…</div>';
   const locs = await fsQuery('locations',where('storyProjectId','==',projectId));
@@ -3523,7 +3571,25 @@ async function renderLocations(container, projectId){
   wizBtn.title='Guided location builder — atmosphere, geography, history, and story role';
   const addBtn=el('button',{class:'btn btn-ghost',onclick:()=>openLocationDrawer(null,projectId)});addBtn.textContent='+ Create Blank Location';
   const pdfBtn=el('button',{class:'btn btn-ghost btn-sm',onclick:()=>generateLocationsPdf(projectId)});pdfBtn.textContent='📄 Create Document';
-  hbtns.append(wizBtn,addBtn,pdfBtn);
+  // Backfill button: scans all screenplay docs in this project and imports
+  // any slugline location names that don't already exist as Location records.
+  const backfillBtn=el('button',{class:'btn btn-ghost btn-sm',title:'Scan all screenplays in this project and import any slugline locations not already in your collection'});
+  backfillBtn.textContent='↺ Import from Script';
+  backfillBtn.onclick=async()=>{
+    backfillBtn.disabled=true;
+    backfillBtn.textContent='Scanning…';
+    try{
+      const created = await backfillLocationsFromAllDocs(projectId);
+      if(created===0) toast('All locations already up to date');
+      else toast('Found '+created+' new location'+(created!==1?'s':''));
+      renderLocations(container,projectId);
+    } catch(e){
+      toast('Import failed','error');
+      backfillBtn.disabled=false;
+      backfillBtn.textContent='↺ Import from Script';
+    }
+  };
+  hbtns.append(wizBtn,addBtn,pdfBtn,backfillBtn);
   header.appendChild(hbtns); wrap.appendChild(header);
   const _hintL=toolHintBanner('locations'); if(_hintL) wrap.appendChild(_hintL);
   if(locs.length===0){wrap.appendChild(emptyState('⬡','No Locations Yet','Define the places your story unfolds.'));}
@@ -4378,7 +4444,7 @@ async function openSceneDraftEditor(scene, projectId, chars, locs){
   const typeBar = el('div',{class:'screenplay-type-selector'});
   SP_TYPES.forEach(t=>{
     const btn = el('button',{class:'type-btn'+(t===currentSpType?' active':''),onclick:()=>setSpType(t,typeBar)});
-    btn.textContent = SP_LABELS[t]; btn.dataset.type = t;
+    btn.textContent = SP_LABELS[t]; btn.dataset.type = t; btn.dataset.short = SP_SHORT[t]||t.slice(0,3).toUpperCase();
     typeBar.appendChild(btn);
   });
   topbar.appendChild(typeBar);
@@ -5684,6 +5750,7 @@ function renderNarrativeEditor(view, doc, projectId){
   loadLinkCache(projectId);
   const narrativeLinkBtn = addLinkToolbarBtn(toolbar, editor, projectId);
   toolbar.appendChild(narrativeLinkBtn);
+  toolbar.appendChild(buildCompactToggle(toolbar));
   const wc=el('div',{class:'editor-word-count'},[wordCount(editor.innerHTML)+' words · 🔗 select text then Link to tag characters, locations, scenes & props']);
   editor.addEventListener('input',()=>{
     wc.textContent=wordCount(editor.innerHTML)+' words';
@@ -5800,6 +5867,17 @@ function autocorrectSluglineNode(node){
 // ── Autofill helpers ──
 let _cachedCharNames = [];
 let _cachedLocNames  = [];
+
+// Session-level location name Set for autoAddLocationsFromBlocks.
+// Loaded once when a screenplay editor opens; avoids a Firestore read on
+// every debounced save (every ~600ms while typing).
+// null = not yet loaded for this session. Clear on navigate().
+let _sessionLocNames = null;
+
+async function loadSessionLocNames(projectId){
+  const locs = await fsQuery('locations', where('storyProjectId','==',projectId));
+  _sessionLocNames = new Set(locs.map(l => l.name.trim().toUpperCase()));
+}
 
 async function loadAutofillNames(projectId) {
   const [chars, locs] = await Promise.all([
@@ -6501,12 +6579,19 @@ async function autoAddLocationsFromBlocks(blocks, projectId){
     if(name) names.add(name);
   });
   if(!names.size) return;
-  // Check against cached names first (fast path — avoids Firestore read every save)
-  const missing = [...names].filter(n => !_cachedLocNames.includes(n.toUpperCase()));
+  // Fast path: use the session-level Set (loaded once on editor open).
+  // Falls back to the autofill cache if the session set hasn't been loaded yet.
+  const checkSet = _sessionLocNames;
+  const missing = checkSet
+    ? [...names].filter(n => !checkSet.has(n.toUpperCase()))
+    : [...names].filter(n => !_cachedLocNames.includes(n.toUpperCase()));
   if(!missing.length) return;
-  // Fetch current location records to double-check (cache may be stale)
+  // Only do a live Firestore read when the session set says something is new,
+  // as a final double-check against concurrent writes from another tab.
   const existing = await fsQuery('locations', where('storyProjectId','==',projectId));
   const existingNames = new Set(existing.map(l => l.name.trim().toUpperCase()));
+  // Also sync session set with what Firestore actually has
+  if(checkSet) existing.forEach(l => checkSet.add(l.name.trim().toUpperCase()));
   const toCreate = missing.filter(n => !existingNames.has(n.toUpperCase()));
   if(!toCreate.length) return;
   await Promise.all(toCreate.map(name => fsCreate('locations', {
@@ -6517,6 +6602,8 @@ async function autoAddLocationsFromBlocks(blocks, projectId){
     storyRole: '',
     autoCreated: true,
   })));
+  // Add new names to session set immediately so subsequent saves skip reads
+  if(checkSet) toCreate.forEach(n => checkSet.add(n.toUpperCase()));
   // Refresh autofill cache so screenplay suggestions include new names
   loadAutofillNames(projectId);
 }
@@ -6526,6 +6613,9 @@ async function autoAddLocationsFromBlocks(blocks, projectId){
 async function renderV2ScreenplayEditor(view, doc, projectId){
   loadAutofillNames(projectId);
   loadLinkCache(projectId);
+  // Load session-level location Set once so autoAddLocationsFromBlocks
+  // skips Firestore reads on every debounced save while the student is typing.
+  loadSessionLocNames(projectId);
 
   // Migrate blocks if needed (legacy `html` → new `content`)
   let blocks = migrateV2Blocks(doc.sceneBlocks || []);
@@ -6570,7 +6660,7 @@ async function renderV2ScreenplayEditor(view, doc, projectId){
         typeBar.querySelectorAll('.type-btn').forEach(b => b.classList.toggle('active', b.dataset.type === t));
       }
     }});
-    btn.textContent = SP_LABELS[t]; btn.dataset.type = t;
+    btn.textContent = SP_LABELS[t]; btn.dataset.type = t; btn.dataset.short = SP_SHORT[t]||t.slice(0,3).toUpperCase();
     typeBar.appendChild(btn);
   });
   toolbar.append(typeBar, el('div',{class:'editor-divider'}));
@@ -6616,6 +6706,9 @@ async function renderV2ScreenplayEditor(view, doc, projectId){
     };
     toolbar.appendChild(revertBtn);
   }
+
+  // Compact mode toggle — far-right end of toolbar, persists via localStorage
+  toolbar.appendChild(buildCompactToggle(toolbar));
 
   view.style.display = 'flex';
   view.style.flexDirection = 'column';
@@ -7394,7 +7487,7 @@ function renderScreenplayEditor(view, doc, projectId) {
   const typeBar=el('div',{class:'screenplay-type-selector'});
   SP_TYPES.forEach(t=>{
     const btn=el('button',{class:'type-btn'+(t===currentSpType?' active':''),onclick:()=>setSpType(t,typeBar)});
-    btn.textContent=SP_LABELS[t]; btn.dataset.type=t; typeBar.appendChild(btn);
+    btn.textContent=SP_LABELS[t]; btn.dataset.type=t; btn.dataset.short=SP_SHORT[t]||t.slice(0,3).toUpperCase(); typeBar.appendChild(btn);
   });
   toolbar.append(typeBar,el('div',{class:'editor-divider'}));
   const backBtn=el('button',{class:'btn btn-ghost btn-sm',onclick:()=>{removeSuggestions();navigate('dashboard',projectId,'writing');}}); backBtn.textContent='← Back';
@@ -7445,6 +7538,8 @@ function renderScreenplayEditor(view, doc, projectId) {
   // Add link button now that editor is defined
   const linkToolbarBtn = addLinkToolbarBtn(toolbar, editor, projectId);
   toolbar.appendChild(linkToolbarBtn);
+  // Compact mode toggle — far-right, persists via localStorage
+  toolbar.appendChild(buildCompactToggle(toolbar));
 
   editor.addEventListener('keydown',e=>{
     // Handle suggestion navigation
@@ -7537,6 +7632,36 @@ function renderScreenplayEditor(view, doc, projectId) {
   if(!doc.content) applyTypeToCurrentLine(editor,'scene-heading');
   else setTimeout(()=>applyContinuedMarkers(editor), 50);
   setupEditorLinkClicks(editor, projectId);
+}
+
+// Short labels for compact toolbar mode (icon-only). Shown via CSS ::before
+// on .type-btn when the toolbar has the .compact class.
+const SP_SHORT = {
+  'scene-heading': 'SH',
+  'action':        'ACT',
+  'character':     'CHR',
+  'dialogue':      'DLG',
+  'parenthetical': 'PAR',
+  'transition':    'TRN',
+};
+
+// Attach a compact-mode toggle button to a toolbar. Reads/writes
+// localStorage key 'toolbarMode'. Returns the button element.
+function buildCompactToggle(toolbar){
+  const isCompact = localStorage.getItem('toolbarMode') === 'compact';
+  if(isCompact) toolbar.classList.add('compact');
+  const btn = el('button',{
+    class: 'toolbar-compact-toggle',
+    title: isCompact ? 'Expand toolbar labels' : 'Compact toolbar (icon-only)',
+  });
+  btn.textContent = isCompact ? '⊞' : '⊟';
+  btn.onclick = () => {
+    const nowCompact = toolbar.classList.toggle('compact');
+    localStorage.setItem('toolbarMode', nowCompact ? 'compact' : 'full');
+    btn.textContent = nowCompact ? '⊞' : '⊟';
+    btn.title = nowCompact ? 'Expand toolbar labels' : 'Compact toolbar (icon-only)';
+  };
+  return btn;
 }
 
 function setSpType(type,typeBar){currentSpType=type;typeBar.querySelectorAll('.type-btn').forEach(b=>b.classList.toggle('active',b.dataset.type===type));}
@@ -8860,6 +8985,26 @@ document.addEventListener('mousedown', (e) => {
 
 const _activeWorkspaces = new Set();
 
+// Walk all .link-btn chips in the current page and toggle the .pinned class
+// based on whether a matching pin exists in the provided pins array.
+// Called with requestAnimationFrame so it never runs synchronously during
+// editor input events (avoids disrupting cursor position).
+// linkType on chip uses full names ('character','location','scene','prop');
+// pin.type uses short names ('char','loc','scene','prop'). Map accordingly.
+const _linkTypeToPinType = { character:'char', location:'loc', scene:'scene', prop:'prop' };
+function refreshChipPinStates(pins){
+  if(!pins || !pins.length){
+    document.querySelectorAll('.link-btn.pinned').forEach(b => b.classList.remove('pinned'));
+    return;
+  }
+  const pinSet = new Set(pins.map(p => p.type + ':' + p.id));
+  document.querySelectorAll('.link-btn[data-link-type][data-link-id]').forEach(btn => {
+    const pinType = _linkTypeToPinType[btn.dataset.linkType] || btn.dataset.linkType;
+    const key = pinType + ':' + btn.dataset.linkId;
+    btn.classList.toggle('pinned', pinSet.has(key));
+  });
+}
+
 function createPinWorkspace(opts){
   const { host, ctx } = opts;
 
@@ -9097,6 +9242,8 @@ function createPinWorkspace(opts){
     pins.push(pin);
     persistDebounced();
     refresh();
+    // Update pin indicators on all link chips in the page
+    requestAnimationFrame(() => refreshChipPinStates(pins));
   }
 
   function removePinByObj(pin){
@@ -9110,6 +9257,8 @@ function createPinWorkspace(opts){
     cardEls.delete(key);
     renderDock();
     persistDebounced();
+    // Update pin indicators on all link chips in the page
+    requestAnimationFrame(() => refreshChipPinStates(pins));
   }
 
   function removePin(type, id){
@@ -9153,6 +9302,8 @@ function createPinWorkspace(opts){
   _activeWorkspaces.add(workspace);
   // Initial render
   refresh();
+  // Mark any chips already pinned from a previous session
+  requestAnimationFrame(() => refreshChipPinStates(pins));
   return workspace;
 }
 
@@ -9369,7 +9520,9 @@ function beatCard(b,projectId,chars,locs,charMap,locMap,allBeats,container){
     const srcIdx=allCards.indexOf(dragSrc),dstIdx=allCards.indexOf(card);
     if(srcIdx<dstIdx)card.after(dragSrc);else card.before(dragSrc);
     const reordered=Array.from(board().querySelectorAll('.beat-card'));
-    await Promise.all(reordered.map((c,i)=>fsUpdate('beats',c.dataset.id,{order:i})));
+    const reorderBatch = writeBatch(db);
+    reordered.forEach((c,i) => reorderBatch.update(userDoc('beats',c.dataset.id),{order:i}));
+    await reorderBatch.commit();
     await renderBeatBoard(container,projectId);
   });
   return card;
