@@ -5771,6 +5771,13 @@ function renderNarrativeEditor(view, doc, projectId){
   function updateToolbar(){fmtBtns.forEach((b,i)=>{toolbar.querySelectorAll('.toolbar-btn')[i].classList.toggle('active',document.queryCommandState(b.cmd));});}
 }
 
+// ── Screenplay line types ─────────────────────────────────────────────
+// Shared by the Writing Desk v1/v2 editors and the per-scene draft editor.
+// Order in SP_TYPES drives Tab-cycling in the editor type selector.
+const SP_TYPES=['scene-heading','action','character','dialogue','parenthetical','transition'];
+const SP_LABELS={'scene-heading':'Scene Heading','action':'Action','character':'Character','dialogue':'Dialogue','parenthetical':'Parenthetical','transition':'Transition'};
+let currentSpType='scene-heading';
+
 // ── Slugline autocorrect ─────────────────────────────────────────────
 // Normalises the raw text of a scene-heading paragraph into standard
 // screenplay format. Runs on Enter and blur so the student's intent is
