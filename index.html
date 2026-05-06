@@ -559,7 +559,9 @@ import {
   signOut, onAuthStateChanged, updateProfile
 } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js';
 import {
-  getFirestore, collection, doc, addDoc, setDoc, getDoc, getDocs,
+  getFirestore, initializeFirestore,
+  persistentLocalCache, persistentMultipleTabManager,
+  collection, doc, addDoc, setDoc, getDoc, getDocs,
   updateDoc, deleteDoc, query, where, orderBy, serverTimestamp, writeBatch, limit
 } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js';
 
@@ -577,7 +579,22 @@ const firebaseConfig = {
 
 const firebaseApp = initializeApp(firebaseConfig);
 const auth = getAuth(firebaseApp);
-const db = getFirestore(firebaseApp);
+
+// ── Item 6 (5-0): Firestore offline persistence ──
+// Use IndexedDB-backed cache so reads/writes work when the network drops
+// (essential for Chromebook/classroom Wi-Fi reliability). Multi-tab manager
+// allows the app to be open in multiple tabs without persistence conflicts.
+// Falls back to memory cache if persistence is unavailable (private browsing,
+// browser without IndexedDB, etc.) — non-fatal, app still runs.
+let db;
+try {
+  db = initializeFirestore(firebaseApp, {
+    localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() })
+  });
+} catch (e) {
+  console.warn('[5-0] Persistent cache unavailable, falling back to memory:', e && e.code);
+  db = getFirestore(firebaseApp);
+}
 
 // ══════════════════════════════════════════════
 //  THEME SYSTEM
@@ -664,6 +681,57 @@ function setSavingIndicator(text,color){
 }
 
 // ══════════════════════════════════════════════
+//  ITEM 32 (5-0) — i18n INFRASTRUCTURE STUB
+// ══════════════════════════════════════════════
+// All NEW user-facing strings added in 5-0 should flow through t().
+// Existing strings are NOT migrated in this phase — that is a future
+// dedicated translation phase. Keys use dot notation: domain.context.thing.
+// Example: t('roles.admin.invite.button', 'Generate teacher invite code')
+//
+// The dictionary is intentionally near-empty in 5-0; entries are added as
+// new strings are written. Active language defaults to 'en'. A user
+// preference field 'preferredLanguage' may be stored but has no UI yet.
+const STRINGS = {
+  en: {
+    // Entries added during 5-0 development. Keep grouped by domain.
+  }
+};
+let _activeLang = 'en';
+function setLang(lang){ if(STRINGS[lang]) _activeLang = lang; }
+function t(key, fallback){
+  const dict = STRINGS[_activeLang] || {};
+  if(Object.prototype.hasOwnProperty.call(dict, key)) return dict[key];
+  return fallback != null ? fallback : key;
+}
+
+// ══════════════════════════════════════════════
+//  ITEM 31 (5-0) — DOCUMENT SCHEMA VERSIONING
+// ══════════════════════════════════════════════
+// Generalizes the existing v2-screenplay formatVersion pattern. Every newly
+// created entity should carry a schemaVersion field. Documents lacking the
+// field are treated as version 1. Bump the version when a shape change is
+// introduced (e.g., adding wizardData to scenes/characters in 5-0b).
+//
+// Convention: schemaVersion is an integer. Start at 1. Increment on shape
+// changes. Document the change reason where the bump happens.
+const CURRENT_SCHEMA_VERSIONS = {
+  // Update entries here as schemas evolve.
+  story: 1, scene: 1, character: 1, location: 1, worldElement: 1,
+  prop: 1, beat: 1, document: 1, comment: 1, classroom: 1, user: 1,
+  outlineNode: 1, walkthrough: 1
+};
+function getSchemaVersion(entityType){
+  return CURRENT_SCHEMA_VERSIONS[entityType] || 1;
+}
+function readSchemaVersion(entity){
+  return (entity && entity.schemaVersion) || 1;
+}
+function withSchemaVersion(entityType, data){
+  // Stamps schemaVersion on a new doc payload. Use in create paths.
+  return { ...data, schemaVersion: getSchemaVersion(entityType) };
+}
+
+// ══════════════════════════════════════════════
 //  FIRESTORE HELPERS
 // ══════════════════════════════════════════════
 let currentUser = null;
@@ -700,9 +768,251 @@ async function fsBatchDelete(colName, fieldName, value){
 
 // ══════════════════════════════════════════════
 //  PHASE 5A — CLASSROOM CONSTANTS & HELPERS
+//  Updated in 5-0 (Item 17) — roles model
 // ══════════════════════════════════════════════
-const TEACHER_UID = 'vCXND7JhhscwvGoWS4kztBBDmbk2';
-function isTeacher(){ return currentUser && currentUser.uid === TEACHER_UID; }
+
+// ── Item 17 (5-0): ROLES MODEL ──
+// Three-tier role system with master flag. Replaces the hardcoded TEACHER_UID.
+//
+//   role: 'student' | 'teacher'  (default 'student')
+//   isAdmin:  bool  — implies role==='teacher'
+//   isMaster: bool  — implies isAdmin && role==='teacher'
+//
+// Capability mapping:
+//   student: existing student capabilities
+//   teacher: + generate classroom join codes
+//   admin:   + promote/demote teachers, generate teacher invite codes,
+//            view all teacher accounts, revoke invite codes
+//   master:  + dev tools tab, prod stats, schema migration, raw inspector
+//            (master is NOT transferable through any UI)
+//
+// Bootstrap: a single legacy UID is recognised as master so the very first
+// deployment works without manual Firestore edits. Once the user profile
+// doc exists with explicit role flags, those override the bootstrap.
+
+// Legacy bootstrap UID — Tom's account. Once user profile docs exist with
+// explicit role flags, those win. Keep this only as a safety net so the
+// existing owner is never locked out.
+const MASTER_UID_BOOTSTRAP = 'vCXND7JhhscwvGoWS4kztBBDmbk2';
+
+// In-memory cache of the current user's profile (loaded after auth).
+// Read via currentUserProfile(); never read directly.
+let _userProfile = null;
+function currentUserProfile(){ return _userProfile; }
+
+function userProfileDoc(uid){ return doc(db,'users',uid,'profile','main'); }
+
+async function loadUserProfile(){
+  if(!currentUser) { _userProfile = null; return null; }
+  try {
+    const snap = await getDoc(userProfileDoc(currentUser.uid));
+    if(snap.exists()){
+      _userProfile = { uid: currentUser.uid, ...snap.data() };
+    } else {
+      // First sign-in: create a default student profile. Bootstrap UID gets
+      // master+admin+teacher so the existing owner account stays working.
+      const isBootstrapMaster = currentUser.uid === MASTER_UID_BOOTSTRAP;
+      const defaultProfile = withSchemaVersion('user', {
+        role: isBootstrapMaster ? 'teacher' : 'student',
+        isAdmin: isBootstrapMaster,
+        isMaster: isBootstrapMaster,
+        displayName: currentUser.displayName || '',
+        email: currentUser.email || '',
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      });
+      await setDoc(userProfileDoc(currentUser.uid), defaultProfile);
+      _userProfile = { uid: currentUser.uid, ...defaultProfile };
+    }
+  } catch(e){
+    // Offline or permission error — fall back to bootstrap-only check so
+    // the app still functions. role/admin/master derive purely from UID.
+    console.warn('[5-0] Could not load user profile, using bootstrap fallback:', e && e.code);
+    const isBootstrapMaster = currentUser.uid === MASTER_UID_BOOTSTRAP;
+    _userProfile = {
+      uid: currentUser.uid,
+      role: isBootstrapMaster ? 'teacher' : 'student',
+      isAdmin: isBootstrapMaster,
+      isMaster: isBootstrapMaster,
+      _bootstrapFallback: true
+    };
+  }
+  return _userProfile;
+}
+
+// ── Capability checks ──
+// All gating must go through these. Never check UID directly outside this block.
+function isTeacher(){
+  if(!currentUser) return false;
+  const p = _userProfile;
+  if(!p) return currentUser.uid === MASTER_UID_BOOTSTRAP; // pre-load bootstrap
+  return p.role === 'teacher';
+}
+function isAdmin(){
+  if(!currentUser) return false;
+  const p = _userProfile;
+  if(!p) return currentUser.uid === MASTER_UID_BOOTSTRAP;
+  return !!p.isAdmin && p.role === 'teacher';
+}
+function isMaster(){
+  if(!currentUser) return false;
+  const p = _userProfile;
+  if(!p) return currentUser.uid === MASTER_UID_BOOTSTRAP;
+  return !!p.isMaster && !!p.isAdmin && p.role === 'teacher';
+}
+
+// ── Admin actions: promote / demote ──
+async function adminListTeachers(){
+  // Returns all user profiles where role==='teacher'. Admin-only.
+  if(!isAdmin()) throw new Error('Admin required');
+  // Profiles live at users/{uid}/profile/main. We use a collectionGroup-style
+  // approach: list known teacher UIDs from classrooms collection (since
+  // teachers create classrooms), then fetch each profile. Imperfect but
+  // works without a top-level users collection.
+  const seen = new Set();
+  const results = [];
+  // 1) Add self.
+  if(_userProfile){ seen.add(currentUser.uid); results.push(_userProfile); }
+  // 2) Pull teacher UIDs from classrooms.
+  try {
+    const csnap = await getDocs(collection(db,'classrooms'));
+    const teacherUids = [...new Set(csnap.docs.map(d=>d.data().teacherUid).filter(Boolean))];
+    for(const uid of teacherUids){
+      if(seen.has(uid)) continue;
+      try {
+        const psnap = await getDoc(userProfileDoc(uid));
+        if(psnap.exists()){
+          const p = { uid, ...psnap.data() };
+          if(p.role === 'teacher'){ results.push(p); seen.add(uid); }
+        }
+      } catch {}
+    }
+  } catch(e){ console.warn('[5-0] adminListTeachers classroom scan failed:', e); }
+  return results;
+}
+
+async function adminPromoteToTeacher(uid){
+  if(!isAdmin()) throw new Error('Admin required');
+  await setDoc(userProfileDoc(uid), { role: 'teacher', updatedAt: serverTimestamp() }, { merge: true });
+}
+async function adminDemoteToStudent(uid){
+  if(!isAdmin()) throw new Error('Admin required');
+  // Self-demotion guard: cannot demote self if would leave zero admins.
+  if(uid === currentUser.uid){
+    const teachers = await adminListTeachers();
+    const otherAdmins = teachers.filter(t => t.uid !== uid && t.isAdmin);
+    if(otherAdmins.length === 0){
+      throw new Error('Cannot demote yourself: no other admins exist.');
+    }
+  }
+  await setDoc(userProfileDoc(uid), {
+    role: 'student', isAdmin: false, isMaster: false, updatedAt: serverTimestamp()
+  }, { merge: true });
+}
+async function adminGrantAdmin(uid){
+  if(!isAdmin()) throw new Error('Admin required');
+  await setDoc(userProfileDoc(uid), {
+    role: 'teacher', isAdmin: true, updatedAt: serverTimestamp()
+  }, { merge: true });
+}
+async function adminRevokeAdmin(uid){
+  if(!isAdmin()) throw new Error('Admin required');
+  // Self-demotion guard.
+  if(uid === currentUser.uid){
+    const teachers = await adminListTeachers();
+    const otherAdmins = teachers.filter(t => t.uid !== uid && t.isAdmin);
+    if(otherAdmins.length === 0){
+      throw new Error('Cannot revoke your own admin: no other admins exist.');
+    }
+  }
+  // Master flag cannot be revoked through this path; isMaster stays unless
+  // explicitly cleared via direct DB write.
+  await setDoc(userProfileDoc(uid), { isAdmin: false, updatedAt: serverTimestamp() }, { merge: true });
+}
+
+// ── Teacher invite codes ──
+function teacherInviteDoc(code){ return doc(db,'teacherInviteCodes',code); }
+function generateInviteCode(){
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let s = 'T-';
+  for(let i=0;i<8;i++){ if(i===4) s+='-'; s += chars[Math.floor(Math.random()*chars.length)]; }
+  return s;
+}
+async function adminCreateInviteCode(daysValid){
+  if(!isAdmin()) throw new Error('Admin required');
+  const code = generateInviteCode();
+  const expiresAt = new Date(Date.now() + (daysValid||7)*24*60*60*1000);
+  await setDoc(teacherInviteDoc(code), withSchemaVersion('classroom', {
+    code,
+    issuedBy: currentUser.uid,
+    issuedAt: serverTimestamp(),
+    expiresAt,
+    usedBy: null,
+    usedAt: null
+  }));
+  return { code, expiresAt };
+}
+async function adminListInviteCodes(){
+  if(!isAdmin()) throw new Error('Admin required');
+  const snap = await getDocs(query(collection(db,'teacherInviteCodes'), where('issuedBy','==',currentUser.uid)));
+  return snap.docs.map(d=>({id:d.id, ...d.data()}));
+}
+async function adminRevokeInviteCode(code){
+  if(!isAdmin()) throw new Error('Admin required');
+  await deleteDoc(teacherInviteDoc(code));
+}
+async function redeemTeacherInviteCode(rawCode){
+  if(!currentUser) throw new Error('Not signed in');
+  const code = (rawCode||'').trim().toUpperCase();
+  if(!code) throw new Error('Enter a code');
+  const snap = await getDoc(teacherInviteDoc(code));
+  if(!snap.exists()) throw new Error('Code not recognised');
+  const data = snap.data();
+  if(data.usedBy) throw new Error('Code already used');
+  const expires = data.expiresAt && data.expiresAt.toDate ? data.expiresAt.toDate() : new Date(data.expiresAt);
+  if(expires && expires.getTime() < Date.now()) throw new Error('Code expired');
+  // Mark code used and promote.
+  await setDoc(teacherInviteDoc(code), {
+    usedBy: currentUser.uid, usedAt: serverTimestamp()
+  }, { merge: true });
+  await setDoc(userProfileDoc(currentUser.uid), {
+    role: 'teacher', updatedAt: serverTimestamp()
+  }, { merge: true });
+  // Refresh profile cache.
+  await loadUserProfile();
+  return true;
+}
+
+// ── Item 30 (5-0): isClassmate() real implementation ──
+// Returns true if `readerUid` and `ownerUid` share at least one classroom.
+// Per-session cache to avoid repeat queries. Used wherever shared-project
+// visibility is gated client-side.
+const _classmateCache = new Map(); // key: "uidA|uidB" sorted
+function _classmateKey(a,b){ return [a,b].sort().join('|'); }
+async function isClassmate(readerUid, ownerUid){
+  if(!readerUid || !ownerUid || readerUid === ownerUid) return false;
+  const k = _classmateKey(readerUid, ownerUid);
+  if(_classmateCache.has(k)) return _classmateCache.get(k);
+  let result = false;
+  try {
+    // Find classrooms containing readerUid as a member.
+    const csnap = await getDocs(collection(db,'classrooms'));
+    for(const c of csnap.docs){
+      if(c.data().archived) continue;
+      const readerMember = await getDoc(doc(db,'classrooms',c.id,'members',readerUid));
+      if(!readerMember.exists()) continue;
+      const ownerMember = await getDoc(doc(db,'classrooms',c.id,'members',ownerUid));
+      if(ownerMember.exists()){ result = true; break; }
+      // Also count owner being the teacher of a classroom the reader is in.
+      if(c.data().teacherUid === ownerUid){ result = true; break; }
+    }
+  } catch(e){
+    console.warn('[5-0] isClassmate query failed:', e && e.code);
+  }
+  _classmateCache.set(k, result);
+  return result;
+}
+function _invalidateClassmateCache(){ _classmateCache.clear(); }
 
 // Classroom Firestore helpers (top-level collections, not user-scoped)
 function classroomDoc(classroomId){ return doc(db,'classrooms',classroomId); }
@@ -710,7 +1020,9 @@ function classroomMemberDoc(classroomId,uid){ return doc(db,'classrooms',classro
 function classroomMembersCol(classroomId){ return collection(db,'classrooms',classroomId,'members'); }
 
 async function getAllClassrooms(){
-  const q = query(collection(db,'classrooms'), where('teacherUid','==',TEACHER_UID));
+  // Updated in 5-0 (Item 17): query by current user's UID, not hardcoded.
+  if(!currentUser) return [];
+  const q = query(collection(db,'classrooms'), where('teacherUid','==',currentUser.uid));
   const snap = await getDocs(q);
   return snap.docs.map(d=>({id:d.id,...d.data()}));
 }
@@ -721,8 +1033,10 @@ async function getClassroomMembers(classroomId){
 }
 
 async function getStudentClassrooms(uid){
-  // Find all classrooms where this student is a member
-  const allQ = query(collection(db,'classrooms'), where('teacherUid','==',TEACHER_UID), where('archived','==',false));
+  // Updated in 5-0 (Item 17): no longer filtered by single TEACHER_UID.
+  // Return ALL active classrooms the student is a member of, regardless of
+  // which teacher owns them. This unblocks multi-teacher deployments.
+  const allQ = query(collection(db,'classrooms'), where('archived','==',false));
   const snap = await getDocs(allQ);
   const results = [];
   for(const d of snap.docs){
@@ -743,13 +1057,15 @@ function generateClassCode(){
 }
 
 async function createClassroom(name){
+  // Updated in 5-0 (Item 17): teacherUid is the current user, not hardcoded.
+  if(!isTeacher()) throw new Error('Teacher required');
   const code = generateClassCode();
   const ref = doc(collection(db,'classrooms'));
-  await setDoc(ref,{
-    name, code, teacherUid:TEACHER_UID,
+  await setDoc(ref, withSchemaVersion('classroom', {
+    name, code, teacherUid: currentUser.uid,
     archived:false,
     createdAt:serverTimestamp(), updatedAt:serverTimestamp()
-  });
+  }));
   return {id:ref.id, name, code};
 }
 
@@ -771,36 +1087,306 @@ async function leaveClassroom(classroomId){
   await deleteDoc(classroomMemberDoc(classroomId, currentUser.uid));
 }
 
+// ══════════════════════════════════════════════
+//  ITEM 17 (5-0) — ADMIN PANEL & INVITE REDEMPTION UI
+// ══════════════════════════════════════════════
+
+// Generic small modal helper used by the admin/become-teacher flows.
+// Returns a { wrap, close } pair. Caller fills wrap with content.
+function _openSmallModal(titleText, widthPx){
+  const overlay = el('div',{class:'modal-overlay',style:'display:flex;'});
+  const modal = el('div',{class:'modal',style:'max-width:'+(widthPx||520)+'px;'});
+  const head = el('div',{class:'modal-header'});
+  const title = el('h3',{},[titleText]);
+  const closeBtn = el('button',{class:'modal-close',onclick:()=>overlay.remove()},['×']);
+  head.append(title, closeBtn);
+  modal.appendChild(head);
+  const body = el('div',{class:'modal-body',style:'padding:18px 22px 22px;'});
+  modal.appendChild(body);
+  overlay.appendChild(modal);
+  document.body.appendChild(overlay);
+  return { wrap: body, close: ()=>overlay.remove() };
+}
+
+// ── "Become a teacher" modal (any signed-in student can open this) ──
+function showBecomeTeacherModal(){
+  const { wrap, close } = _openSmallModal(t('roles.becomeTeacher.title','Become a teacher'), 480);
+  wrap.innerHTML = `
+    <p style="color:var(--fg2);margin:0 0 14px;line-height:1.5;">
+      ${esc(t('roles.becomeTeacher.body','If your school admin has given you a teacher invite code, enter it here to unlock teacher tools.'))}
+    </p>
+    <input id="invite-code-input" class="input" placeholder="T-XXXX-XXXX" style="text-transform:uppercase;letter-spacing:1px;" />
+    <div id="invite-code-msg" style="margin-top:10px;font-size:13px;min-height:18px;"></div>
+  `;
+  const actions = el('div',{style:'display:flex;justify-content:flex-end;gap:8px;margin-top:14px;'});
+  const cancelBtn = el('button',{class:'btn btn-ghost',onclick:()=>close()},[t('common.cancel','Cancel')]);
+  const submitBtn = el('button',{class:'btn btn-primary'},[t('roles.becomeTeacher.submit','Redeem code')]);
+  submitBtn.onclick = async ()=>{
+    const code = document.getElementById('invite-code-input').value;
+    const msg = document.getElementById('invite-code-msg');
+    msg.textContent = '';
+    msg.style.color = 'var(--red)';
+    submitBtn.disabled = true;
+    try {
+      await redeemTeacherInviteCode(code);
+      msg.style.color = 'var(--green)';
+      msg.textContent = t('roles.becomeTeacher.success','Teacher access unlocked. Reloading…');
+      setTimeout(()=>location.reload(), 900);
+    } catch(e){
+      msg.textContent = e.message || 'Could not redeem code';
+      submitBtn.disabled = false;
+    }
+  };
+  actions.append(cancelBtn, submitBtn);
+  wrap.appendChild(actions);
+}
+
+// ── Admin panel modal ──
+async function showAdminPanel(){
+  if(!isAdmin()){ toast('Admin only', 'error'); return; }
+  const { wrap, close } = _openSmallModal(t('admin.panel.title','Admin Panel'), 720);
+  wrap.innerHTML = `
+    <div class="admin-tabs" style="display:flex;gap:6px;border-bottom:1px solid var(--border);margin-bottom:14px;">
+      <button class="admin-tab active" data-tab="teachers" style="background:none;border:none;color:var(--fg);padding:8px 14px;cursor:pointer;border-bottom:2px solid var(--primary);">${esc(t('admin.tab.teachers','Teachers'))}</button>
+      <button class="admin-tab" data-tab="invites" style="background:none;border:none;color:var(--fg2);padding:8px 14px;cursor:pointer;border-bottom:2px solid transparent;">${esc(t('admin.tab.invites','Invite codes'))}</button>
+      ${isMaster() ? `<button class="admin-tab" data-tab="dev" style="background:none;border:none;color:var(--fg2);padding:8px 14px;cursor:pointer;border-bottom:2px solid transparent;">${esc(t('admin.tab.dev','Dev'))}</button>` : ''}
+    </div>
+    <div id="admin-tab-content"></div>
+  `;
+  wrap.querySelectorAll('.admin-tab').forEach(btn=>{
+    btn.onclick = ()=>{
+      wrap.querySelectorAll('.admin-tab').forEach(b=>{
+        b.classList.remove('active');
+        b.style.color='var(--fg2)';
+        b.style.borderBottomColor='transparent';
+      });
+      btn.classList.add('active');
+      btn.style.color='var(--fg)';
+      btn.style.borderBottomColor='var(--primary)';
+      _renderAdminTab(btn.dataset.tab, document.getElementById('admin-tab-content'));
+    };
+  });
+  await _renderAdminTab('teachers', document.getElementById('admin-tab-content'));
+}
+
+async function _renderAdminTab(tab, container){
+  if(tab === 'teachers') return _renderAdminTeachersTab(container);
+  if(tab === 'invites')  return _renderAdminInvitesTab(container);
+  if(tab === 'dev')      return _renderAdminDevTab(container);
+}
+
+async function _renderAdminTeachersTab(container){
+  container.innerHTML = '<div style="padding:20px;text-align:center;color:var(--fg3);">'+esc(t('admin.teachers.loading','Loading teachers…'))+'</div>';
+  let teachers;
+  try { teachers = await adminListTeachers(); }
+  catch(e){ container.innerHTML = '<div style="color:var(--red);padding:12px;">'+esc(e.message||'Failed to load')+'</div>'; return; }
+  container.innerHTML = '';
+  const intro = el('p',{style:'color:var(--fg2);margin:0 0 12px;font-size:13px;line-height:1.5;'});
+  intro.textContent = t('admin.teachers.intro','Manage teacher accounts. Promote a student to teacher by adding them as a member of any classroom first, then promoting them here. Or generate an invite code on the next tab.');
+  container.appendChild(intro);
+  if(teachers.length === 0){
+    container.appendChild(el('div',{style:'color:var(--fg3);padding:24px;text-align:center;'},[t('admin.teachers.empty','No teachers found.')]));
+    return;
+  }
+  teachers.forEach(t_ => {
+    const row = el('div',{style:'display:flex;align-items:center;gap:10px;padding:10px;border:1px solid var(--border);border-radius:8px;margin-bottom:8px;'});
+    const labelText = (t_.displayName || t_.email || t_.uid) +
+      (t_.isMaster ? '  · master' : (t_.isAdmin ? '  · admin' : ''));
+    const lbl = el('div',{style:'flex:1;color:var(--fg);font-size:14px;'},[labelText]);
+    row.appendChild(lbl);
+    // Self row: only allow self-revoke admin (with guard).
+    if(t_.uid === currentUser.uid){
+      if(t_.isAdmin && !t_.isMaster){
+        const btn = el('button',{class:'btn btn-ghost btn-sm'},[t('admin.teachers.revokeSelf','Revoke my admin')]);
+        btn.onclick = async ()=>{
+          if(!confirm('Revoke your own admin? You will not be able to undo this without another admin promoting you.')) return;
+          try { await adminRevokeAdmin(t_.uid); toast('Admin revoked'); _renderAdminTeachersTab(container); }
+          catch(e){ toast(e.message||'Failed','error'); }
+        };
+        row.appendChild(btn);
+      }
+    } else {
+      // Other teachers: promote/revoke admin, or demote to student.
+      if(!t_.isAdmin){
+        const grantBtn = el('button',{class:'btn btn-ghost btn-sm'},[t('admin.teachers.grantAdmin','Grant admin')]);
+        grantBtn.onclick = async ()=>{
+          try { await adminGrantAdmin(t_.uid); toast('Granted'); _renderAdminTeachersTab(container); }
+          catch(e){ toast(e.message||'Failed','error'); }
+        };
+        row.appendChild(grantBtn);
+      } else if(!t_.isMaster){
+        const revokeBtn = el('button',{class:'btn btn-ghost btn-sm'},[t('admin.teachers.revokeAdmin','Revoke admin')]);
+        revokeBtn.onclick = async ()=>{
+          if(!confirm('Revoke admin from '+(t_.displayName||t_.email||t_.uid)+'?')) return;
+          try { await adminRevokeAdmin(t_.uid); toast('Admin revoked'); _renderAdminTeachersTab(container); }
+          catch(e){ toast(e.message||'Failed','error'); }
+        };
+        row.appendChild(revokeBtn);
+      }
+      if(!t_.isMaster){
+        const demoteBtn = el('button',{class:'btn btn-ghost btn-sm',style:'color:var(--red);'},[t('admin.teachers.demote','Demote to student')]);
+        demoteBtn.onclick = async ()=>{
+          if(!confirm('Demote '+(t_.displayName||t_.email||t_.uid)+' to student? They will lose all teacher capabilities.')) return;
+          try { await adminDemoteToStudent(t_.uid); toast('Demoted'); _renderAdminTeachersTab(container); }
+          catch(e){ toast(e.message||'Failed','error'); }
+        };
+        row.appendChild(demoteBtn);
+      }
+    }
+    container.appendChild(row);
+  });
+}
+
+async function _renderAdminInvitesTab(container){
+  container.innerHTML = '';
+  const intro = el('p',{style:'color:var(--fg2);margin:0 0 12px;font-size:13px;line-height:1.5;'});
+  intro.textContent = t('admin.invites.intro','Generate single-use codes that promote any signed-in student to teacher. Codes expire after 7 days by default. Share out-of-band; recipients enter the code from their account menu.');
+  container.appendChild(intro);
+
+  const genBtn = el('button',{class:'btn btn-primary'},[t('admin.invites.generate','Generate invite code')]);
+  genBtn.onclick = async ()=>{
+    genBtn.disabled = true;
+    try {
+      const { code, expiresAt } = await adminCreateInviteCode(7);
+      toast('Code generated');
+      // Show the code prominently for copy.
+      const banner = el('div',{style:'background:var(--bg2);border:1px solid var(--primary);border-radius:8px;padding:12px;margin:10px 0;'});
+      banner.innerHTML = '<div style="font-size:13px;color:var(--fg2);">'+esc(t('admin.invites.copyHint','Copy this code now and share it. It will not be shown again in full.'))+'</div>'+
+        '<div style="font-family:monospace;font-size:18px;color:var(--fg);margin-top:6px;letter-spacing:2px;">'+esc(code)+'</div>'+
+        '<div style="font-size:12px;color:var(--fg3);margin-top:4px;">Expires '+expiresAt.toLocaleDateString()+'</div>';
+      container.insertBefore(banner, list);
+      _refreshInviteList();
+    } catch(e){ toast(e.message||'Failed','error'); }
+    finally { genBtn.disabled = false; }
+  };
+  container.appendChild(genBtn);
+
+  const list = el('div',{style:'margin-top:16px;'});
+  container.appendChild(list);
+
+  async function _refreshInviteList(){
+    list.innerHTML = '<div style="padding:12px;color:var(--fg3);">'+esc(t('admin.invites.loading','Loading codes…'))+'</div>';
+    try {
+      const codes = await adminListInviteCodes();
+      list.innerHTML = '';
+      if(codes.length === 0){
+        list.appendChild(el('div',{style:'color:var(--fg3);padding:12px;text-align:center;font-size:13px;'},[t('admin.invites.empty','No codes issued yet.')]));
+        return;
+      }
+      codes.forEach(c => {
+        const row = el('div',{style:'display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px solid var(--border);border-radius:6px;margin-bottom:6px;font-size:13px;'});
+        const expires = c.expiresAt && c.expiresAt.toDate ? c.expiresAt.toDate() : new Date(c.expiresAt);
+        const used = !!c.usedBy;
+        const expired = expires && expires.getTime() < Date.now();
+        const statusLabel = used ? 'used' : (expired ? 'expired' : 'active');
+        const statusColor = used ? 'var(--fg3)' : (expired ? 'var(--red)' : 'var(--green)');
+        row.innerHTML = '<div style="font-family:monospace;flex:1;color:var(--fg);">'+esc(c.code)+'</div>'+
+          '<div style="color:'+statusColor+';font-size:12px;">'+statusLabel+'</div>'+
+          '<div style="color:var(--fg3);font-size:12px;">'+(expires?expires.toLocaleDateString():'')+'</div>';
+        if(!used && !expired){
+          const revBtn = el('button',{class:'btn btn-ghost btn-sm'},[t('admin.invites.revoke','Revoke')]);
+          revBtn.onclick = async ()=>{
+            if(!confirm('Revoke this code? It cannot be undone.')) return;
+            try { await adminRevokeInviteCode(c.code); _refreshInviteList(); }
+            catch(e){ toast(e.message||'Failed','error'); }
+          };
+          row.appendChild(revBtn);
+        }
+        list.appendChild(row);
+      });
+    } catch(e){
+      list.innerHTML = '<div style="color:var(--red);padding:12px;">'+esc(e.message||'Failed to load')+'</div>';
+    }
+  }
+  _refreshInviteList();
+}
+
+async function _renderAdminDevTab(container){
+  container.innerHTML = '';
+  const intro = el('p',{style:'color:var(--fg2);margin:0 0 12px;font-size:13px;line-height:1.5;'});
+  intro.textContent = t('admin.dev.intro','Master-only diagnostics. Used during development to inspect app state.');
+  container.appendChild(intro);
+
+  const profilePanel = el('div',{style:'background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:10px;font-family:monospace;font-size:12px;white-space:pre-wrap;color:var(--fg2);'});
+  profilePanel.textContent = JSON.stringify({
+    uid: currentUser.uid,
+    profile: _userProfile,
+    schemaVersions: CURRENT_SCHEMA_VERSIONS,
+    lang: _activeLang
+  }, null, 2);
+  container.appendChild(el('div',{style:'font-size:13px;color:var(--fg);margin-bottom:6px;'},[t('admin.dev.session','Current session')]));
+  container.appendChild(profilePanel);
+
+  // Cache controls.
+  const cacheRow = el('div',{style:'display:flex;gap:8px;margin-top:10px;'});
+  const clearClassmateBtn = el('button',{class:'btn btn-ghost btn-sm'},[t('admin.dev.clearClassmate','Clear classmate cache')]);
+  clearClassmateBtn.onclick = ()=>{ _invalidateClassmateCache(); toast('Cache cleared'); };
+  cacheRow.append(clearClassmateBtn);
+  container.appendChild(cacheRow);
+}
+
 // Get student stats from their Firestore subtree
 async function getStudentStats(studentUid){
-  try{
-    const stuCol = (c)=>collection(db,'users',studentUid,c);
-    const [projSnap, scenesSnap, docsSnap] = await Promise.all([
-      getDocs(query(stuCol('projects'), limit(50))),
-      getDocs(query(stuCol('scenes'), limit(200))),
-      getDocs(query(stuCol('generatedDocs'), limit(50))),
-    ]);
-    const allDocs = await getDocs(query(stuCol('documents'), limit(50)));
-    let totalWords = 0;
-    allDocs.docs.forEach(d=>{
-      const html = d.data().content||'';
-      const txt = html.replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').trim();
-      if(txt) totalWords += txt.split(' ').length;
+  // 5-0b.1 (bug 1.3): rewritten to fix multiple compounding issues:
+  //   - Removed silent limit(50)/limit(200) caps that froze stats for active students
+  //   - lastActive now sweeps all four collections, not just projects+documents
+  //     (previously, editing a scene bumped the count but not the timestamp)
+  //   - updatedAt normalized to milliseconds; handles Firestore Timestamp,
+  //     plain Date, JS number, and {seconds,nanoseconds} shapes
+  //   - Cache-only reads with null updatedAt (from offline persistence) are
+  //     skipped, not treated as zero
+  //   - Per-collection try/catch so one failing query degrades only its column
+  const stuCol = (c) => collection(db, 'users', studentUid, c);
+
+  async function safeSnap(c){
+    try { return await getDocs(stuCol(c)); } catch(e){ return null; }
+  }
+
+  // Run all four queries in parallel
+  const [projectsSnap, scenesSnap, documentsSnap, generatedDocsSnap] = await Promise.all([
+    safeSnap('projects'),
+    safeSnap('scenes'),
+    safeSnap('documents'),
+    safeSnap('generatedDocs'),
+  ]);
+
+  // Word count from documents
+  let wordCount = 0;
+  if(documentsSnap){
+    documentsSnap.docs.forEach(d => {
+      const html = d.data().content || '';
+      const txt = html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+      if(txt) wordCount += txt.split(' ').length;
     });
-    // approximate last active
-    let lastActive = null;
-    [...projSnap.docs,...allDocs.docs].forEach(d=>{
-      const ua = d.data().updatedAt;
-      if(ua && (!lastActive || ua.seconds > lastActive.seconds)) lastActive = ua;
+  }
+
+  // Normalize an updatedAt value to milliseconds-since-epoch, or null.
+  const tsToMs = (ua) => {
+    if(ua == null) return null;
+    if(typeof ua === 'number') return ua;
+    if(ua instanceof Date) return ua.getTime();
+    if(typeof ua.toMillis === 'function') return ua.toMillis();
+    if(typeof ua.seconds === 'number') return ua.seconds * 1000;
+    return null;
+  };
+
+  // Sweep all four snapshots for the most recent updatedAt
+  let lastActive = null;
+  [projectsSnap, scenesSnap, documentsSnap, generatedDocsSnap].forEach(snap => {
+    if(!snap) return;
+    snap.docs.forEach(d => {
+      const ms = tsToMs(d.data().updatedAt);
+      if(ms != null && (lastActive == null || ms > lastActive)) lastActive = ms;
     });
-    return {
-      projects: projSnap.size,
-      scenes: scenesSnap.size,
-      wordCount: totalWords,
-      documents: docsSnap.size,
-      lastActive
-    };
-  } catch(e){ return {projects:'—',scenes:'—',wordCount:'—',documents:'—',lastActive:null}; }
+  });
+
+  return {
+    projects: projectsSnap ? projectsSnap.size : '—',
+    scenes: scenesSnap ? scenesSnap.size : '—',
+    wordCount: documentsSnap ? wordCount : '—',
+    documents: generatedDocsSnap ? generatedDocsSnap.size : '—',
+    lastActive,  // milliseconds-since-epoch number, or null
+  };
 }
 
 // ══════════════════════════════════════════════
@@ -917,10 +1503,20 @@ function renderHomeButtons(tr){
   userDiv.append(avatar,name);
   tr.insertBefore(themeToggleEl(),tr.firstChild);
   tr.insertBefore(signOutBtn,tr.firstChild);
-  // Student: show "My Classes" button + unread badge
+  // Item 17 (5-0): admin panel entry point for admins.
+  if(isAdmin()){
+    const adminBtn = el('button',{class:'btn btn-ghost btn-sm',onclick:e=>{e.stopPropagation();showAdminPanel();}});
+    adminBtn.textContent = isMaster() ? t('topbar.admin.master','⚙ Admin · master') : t('topbar.admin','⚙ Admin');
+    tr.insertBefore(adminBtn, tr.firstChild);
+  }
+  // Student: show "My Classes" button + unread badge + "Become a teacher" link
   if(!isTeacher()){
     const classesBtn = el('button',{class:'btn btn-ghost btn-sm',onclick:()=>showMyClassesModal()});classesBtn.textContent='🎓 My Classes';
     tr.insertBefore(classesBtn,tr.firstChild);
+    // Item 17 (5-0): teacher invite redemption entry point.
+    const becomeBtn = el('button',{class:'btn btn-ghost btn-sm',onclick:e=>{e.stopPropagation();showBecomeTeacherModal();},title:t('topbar.becomeTeacher.tip','Have a teacher invite code?')});
+    becomeBtn.textContent = t('topbar.becomeTeacher','Have a code?');
+    tr.insertBefore(becomeBtn, tr.firstChild);
     // Check for unread comments and show badge
     checkUnreadComments().then(count=>{
       if(count>0){
@@ -4261,7 +4857,12 @@ async function renderScenes(container, projectId){
       const draftSceneBtn = el('button',{class:'btn btn-ghost btn-sm',onclick:()=>openSceneDraftEditor(sc,projectId,chars,locs),title: link ? 'Edit this scene (changes also update the script)' : 'Write or edit the screenplay prose for this scene'});
       draftSceneBtn.textContent = draftWords > 0 ? '✎ Edit' : '✎ Draft';
       const eb=el('button',{class:'btn btn-ghost btn-sm',onclick:()=>openSceneDrawer(sc,projectId,chars,locs,scenes.length+1)});eb.textContent='Details';
-      const db2=el('button',{class:'btn btn-danger btn-sm',onclick:()=>confirmDelete('Delete "'+sc.title+'"?',async()=>{await fsDelete('scenes',sc.id);renderScenes(container,projectId);toast('Deleted');})});db2.textContent='✕';
+      const db2=el('button',{class:'btn btn-danger btn-sm',onclick:()=>{
+        deleteSceneWithLinkedBlock(sc, projectId, () => {
+          renderScenes(container,projectId);
+          toast('Deleted');
+        });
+      }});db2.textContent='\u2715';
       acts.append(draftSceneBtn,eb,db2); item.append(num,body,acts); list.appendChild(item);
     });
     wrap.appendChild(list);
@@ -4337,7 +4938,7 @@ function openSceneDrawer(scene, projectId, chars, locs, nextSeq){
       ${chars.length?`<div class="field"><label class="label">Characters</label><div style="display:flex;flex-direction:column;gap:8px;padding:10px;background:var(--bg3);border-radius:var(--radius-sm);">${charOpts}</div></div>`:''}
     </div>
     <div class="drawer-footer">
-      ${!isNew?`<button class="btn btn-danger" onclick="confirmDelete('Delete this scene?',async()=>{await fsDelete('scenes','${scene.id}');document.querySelector('.drawer-overlay').remove();renderScenes(document.getElementById('content'),'${projectId}');toast('Deleted');})">Delete</button>`:''}
+      ${!isNew?`<button class="btn btn-danger" id="sd-delete">Delete</button>`:''}
       ${!isNew?`<button class="btn btn-ghost" id="sd-draft" title="Write the actual screenplay prose for this scene">✎ Draft Scene</button>`:''}
       <button class="btn btn-ghost" onclick="this.closest('.drawer-overlay').remove()">Cancel</button>
       <button class="btn btn-primary" id="sd-save">Save Scene</button>
@@ -4346,6 +4947,17 @@ function openSceneDrawer(scene, projectId, chars, locs, nextSeq){
   const locCombo = buildLocationCombo('sd-loc', locs, data.locationId);
   drawer.querySelector('#sd-loc-container').appendChild(locCombo);
   document.body.appendChild(overlay); overlay.appendChild(drawer);
+  // 5-0b.1 (bug 1.2): wire delete via the linked-block-aware helper.
+  const sdDeleteBtn = drawer.querySelector('#sd-delete');
+  if(sdDeleteBtn){
+    sdDeleteBtn.onclick = () => {
+      deleteSceneWithLinkedBlock(scene, projectId, () => {
+        overlay.remove();
+        renderScenes(document.getElementById('content'), projectId);
+        toast('Deleted');
+      });
+    };
+  }
   drawer.querySelector('#sd-save').onclick=async()=>{
     const cbs=Array.from(drawer.querySelectorAll('input[type="checkbox"]:checked')).map(c=>c.value);
     const locVal = v('sd-loc');
@@ -4353,7 +4965,11 @@ function openSceneDrawer(scene, projectId, chars, locs, nextSeq){
     const up={title:v('sd-title'),description:v('sd-desc'),locationId:locId,sequenceNumber:parseInt(v('sd-seq'))||1,characterIds:cbs};
     showSaving();
     if(isNew) await fsCreate('scenes',{storyProjectId:projectId,...up});
-    else await fsUpdate('scenes',scene.id,up);
+    else {
+      await fsUpdate('scenes',scene.id,up);
+      // 5-0b.1 (bug 1.4): propagate sequenceNumber to the linked script block.
+      await syncSceneNumberFromCard({id: scene.id, sequenceNumber: up.sequenceNumber}, projectId);
+    }
     showSaved();
     overlay.remove(); renderScenes(document.getElementById('content'),projectId); toast(isNew?'Scene created':'Scene saved');
   };
@@ -4369,6 +4985,8 @@ function openSceneDrawer(scene, projectId, chars, locs, nextSeq){
       const up={title:v('sd-title'),description:v('sd-desc'),locationId:locId,sequenceNumber:parseInt(v('sd-seq'))||1,characterIds:cbs};
       showSaving();
       await fsUpdate('scenes',scene.id,up);
+      // 5-0b.1 (bug 1.4): propagate sequenceNumber to the linked script block.
+      await syncSceneNumberFromCard({id: scene.id, sequenceNumber: up.sequenceNumber}, projectId);
       showSaved();
       overlay.remove();
       const fresh = await fsGet('scenes', scene.id);
@@ -6287,6 +6905,137 @@ function getBlockWordCount(block){
   return wordCount(block.content);
 }
 
+// ── Cleanup helpers (5-0b.1: bug 1.1 fix) ──
+// scanScriptIssues walks the block array and returns a list of fixable
+// problems the user can review and remove via the Clean Up modal. Each issue
+// is { index, block, kind, reason } where index is the position in the
+// original blocks array. Issue kinds:
+//   - 'empty':            block is completely empty (no slugline, no words)
+//   - 'heading-only':     slugline present but zero scene content written
+//   - 'orphan-placeholder': placeholder block with no sceneId and no slugline
+//   - 'duplicate':        an empty block whose slugline matches an adjacent block
+function scanScriptIssues(blocks){
+  const issues = [];
+  if(!Array.isArray(blocks)) return issues;
+  blocks.forEach((b, i) => {
+    if(!b || b.kind === 'preamble') return;
+    const slug = getBlockSlug(b);
+    const wc = getBlockWordCount(b);
+    // Subtract the slug words from the body-content estimate so a heading-only
+    // block reads as 0 body words.
+    const slugWords = slug ? slug.split(/\s+/).filter(Boolean).length : 0;
+    const bodyWords = Math.max(0, wc - slugWords);
+
+    if(b.kind === 'placeholder' && !b.sceneId && !slug){
+      issues.push({ index:i, block:b, kind:'orphan-placeholder',
+        reason:'Empty placeholder card with no scene link' });
+      return;
+    }
+    if(!slug && bodyWords === 0){
+      issues.push({ index:i, block:b, kind:'empty',
+        reason:'Empty block (no slugline, no content)' });
+      return;
+    }
+    if(slug && bodyWords === 0){
+      issues.push({ index:i, block:b, kind:'heading-only',
+        reason:'Slugline present but no scene content written' });
+      return;
+    }
+    // Duplicate: an empty heading-only block whose slug matches the previous
+    // or next non-preamble block. Already handled by 'heading-only' above
+    // unless we want to flag both copies — current rule: only flag the empty
+    // one, which is what 'heading-only' catches. No additional case needed.
+  });
+  return issues;
+}
+
+// showCleanupModal renders a review modal listing each issue with a checkbox
+// (default checked). On confirm, calls onConfirm(selectedIndices) where
+// selectedIndices is the array of original-block-array positions to remove.
+function showCleanupModal(issues, onConfirm){
+  const overlay = el('div', {style:
+    'position:fixed;inset:0;z-index:600;display:flex;align-items:center;'+
+    'justify-content:center;background:rgba(0,0,0,0.65);animation:fadeIn 0.15s;'
+  });
+  const box = el('div', {style:
+    'background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);'+
+    'padding:24px;width:520px;max-width:92vw;max-height:80vh;'+
+    'display:flex;flex-direction:column;gap:14px;'
+  });
+  const title = el('div', {style:
+    'font-family:\u2019Belleza\u2019,serif;font-size:20px;color:var(--fg);'
+  });
+  title.textContent = '\u2728 Script Cleanup';
+  box.appendChild(title);
+
+  if(issues.length === 0){
+    const msg = el('div', {style:'font-size:14px;color:var(--fg2);line-height:1.6;'});
+    msg.textContent = 'Your script looks clean \u2014 no empty or duplicate scenes found.';
+    box.appendChild(msg);
+    const btnRow = el('div', {style:'display:flex;justify-content:flex-end;'});
+    const closeBtn = el('button', {class:'btn btn-primary'});
+    closeBtn.textContent = 'OK';
+    closeBtn.onclick = () => overlay.remove();
+    btnRow.appendChild(closeBtn);
+    box.appendChild(btnRow);
+    overlay.appendChild(box);
+    document.body.appendChild(overlay);
+    return;
+  }
+
+  const sub = el('div', {style:'font-size:13px;color:var(--fg2);line-height:1.5;'});
+  sub.textContent = 'Found ' + issues.length + ' issue' + (issues.length===1?'':'s') +
+    '. Uncheck anything you want to keep, then confirm to remove the rest.';
+  box.appendChild(sub);
+
+  const list = el('div', {style:
+    'overflow-y:auto;max-height:360px;border:1px solid var(--border);'+
+    'border-radius:8px;padding:10px;display:flex;flex-direction:column;gap:8px;'
+  });
+  // Each row is { issue, checkbox }
+  const rows = issues.map(issue => {
+    const row = el('div', {style:
+      'display:flex;align-items:flex-start;gap:10px;padding:8px;'+
+      'border-radius:6px;background:var(--bg);'
+    });
+    const cb = el('input', {type:'checkbox', style:'margin-top:3px;flex-shrink:0;'});
+    cb.checked = true;
+    const info = el('div', {style:'flex:1;min-width:0;'});
+    const slug = getBlockSlug(issue.block) || '(no slugline)';
+    const slugEl = el('div', {style:
+      'font-family:\u2019JetBrains Mono\u2019,monospace;font-size:12px;'+
+      'color:var(--fg);margin-bottom:3px;overflow:hidden;text-overflow:ellipsis;'+
+      'white-space:nowrap;'
+    });
+    slugEl.textContent = slug;
+    const reasonEl = el('div', {style:'font-size:11px;color:var(--fg3);'});
+    reasonEl.textContent = issue.reason;
+    info.append(slugEl, reasonEl);
+    row.append(cb, info);
+    list.appendChild(row);
+    return { issue, cb };
+  });
+  box.appendChild(list);
+
+  const btnRow = el('div', {style:'display:flex;justify-content:space-between;gap:10px;'});
+  const cancel = el('button', {class:'btn btn-ghost'});
+  cancel.textContent = 'Cancel';
+  cancel.onclick = () => overlay.remove();
+  const confirm = el('button', {class:'btn btn-primary'});
+  confirm.textContent = 'Remove selected';
+  confirm.onclick = () => {
+    const selected = rows.filter(r => r.cb.checked).map(r => r.issue.index);
+    overlay.remove();
+    if(selected.length > 0) onConfirm(selected);
+    else toast('Nothing selected');
+  };
+  btnRow.append(cancel, confirm);
+  box.appendChild(btnRow);
+
+  overlay.appendChild(box);
+  document.body.appendChild(overlay);
+}
+
 // Build the v2 status bar.
 function buildV2StatusBar(doc, blocks, totalWords, callbacks){
   const bar = el('div', {class: 'v2-status-bar'});
@@ -6356,7 +7105,8 @@ function buildV2Navigator(blocks, doc, lockState, callbacks){
   } else {
     blocks.forEach((b, i) => {
       if(b.kind === 'preamble') return;
-      const item = el('div', {class:'v2-nav-item'+(b.kind==='placeholder'?' placeholder':'')});
+      const item = el('div', {class:'v2-nav-item'+(b.kind==='placeholder'?' placeholder':''),
+        style:'position:relative;'});
       const numInfo = computeSceneNumber(blocks, i, lockState);
       const num = el('div', {class:'v2-nav-num'}); num.textContent = numInfo.value;
       const text = el('div', {class:'v2-nav-text'});
@@ -6368,12 +7118,26 @@ function buildV2Navigator(blocks, doc, lockState, callbacks){
       meta.textContent = wc + ' words';
       if(!b.sceneId){
         const orphan = el('span',{class:'v2-nav-orphan',style:'margin-left:6px;'});
-        orphan.textContent = '· orphan';
+        orphan.textContent = '\u00b7 orphan';
         orphan.title = 'This scene is not linked to a Scene Builder card.';
         meta.appendChild(orphan);
       }
       text.appendChild(meta);
-      item.append(num, text);
+      // 5-0b.1 (bug 1.2): delete button, visible on hover.
+      const delBtn = el('button', {class:'btn-icon', style:
+        'position:absolute;right:6px;top:50%;transform:translateY(-50%);'+
+        'opacity:0;transition:opacity 0.15s;color:var(--red);font-size:13px;'+
+        'padding:2px 6px;line-height:1;background:transparent;border:0;cursor:pointer;',
+        title:'Delete this scene from the script'
+      });
+      delBtn.textContent = '\u2715';
+      delBtn.onclick = (e) => {
+        e.stopPropagation();
+        if(typeof callbacks.onDeleteBlock === 'function') callbacks.onDeleteBlock(b);
+      };
+      item.addEventListener('mouseenter', () => { delBtn.style.opacity = '1'; });
+      item.addEventListener('mouseleave', () => { delBtn.style.opacity = '0'; });
+      item.append(num, text, delBtn);
       item.onclick = () => callbacks.onJump(b);
       list.appendChild(item);
     });
@@ -6841,7 +7605,13 @@ async function renderV2ScreenplayEditor(view, doc, projectId){
       if(newVal) b.manualNumber = newVal;
       else delete b.manualNumber;
       await fsUpdate('documents', doc.id, { sceneBlocks: state.blocks });
+      // 5-0b.1 (bug 1.4): if this block is linked to a scene card, propagate
+      // the integer prefix of the new manualNumber back to the card.
+      if(b.sceneId && newVal){
+        await syncSceneNumberFromBlock(b, projectId);
+      }
       rerenderFlow();
+      rerenderChrome();  // also refresh navigator (it shows scene numbers)
     });
   }
 
@@ -6869,6 +7639,53 @@ async function renderV2ScreenplayEditor(view, doc, projectId){
       });
       toast('Removed ' + selectedIndices.length + ' block' + (selectedIndices.length === 1 ? '' : 's'));
       rerenderFlow();
+      rerenderChrome();  // 5-0b.1 fix: also refresh navigator + status bar
+    });
+  }
+
+  // 5-0b.1 (bug 1.2): delete a single block from the script via the navigator.
+  // If the block has a sceneId, the linked scene card is also deleted (with a
+  // warning if the block contains writing). For unlinked blocks, just remove
+  // the block.
+  async function onDeleteBlock(block){
+    const slug = getBlockSlug(block) || '(empty heading)';
+    const wc = getBlockWordCount(block);
+    const hasContent = wc > 0;
+    const linkedSceneId = block.sceneId || null;
+
+    // Build the confirmation prompt based on what's about to be lost.
+    let promptMsg;
+    if(linkedSceneId && hasContent){
+      promptMsg = 'Delete \u201c' + slug + '\u201d?\n\n' +
+        'This scene contains ' + wc + ' word' + (wc===1?'':'s') + '. ' +
+        'Both the script writing and the linked scene card will be removed. ' +
+        'This cannot be undone.';
+    } else if(linkedSceneId){
+      promptMsg = 'Delete \u201c' + slug + '\u201d?\n\n' +
+        'The block and its linked scene card will be removed.';
+    } else if(hasContent){
+      promptMsg = 'Delete \u201c' + slug + '\u201d?\n\n' +
+        'This scene contains ' + wc + ' word' + (wc===1?'':'s') + '. ' +
+        'This cannot be undone.';
+    } else {
+      promptMsg = 'Delete \u201c' + slug + '\u201d?';
+    }
+
+    confirmDelete(promptMsg, async () => {
+      // Remove the block from state.blocks
+      state.blocks = state.blocks.filter(b => b.id !== block.id);
+      await fsUpdate('documents', doc.id, {
+        sceneBlocks: state.blocks,
+        content: flattenBlocksToHtml(state.blocks),
+      });
+      // If linked, also delete the scene card. Silent on failure since the
+      // card may already be gone (legacy orphan from before this fix).
+      if(linkedSceneId){
+        try { await fsDelete('scenes', linkedSceneId); } catch(e){}
+      }
+      toast('Scene deleted');
+      rerenderFlow();
+      rerenderChrome();
     });
   }
 
@@ -7150,6 +7967,7 @@ async function renderV2ScreenplayEditor(view, doc, projectId){
     const newNav = buildV2Navigator(state.blocks, doc, doc.lockState || 'draft', {
       onJump: jumpToBlock,
       onCollapse: onNavToggle,
+      onDeleteBlock: onDeleteBlock,
     });
     if(navigatorEl) navigatorEl.replaceWith(newNav);
     else wrap.insertBefore(newNav, editorHost);
@@ -7242,6 +8060,114 @@ async function findLinkedScriptDoc(sceneId, projectId){
     }
   }
   return null;
+}
+
+// 5-0b.1 (bug 1.2): delete a scene card with awareness of any linked script
+// block. If the linked block contains writing, warn the user before deleting
+// both. If no block is linked, behave as a simple card delete. Calls
+// onComplete() on successful delete; does nothing on cancel.
+async function deleteSceneWithLinkedBlock(scene, projectId, onComplete){
+  const linkedDoc = await findLinkedScriptDoc(scene.id, projectId);
+  const linkedBlock = linkedDoc
+    ? linkedDoc.sceneBlocks.find(b => b.sceneId === scene.id)
+    : null;
+  const wc = linkedBlock ? getBlockWordCount(linkedBlock) : 0;
+  const hasContent = wc > 0;
+
+  let promptMsg;
+  if(linkedBlock && hasContent){
+    promptMsg = 'Delete \u201c' + (scene.title||'Untitled') + '\u201d?\n\n' +
+      'This scene contains ' + wc + ' word' + (wc===1?'':'s') + ' of script writing in \u201c' +
+      (linkedDoc.title || 'Untitled') + '\u201d. ' +
+      'Deleting will remove both the scene card and the writing. This cannot be undone.';
+  } else if(linkedBlock){
+    promptMsg = 'Delete \u201c' + (scene.title||'Untitled') + '\u201d?\n\n' +
+      'Both the scene card and its empty block in \u201c' +
+      (linkedDoc.title || 'Untitled') + '\u201d will be removed.';
+  } else {
+    promptMsg = 'Delete \u201c' + (scene.title||'Untitled') + '\u201d?';
+  }
+
+  confirmDelete(promptMsg, async () => {
+    // Delete the scene card
+    await fsDelete('scenes', scene.id);
+    // Delete the linked block from the document, if any
+    if(linkedDoc && linkedBlock){
+      const newBlocks = linkedDoc.sceneBlocks.filter(b => b.id !== linkedBlock.id);
+      await fsUpdate('documents', linkedDoc.id, {
+        sceneBlocks: newBlocks,
+        content: flattenBlocksToHtml(newBlocks),
+      });
+    }
+    if(typeof onComplete === 'function') onComplete();
+  });
+}
+
+// ── Scene-number sync helpers (5-0b.1: bug 1.4 fix) ──
+// Model C, Option 1: scene cards and script blocks stay in sync for linked
+// scenes; unlinked scenes/blocks are independent. Manual letter suffixes on
+// chip values (e.g., "14A") write the integer prefix back to the card.
+
+// Extract the integer prefix from a chip's manualNumber. Returns null if no
+// integer can be parsed. Examples: "14" -> 14, "14A" -> 14, "" -> null.
+function _parseManualNumberInt(manualNumber){
+  if(manualNumber == null) return null;
+  const m = String(manualNumber).match(/^(\d+)/);
+  return m ? parseInt(m[1], 10) : null;
+}
+
+// Called after a scene card's sequenceNumber is written. Finds the linked
+// script block (if any) and updates its manualNumber to the new value.
+// Silent on errors / missing links — sync is best-effort.
+async function syncSceneNumberFromCard(scene, projectId){
+  if(!scene || !scene.id || !projectId) return;
+  try {
+    const linkedDoc = await findLinkedScriptDoc(scene.id, projectId);
+    if(!linkedDoc) return;
+    const newManual = scene.sequenceNumber != null ? String(scene.sequenceNumber) : null;
+    let changed = false;
+    const newBlocks = linkedDoc.sceneBlocks.map(b => {
+      if(b.sceneId !== scene.id) return b;
+      // Don't overwrite a manual letter-suffix override (e.g., "14A") with the
+      // integer alone — preserve the suffix and just update the prefix.
+      const existingSuffix = b.manualNumber
+        ? String(b.manualNumber).replace(/^\d+/, '')
+        : '';
+      const newVal = newManual != null ? newManual + existingSuffix : null;
+      if(b.manualNumber === newVal) return b;
+      changed = true;
+      return Object.assign({}, b, { manualNumber: newVal });
+    });
+    if(changed){
+      await fsUpdate('documents', linkedDoc.id, {
+        sceneBlocks: newBlocks,
+        content: flattenBlocksToHtml(newBlocks),
+      });
+    }
+  } catch(e){
+    // Best-effort sync; don't surface errors to the user.
+    console.warn('syncSceneNumberFromCard failed', e);
+  }
+}
+
+// Called after a script block's manualNumber is changed via the chip popover.
+// Finds the linked scene card (if any) and updates its sequenceNumber to the
+// integer prefix of manualNumber. If manualNumber is null/empty, leaves the
+// card alone (auto-positional numbering doesn't propagate to the card in 5-0b.1
+// for chip-edit; full positional sync lands with scene reordering in 5-0d).
+async function syncSceneNumberFromBlock(block, projectId){
+  if(!block || !block.sceneId || !projectId) return;
+  try {
+    const intVal = _parseManualNumberInt(block.manualNumber);
+    if(intVal == null) return;  // No integer to propagate
+    // Read the card to avoid stomping unchanged values
+    const sceneSnap = await fsGet('scenes', block.sceneId);
+    if(!sceneSnap) return;
+    if(sceneSnap.sequenceNumber === intVal) return;
+    await fsUpdate('scenes', block.sceneId, { sequenceNumber: intVal });
+  } catch(e){
+    console.warn('syncSceneNumberFromBlock failed', e);
+  }
 }
 
 // Show a picker when multiple v2 screenplays exist. Returns the chosen doc or null.
@@ -9804,6 +10730,11 @@ service cloud.firestore {
 onAuthStateChanged(auth, async user=>{
   if(user){
     currentUser = user;
+    // ── Item 17 (5-0): load role profile before any UI renders ──
+    // Critical: every isTeacher()/isAdmin()/isMaster() check downstream
+    // depends on _userProfile being populated.
+    await loadUserProfile();
+    _invalidateClassmateCache();
     document.getElementById('auth-container').innerHTML='';
     document.getElementById('topbar').style.display='flex';
     document.getElementById('main').style.display='flex';
@@ -9818,6 +10749,8 @@ onAuthStateChanged(auth, async user=>{
     navigate('home');
   } else {
     currentUser = null;
+    _userProfile = null;
+    _invalidateClassmateCache();
     viewingStudentUid = null;
     document.getElementById('student-view-banner')?.remove();
     document.getElementById('feedback-fab')?.remove();
