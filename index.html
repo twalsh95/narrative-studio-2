@@ -254,6 +254,7 @@
   .v2-conflict-side-body{flex:1;overflow-y:auto;padding:20px;font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.6;color:var(--fg2);}
   .v2-conflict-footer{padding:16px 24px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;}
   .scene-list{display:flex;flex-direction:column;gap:10px;}
+  .scene-item.drag-over{border-color:var(--primary);background:var(--active-bg);}
   .scene-item{background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:16px 20px;display:flex;gap:14px;align-items:flex-start;transition:all 0.2s;}
   .scene-item:hover{border-color:var(--border2);}
   .scene-num{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--fg3);background:var(--bg3);padding:2px 7px;border-radius:4px;flex-shrink:0;margin-top:2px;}
@@ -310,9 +311,9 @@
   .link-btn:hover{opacity:0.75;}
   .link-btn.pinned::after{content:' 📌';font-size:9px;opacity:0.7;vertical-align:middle;}
   .link-char{background:rgba(82,183,136,0.12);color:var(--primary);border-color:rgba(82,183,136,0.25);}
-  .link-loc{background:rgba(94,202,200,0.1);color:var(--teal);border-color:rgba(94,202,200,0.25);}
+  .link-loc{background:rgba(229,184,110,0.12);color:var(--gold);border-color:rgba(229,184,110,0.28);}
   .link-scene{background:rgba(104,147,239,0.1);color:var(--accent);border-color:rgba(104,147,239,0.25);}
-  .link-prop{background:rgba(229,184,110,0.1);color:var(--gold);border-color:rgba(229,184,110,0.25);}
+  .link-prop{background:rgba(130,100,220,0.1);color:#8b6fdc;border-color:rgba(130,100,220,0.25);}
   .link-popover{position:absolute;background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius-sm);padding:6px 4px;z-index:60;box-shadow:var(--shadow);min-width:160px;animation:fadeIn 0.1s;}
   .link-popover-title{font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:var(--fg3);padding:4px 10px 6px;font-family:'JetBrains Mono',monospace;}
   .link-popover-item{padding:6px 10px;font-size:12px;cursor:pointer;border-radius:4px;color:var(--fg2);display:flex;align-items:center;gap:7px;transition:background 0.1s;}
@@ -457,6 +458,8 @@
   .comment-meta{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
   .comment-author{font-family:'Belleza',serif;font-size:13px;color:var(--fg);}
   .comment-time{font-size:11px;color:var(--fg3);}
+  .comment-anchor{font-size:11px;color:var(--fg3);background:var(--bg3);border:1px solid var(--border);border-left:2px solid var(--primary);border-radius:var(--radius-sm);padding:4px 10px;margin-bottom:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;display:block;font-style:italic;}
+  .comment-anchor.stale{border-left-color:var(--fg3);color:var(--fg3);opacity:0.6;}
   .comment-body{font-size:13px;color:var(--fg2);line-height:1.6;margin-bottom:8px;}
   .comment-replies{padding-left:14px;border-left:2px solid var(--border);margin-top:8px;}
   .reply-item{margin-bottom:8px;}
@@ -470,6 +473,15 @@
   .comment-new{padding:16px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:8px;}
   .comment-new textarea{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:9px 12px;color:var(--fg);font-family:'Lora',serif;font-size:13px;resize:vertical;min-height:80px;outline:none;width:100%;}
   .comment-new textarea:focus{border-color:var(--primary);}
+  .comment-anchor-preview{font-size:11px;color:var(--fg3);background:var(--bg3);border:1px solid var(--border);border-left:2px solid var(--primary);border-radius:var(--radius-sm);padding:5px 10px;font-style:italic;display:flex;align-items:center;justify-content:space-between;gap:8px;}
+  .comment-anchor-preview .clear-anchor{background:none;border:none;cursor:pointer;color:var(--fg3);font-size:12px;padding:0;flex-shrink:0;}
+  .comment-anchor-preview .clear-anchor:hover{color:var(--fg);}
+  /* Per-block inline comment trigger in teacher read-only view */
+  .block-comment-wrap{position:relative;}
+  .block-comment-wrap:hover .block-comment-btn{opacity:1;}
+  .block-comment-btn{position:absolute;right:-36px;top:50%;transform:translateY(-50%);opacity:0;transition:opacity 0.15s;background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:2px 8px;font-size:11px;color:var(--fg3);cursor:pointer;white-space:nowrap;}
+  .block-comment-btn:hover{background:var(--primary);color:var(--bg);border-color:var(--primary);}
+  .block-has-comment .block-comment-btn{opacity:0.5;color:var(--primary);}
   .unread-dot{width:9px;height:9px;border-radius:50%;background:var(--green);display:inline-block;margin-left:4px;flex-shrink:0;box-shadow:0 0 0 2px var(--bg);}
   .feedback-panel{padding:20px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:16px;}
   .unread-list{display:flex;flex-direction:column;gap:8px;margin-top:8px;}
@@ -1327,66 +1339,34 @@ async function _renderAdminDevTab(container){
 
 // Get student stats from their Firestore subtree
 async function getStudentStats(studentUid){
-  // 5-0b.1 (bug 1.3): rewritten to fix multiple compounding issues:
-  //   - Removed silent limit(50)/limit(200) caps that froze stats for active students
-  //   - lastActive now sweeps all four collections, not just projects+documents
-  //     (previously, editing a scene bumped the count but not the timestamp)
-  //   - updatedAt normalized to milliseconds; handles Firestore Timestamp,
-  //     plain Date, JS number, and {seconds,nanoseconds} shapes
-  //   - Cache-only reads with null updatedAt (from offline persistence) are
-  //     skipped, not treated as zero
-  //   - Per-collection try/catch so one failing query degrades only its column
-  const stuCol = (c) => collection(db, 'users', studentUid, c);
-
-  async function safeSnap(c){
-    try { return await getDocs(stuCol(c)); } catch(e){ return null; }
-  }
-
-  // Run all four queries in parallel
-  const [projectsSnap, scenesSnap, documentsSnap, generatedDocsSnap] = await Promise.all([
-    safeSnap('projects'),
-    safeSnap('scenes'),
-    safeSnap('documents'),
-    safeSnap('generatedDocs'),
-  ]);
-
-  // Word count from documents
-  let wordCount = 0;
-  if(documentsSnap){
-    documentsSnap.docs.forEach(d => {
-      const html = d.data().content || '';
-      const txt = html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
-      if(txt) wordCount += txt.split(' ').length;
+  try{
+    const stuCol = (c)=>collection(db,'users',studentUid,c);
+    const [projSnap, scenesSnap, docsSnap] = await Promise.all([
+      getDocs(query(stuCol('projects'), limit(50))),
+      getDocs(query(stuCol('scenes'), limit(200))),
+      getDocs(query(stuCol('generatedDocs'), limit(50))),
+    ]);
+    const allDocs = await getDocs(query(stuCol('documents'), limit(50)));
+    let totalWords = 0;
+    allDocs.docs.forEach(d=>{
+      const html = d.data().content||'';
+      const txt = html.replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').trim();
+      if(txt) totalWords += txt.split(' ').length;
     });
-  }
-
-  // Normalize an updatedAt value to milliseconds-since-epoch, or null.
-  const tsToMs = (ua) => {
-    if(ua == null) return null;
-    if(typeof ua === 'number') return ua;
-    if(ua instanceof Date) return ua.getTime();
-    if(typeof ua.toMillis === 'function') return ua.toMillis();
-    if(typeof ua.seconds === 'number') return ua.seconds * 1000;
-    return null;
-  };
-
-  // Sweep all four snapshots for the most recent updatedAt
-  let lastActive = null;
-  [projectsSnap, scenesSnap, documentsSnap, generatedDocsSnap].forEach(snap => {
-    if(!snap) return;
-    snap.docs.forEach(d => {
-      const ms = tsToMs(d.data().updatedAt);
-      if(ms != null && (lastActive == null || ms > lastActive)) lastActive = ms;
+    // approximate last active
+    let lastActive = null;
+    [...projSnap.docs,...allDocs.docs].forEach(d=>{
+      const ua = d.data().updatedAt;
+      if(ua && (!lastActive || ua.seconds > lastActive.seconds)) lastActive = ua;
     });
-  });
-
-  return {
-    projects: projectsSnap ? projectsSnap.size : '—',
-    scenes: scenesSnap ? scenesSnap.size : '—',
-    wordCount: documentsSnap ? wordCount : '—',
-    documents: generatedDocsSnap ? generatedDocsSnap.size : '—',
-    lastActive,  // milliseconds-since-epoch number, or null
-  };
+    return {
+      projects: projSnap.size,
+      scenes: scenesSnap.size,
+      wordCount: totalWords,
+      documents: docsSnap.size,
+      lastActive
+    };
+  } catch(e){ return {projects:'—',scenes:'—',wordCount:'—',documents:'—',lastActive:null}; }
 }
 
 // ══════════════════════════════════════════════
@@ -1396,21 +1376,38 @@ let currentRoute = {page:'home', projectId:null, sub:null, subId:null};
 // classViewState tracks teacher class view navigation
 let classViewState = {view:'list', classroomId:null, studentUid:null, studentName:null, sub:'overview'};
 
-function navigate(page, projectId, sub, subId){
+function _buildHash(page, projectId, sub, subId){
+  if(!page || page==='home') return '#home';
+  if(page==='classView') return '#class';
+  let h = '#project/'+projectId;
+  if(sub) h += '/'+sub;
+  if(subId) h += '/'+subId;
+  return h;
+}
+
+function navigate(page, projectId, sub, subId, _fromPopstate){
   document.getElementById('feedback-fab')?.remove();
   document.getElementById('comment-sidebar')?.remove();
   destroyAllPinWorkspaces();
   _sessionLocNames = null; // clear session loc Set so next editor load re-fetches
   currentRoute = {page:page||'home', projectId:projectId||null, sub:sub||null, subId:subId||null};
+  if(!_fromPopstate){
+    const state = {type:'project', page:page||'home', projectId:projectId||null, sub:sub||null, subId:subId||null};
+    history.pushState(state, '', _buildHash(page,projectId,sub,subId));
+  }
   render();
 }
 
-function navigateClassView(view, classroomId, studentUid, studentName, sub){
+function navigateClassView(view, classroomId, studentUid, studentName, sub, _fromPopstate){
   document.getElementById('feedback-fab')?.remove();
   document.getElementById('comment-sidebar')?.remove();
   destroyAllPinWorkspaces();
   classViewState = {view:view||'list', classroomId:classroomId||null, studentUid:studentUid||null, studentName:studentName||null, sub:sub||'overview'};
   currentRoute = {page:'classView', projectId:null, sub:null, subId:null};
+  if(!_fromPopstate){
+    const state = {type:'classView', view:view||'list', classroomId:classroomId||null, studentUid:studentUid||null, studentName:studentName||null, sub:sub||'overview'};
+    history.pushState(state, '', '#class');
+  }
   render();
 }
 
@@ -1590,8 +1587,12 @@ async function renderClassroomList(container){
   const wrap = el('div',{class:'class-view-wrap'});
   const hdr = el('div',{class:'page-header'});
   hdr.innerHTML='<div><div class="class-section-title">Class View</div><div class="class-section-sub">Manage your classrooms and view student work.</div></div>';
+  const hdrRight = el('div',{style:'display:flex;gap:8px;align-items:center;'});
+  const snippetsBtn = el('button',{class:'btn btn-ghost',onclick:()=>openCommentTemplateManager()});snippetsBtn.textContent='📋 Feedback Snippets';
+  const tipsBtn = el('button',{class:'btn btn-ghost',onclick:()=>openTeacherTipsManager()});tipsBtn.textContent='💡 Manage Tips';
   const newBtn = el('button',{class:'btn btn-primary',onclick:()=>openCreateClassroomModal()});newBtn.textContent='+ Create Classroom';
-  hdr.appendChild(newBtn);
+  hdrRight.append(snippetsBtn, tipsBtn, newBtn);
+  hdr.appendChild(hdrRight);
   wrap.appendChild(hdr);
 
   if(active.length===0){
@@ -1786,7 +1787,7 @@ async function renderStudentProject(container, studentUid, projectId, classroomI
   }
   const nav=el('div',{class:'nav-section'});
   let activeSub='overview';
-  const navItems=[{id:'overview',label:'Overview',icon:'◈'},{id:'characters',label:'Characters',icon:'◉'},{id:'locations',label:'Locations',icon:'⬡'},{id:'scenes',label:'Scenes',icon:'◧'},{id:'props',label:'Props',icon:'◇'},{id:'world',label:'World Building',icon:'◎'},{id:'outline',label:'Outline',icon:'≡'},{id:'beatboard',label:'Beat Board',icon:'▦'},{id:'library',label:'Document Library',icon:'📁'},{id:'writing',label:'Writing Desk',icon:'✦'}];
+  const navItems=[{id:'overview',label:'Overview',icon:'◈'},{id:'characters',label:'Characters',icon:'◉'},{id:'locations',label:'Locations',icon:'⬡'},{id:'scenes',label:'Scenes',icon:'◧'},{id:'props',label:'Props',icon:'◇'},{id:'world',label:'World Building',icon:'◎'},{id:'outline',label:'Outline',icon:'≡'},{id:'beatboard',label:'Beat Board',icon:'▦'},{id:'library',label:'Document Library',icon:'📁'},{id:'writing',label:'Writing Desk',icon:'✦'},{id:'timeline',label:'Activity Timeline',icon:'◷'}];
 
   function setStudentSub(subId){
     activeSub=subId;
@@ -2268,6 +2269,65 @@ async function renderStudentSubView(container, studentUid, projectId, sub, stuDo
     }
     injectTeacherFeedback('writing','Writing Desk');
 
+  } else if(sub==='timeline'){
+    // ── ITEM INLINE-B: Student Activity Timeline ──
+    const hdr=el('div',{class:'page-header'});
+    hdr.innerHTML='<div><div class="page-title">Activity Timeline</div><div class="page-subtitle">When this student last touched each tool in this project</div></div>';
+    wrap.appendChild(hdr);
+
+    const toolDefs = [
+      { id:'characters', label:'Characters',    icon:'◉', col:'characters' },
+      { id:'locations',  label:'Locations',      icon:'⬡', col:'locations'  },
+      { id:'scenes',     label:'Scenes',         icon:'◧', col:'scenes'     },
+      { id:'props',      label:'Props',          icon:'◇', col:'props'      },
+      { id:'world',      label:'World Building', icon:'◎', col:'worlds'     },
+      { id:'outline',    label:'Outline',        icon:'≡', col:'outlines'   },
+      { id:'beatboard',  label:'Beat Board',     icon:'▦', col:'beats'      },
+      { id:'writing',    label:'Writing Desk',   icon:'✦', col:'documents'  },
+    ];
+
+    const toolResults = await Promise.all(toolDefs.map(async t => {
+      try {
+        const items = await stuCol(t.col, where('storyProjectId','==',projectId));
+        let lastAt = null;
+        items.forEach(item => {
+          const ts = item.updatedAt || item.createdAt;
+          if(!ts) return;
+          const ms = typeof ts.toMillis === 'function' ? ts.toMillis() : (typeof ts === 'number' ? ts : null);
+          if(ms && (!lastAt || ms > lastAt)) lastAt = ms;
+        });
+        return { ...t, count: items.length, lastAt };
+      } catch(e) { return { ...t, count: 0, lastAt: null }; }
+    }));
+
+    toolResults.sort((a,b)=>{
+      if(a.lastAt && b.lastAt) return b.lastAt - a.lastAt;
+      if(a.lastAt) return -1;
+      if(b.lastAt) return 1;
+      return 0;
+    });
+
+    const tlGrid = el('div',{style:'display:flex;flex-direction:column;gap:8px;'});
+    toolResults.forEach(t => {
+      const row = el('div',{style:'display:flex;align-items:center;gap:14px;padding:12px 16px;background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);'});
+      const icon = el('div',{style:'font-size:18px;width:24px;text-align:center;flex-shrink:0;color:var(--fg3);'});
+      icon.textContent = t.icon;
+      const info = el('div',{style:'flex:1;'});
+      const tlName = el('div',{style:'font-size:14px;font-weight:600;color:var(--fg);'});
+      tlName.textContent = t.label;
+      const tlMeta = el('div',{style:'font-size:12px;color:var(--fg3);margin-top:2px;'});
+      tlMeta.textContent = t.count > 0
+        ? t.count + ' item' + (t.count!==1?'s':'') + (t.lastAt ? ' · Last active ' + relativeTime({toMillis:()=>t.lastAt}) : '')
+        : 'No activity yet';
+      info.append(tlName, tlMeta);
+      const badge = el('div',{style:'flex-shrink:0;font-size:11px;padding:3px 10px;border-radius:20px;'
+        + (t.lastAt ? 'background:var(--active-bg);color:var(--primary);border:1px solid var(--primary);' : 'background:var(--bg3);color:var(--fg3);border:1px solid var(--border);')});
+      badge.textContent = t.lastAt ? relativeTime({toMillis:()=>t.lastAt}) : 'Untouched';
+      row.append(icon, info, badge);
+      tlGrid.appendChild(row);
+    });
+    wrap.appendChild(tlGrid);
+
   } else {
     wrap.innerHTML='<div class="page-header"><div><div class="page-title">'+capitalize(sub)+'</div></div></div><p style="color:var(--fg3);padding:20px 0">View not available.</p>';
   }
@@ -2291,12 +2351,15 @@ async function viewStudentDoc(container, doc2, sub, studentUid, projectId, stuDo
   // Body wrap: read-only content on the left, teacher's pin dock on the right
   const bodyWrap=el('div',{style:'flex:1;display:flex;overflow:hidden;border-top:1px solid var(--border);'});
   const body=el('div',{class:'editor-body',style:'padding:20px;flex:1;overflow-y:auto;'});
-  // Read-only doc view: text is non-interactive (no editing) but the teacher
-  // can still click linked entity chips to open the quick-reference card. We
-  // achieve this by disabling pointer events on the content wrapper, then
-  // re-enabling them on .link-btn descendants via inline style.
-  const content=el('div',{class:'editor-content',style:'max-width:700px;pointer-events:none;'});
-  content.innerHTML=doc2.content||'<p style="color:var(--fg3)">No content yet.</p>';
+  // Read-only doc view. For v2 docs (sceneBlocks), render block-by-block so
+  // each block can have an inline comment trigger. For v1/legacy docs, fall
+  // back to the flat HTML render with pointer-events disabled.
+  const content=el('div',{class:'editor-content',style:'max-width:700px;'});
+  const isV2 = doc2.formatVersion==='v2' && Array.isArray(doc2.sceneBlocks) && doc2.sceneBlocks.length > 0;
+  if(!isV2){
+    content.style.pointerEvents='none';
+    content.innerHTML=doc2.content||'<p style="color:var(--fg3)">No content yet.</p>';
+  }
 
   // ── Teacher Pin Workspace ──
   // Pins are stored on the teacher's account, scoped to studentUid + docId.
@@ -2307,32 +2370,72 @@ async function viewStudentDoc(container, doc2, sub, studentUid, projectId, stuDo
   const teacherPinWorkspace = createPinWorkspace({ host: bodyWrap, ctx: teacherCtx });
   page._pinWorkspace = teacherPinWorkspace;
 
-  // Re-enable click on link chips and route them to openLinkedCard with the
-  // STUDENT'S project context (so the lookups hit the student's collections).
-  // The drawer's pin button will use the active workspace (teacher's).
-  content.querySelectorAll('.link-btn').forEach(span => {
-    span.style.pointerEvents = 'auto';
-    span.style.cursor = 'pointer';
-    span.addEventListener('click', e => {
-      e.preventDefault(); e.stopPropagation();
-      const type = span.dataset.linkType, id = span.dataset.linkId;
-      // Wire pin context so the drawer offers a Pin button targeting the
-      // teacher's workspace.
-      const pinContext = {
-        getPins: () => teacherPinWorkspace.getPins(),
-        addPin:  (pin) => teacherPinWorkspace.addPin(pin),
-        removePin: (t, i) => teacherPinWorkspace.removePin(t, i),
-      };
-      const opts = { pinContext };
-      const loaders = {
-        char:  () => getDoc(stuDoc('characters', id)).then(s=>s.exists()?{id,...s.data()}:null).then(e=>showRichEntityPanel('character', e, projectId, opts)),
-        loc:   () => getDoc(stuDoc('locations', id)).then(s=>s.exists()?{id,...s.data()}:null).then(e=>showRichEntityPanel('location', e, projectId, opts)),
-        scene: () => getDoc(stuDoc('scenes', id)).then(s=>s.exists()?{id,...s.data()}:null).then(e=>showRichEntityPanel('scene', e, projectId, opts)),
-        prop:  () => getDoc(stuDoc('props', id)).then(s=>s.exists()?{id,...s.data()}:null).then(e=>showRichEntityPanel('prop', e, projectId, opts)),
-      };
-      if(loaders[type]) loaders[type]();
+  // Build the link-chip click handler (shared by v1 flat render and v2 per-block render)
+  function wireChipClicks(root){
+    root.querySelectorAll('.link-btn').forEach(span => {
+      span.style.pointerEvents = 'auto';
+      span.style.cursor = 'pointer';
+      span.addEventListener('click', e => {
+        e.preventDefault(); e.stopPropagation();
+        const type = span.dataset.linkType, id = span.dataset.linkId;
+        const pinContext = {
+          getPins: () => teacherPinWorkspace.getPins(),
+          addPin:  (pin) => teacherPinWorkspace.addPin(pin),
+          removePin: (t, i) => teacherPinWorkspace.removePin(t, i),
+        };
+        const opts = { pinContext };
+        const loaders = {
+          char:  () => getDoc(stuDoc('characters', id)).then(s=>s.exists()?{id,...s.data()}:null).then(e=>showRichEntityPanel('character', e, projectId, opts)),
+          loc:   () => getDoc(stuDoc('locations', id)).then(s=>s.exists()?{id,...s.data()}:null).then(e=>showRichEntityPanel('location', e, projectId, opts)),
+          scene: () => getDoc(stuDoc('scenes', id)).then(s=>s.exists()?{id,...s.data()}:null).then(e=>showRichEntityPanel('scene', e, projectId, opts)),
+          prop:  () => getDoc(stuDoc('props', id)).then(s=>s.exists()?{id,...s.data()}:null).then(e=>showRichEntityPanel('prop', e, projectId, opts)),
+        };
+        if(loaders[type]) loaders[type]();
+      });
     });
-  });
+  }
+
+  // ── INLINE-A: V2 block-by-block rendering with per-block comment triggers ──
+  if(isV2){
+    // Load existing comments for this doc context to mark blocks that have comments
+    const toolCtx = 'writing:'+doc2.id;
+    let existingComments = [];
+    try { existingComments = await getCommentsForContext(studentUid, toolCtx); } catch(e){}
+    const commentedBlocks = new Set(existingComments.map(c=>c.anchorBlockId).filter(Boolean));
+
+    const blocks = migrateV2Blocks(doc2.sceneBlocks);
+    // Render blocks with position:relative wrapper for the comment button
+    content.style.position='relative';
+    content.style.paddingRight='44px'; // room for comment buttons
+    blocks.forEach(block => {
+      if(!block.content) return;
+      const wrap = el('div',{class:'block-comment-wrap'+(commentedBlocks.has(block.id)?' block-has-comment':'')});
+      // Render block HTML — pointer-events off on text, on for link chips
+      const blockEl = el('div',{style:'pointer-events:none;'});
+      blockEl.innerHTML = block.content;
+      wireChipClicks(blockEl);
+      // Comment trigger button
+      const commentBtn = el('button',{class:'block-comment-btn',title:'Comment on this passage'});
+      commentBtn.textContent = commentedBlocks.has(block.id) ? '💬' : '+ comment';
+      commentBtn.onclick = (e)=>{
+        e.stopPropagation();
+        // Extract plain text from the block for the anchor label
+        const tmp = document.createElement('div');
+        tmp.innerHTML = block.content;
+        const anchorText = (tmp.textContent||'').trim().slice(0,120);
+        openCommentSidebar(studentUid, toolCtx, projectId, doc2.title||'Writing Desk', block.id, anchorText);
+      };
+      wrap.append(blockEl, commentBtn);
+      content.appendChild(wrap);
+    });
+    if(!blocks.length){
+      content.innerHTML='<p style="color:var(--fg3)">No content yet.</p>';
+    }
+  } else {
+    // V1: re-enable link chip clicks on the already-rendered flat content
+    wireChipClicks(content);
+  }
+
   body.appendChild(content);
 
   // Reorder: bodyWrap should contain body + the dock that the workspace
@@ -2436,6 +2539,104 @@ function commentsCol(){ return collection(db,'comments'); }
 function commentDoc(id){ return doc(db,'comments',id); }
 function repliesCol(commentId){ return collection(db,'comments',commentId,'replies'); }
 
+// ── Item 19: Comment templates (saved feedback snippets) ──
+function commentTemplatesCol(){ return collection(db,'commentTemplates'); }
+function commentTemplateDoc(id){ return doc(db,'commentTemplates',id); }
+
+async function getMyCommentTemplates(){
+  try {
+    const q = query(commentTemplatesCol(), where('authorUid','==',currentUser.uid), orderBy('createdAt','asc'));
+    const snap = await getDocs(q);
+    return snap.docs.map(d=>({id:d.id,...d.data()}));
+  } catch(e){ return []; }
+}
+
+async function saveCommentTemplate(title, body){
+  return addDoc(commentTemplatesCol(),{
+    authorUid: currentUser.uid,
+    title: title.trim(),
+    body: body.trim(),
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  });
+}
+
+async function updateCommentTemplate(id, title, body){
+  await updateDoc(commentTemplateDoc(id),{
+    title: title.trim(),
+    body: body.trim(),
+    updatedAt: serverTimestamp(),
+  });
+}
+
+function openCommentTemplateManager(){
+  const overlay = el('div',{class:'modal-overlay',onclick:e=>{if(e.target===overlay)overlay.remove();}});
+  const modal = el('div',{class:'modal',style:'max-width:520px;'});
+  const title = el('div',{class:'modal-title'});title.textContent = 'Feedback Snippets';
+  modal.appendChild(title);
+
+  const desc = el('div',{style:'font-size:13px;color:var(--fg3);margin-bottom:18px;line-height:1.5;'});
+  desc.textContent = 'Save reusable feedback phrases. Click a snippet in the comment panel to insert it.';
+  modal.appendChild(desc);
+
+  const listWrap = el('div',{id:'ct-list',style:'display:flex;flex-direction:column;gap:8px;margin-bottom:18px;min-height:40px;'});
+  modal.appendChild(listWrap);
+
+  async function refreshList(){
+    listWrap.innerHTML = '<div style="color:var(--fg3);font-size:13px;padding:8px 0;">Loading…</div>';
+    const templates = await getMyCommentTemplates();
+    listWrap.innerHTML = '';
+    if(!templates.length){
+      const empty = el('div',{style:'color:var(--fg3);font-size:13px;padding:8px 0;'});
+      empty.textContent = 'No snippets yet. Add one below.';
+      listWrap.appendChild(empty);
+      return;
+    }
+    templates.forEach(t => {
+      const row = el('div',{style:'display:flex;align-items:flex-start;gap:10px;padding:10px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm);'});
+      const info = el('div',{style:'flex:1;min-width:0;'});
+      const tn = el('div',{style:'font-size:13px;font-weight:600;color:var(--fg);margin-bottom:3px;'});tn.textContent=t.title;
+      const tb = el('div',{style:'font-size:12px;color:var(--fg3);white-space:pre-wrap;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;'});tb.textContent=t.body;
+      info.append(tn,tb);
+      const del = el('button',{class:'btn btn-ghost btn-sm',style:'color:var(--red);flex-shrink:0;',onclick:async()=>{
+        if(!confirm('Delete this snippet?')) return;
+        await deleteDoc(commentTemplateDoc(t.id));
+        refreshList();
+      }});del.textContent='✕';
+      row.append(info,del);
+      listWrap.appendChild(row);
+    });
+  }
+
+  // Add new snippet form
+  const addSection = el('div',{style:'border-top:1px solid var(--border);padding-top:16px;'});
+  const addTitle = el('div',{style:'font-size:12px;font-weight:600;color:var(--fg3);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px;'});
+  addTitle.textContent = 'New Snippet';
+  const titleInput = el('input',{class:'input',placeholder:'Short label (e.g. "Strong Opening")',style:'margin-bottom:8px;'});
+  const bodyInput = el('textarea',{class:'textarea',placeholder:'The feedback text…',rows:'3'});
+  const addBtn = el('button',{class:'btn btn-primary btn-sm',style:'margin-top:8px;',onclick:async()=>{
+    const t2 = titleInput.value.trim();
+    const b2 = bodyInput.value.trim();
+    if(!t2||!b2){ toast('Fill in both fields','error'); return; }
+    addBtn.disabled=true; addBtn.textContent='Saving…';
+    await saveCommentTemplate(t2,b2);
+    titleInput.value=''; bodyInput.value='';
+    addBtn.disabled=false; addBtn.textContent='Add Snippet';
+    refreshList();
+  }});
+  addBtn.textContent='Add Snippet';
+  addSection.append(addTitle,titleInput,bodyInput,addBtn);
+  modal.appendChild(addSection);
+
+  const footer = el('div',{class:'modal-footer'});
+  const closeBtn = el('button',{class:'btn btn-ghost',onclick:()=>overlay.remove()});closeBtn.textContent='Close';
+  footer.appendChild(closeBtn);
+  modal.appendChild(footer);
+  overlay.appendChild(modal);
+  document.body.appendChild(overlay);
+  refreshList();
+}
+
 async function getCommentsForContext(studentUid, toolContext){
   try{
     const q = query(commentsCol(), where('studentUid','==',studentUid), where('toolContext','==',toolContext), orderBy('createdAt','desc'));
@@ -2444,7 +2645,7 @@ async function getCommentsForContext(studentUid, toolContext){
   } catch(e){ return []; }
 }
 
-async function postComment(studentUid, toolContext, body, projectId){
+async function postComment(studentUid, toolContext, body, projectId, anchorBlockId, anchorText){
   const ref = await addDoc(commentsCol(),{
     studentUid,
     projectId: projectId||null,
@@ -2453,6 +2654,8 @@ async function postComment(studentUid, toolContext, body, projectId){
     authorName: currentUser.displayName||currentUser.email,
     body,
     read: false,
+    anchorBlockId: anchorBlockId||null,
+    anchorText: anchorText||null,
     createdAt: serverTimestamp()
   });
   return ref.id;
@@ -2497,7 +2700,7 @@ async function getUnreadComments(){
 }
 
 // ── Comment Sidebar (teacher leaves feedback) ──
-function openCommentSidebar(studentUid, toolContext, projectId, label){
+function openCommentSidebar(studentUid, toolContext, projectId, label, anchorBlockId, anchorText){
   document.getElementById('comment-sidebar')?.remove();
   const sidebar = el('div',{class:'comment-sidebar',id:'comment-sidebar'});
   const header = el('div',{class:'comment-sidebar-header'});
@@ -2505,6 +2708,9 @@ function openCommentSidebar(studentUid, toolContext, projectId, label){
   const closeBtn = el('button',{class:'btn-icon',onclick:()=>sidebar.remove()});closeBtn.textContent='✕';
   header.appendChild(closeBtn);
   sidebar.appendChild(header);
+  // Track current anchor (may be cleared by user)
+  let _anchorBlockId = anchorBlockId||null;
+  let _anchorText = anchorText||null;
 
   const listEl = el('div',{class:'comment-list',id:'comment-list-inner'});
   listEl.innerHTML='<div style="color:var(--fg3);font-size:13px;text-align:center;padding:20px 0">Loading…</div>';
@@ -2513,13 +2719,77 @@ function openCommentSidebar(studentUid, toolContext, projectId, label){
   const newArea = el('div',{class:'comment-new'});
   const ta = el('textarea',{placeholder:'Write feedback for this student…'});
   ta.className='textarea';
+
+  // Anchor preview — shown when a block anchor is attached to this comment
+  if(_anchorText){
+    const anchorPreview = el('div',{class:'comment-anchor-preview',id:'comment-anchor-preview'});
+    const anchorLbl = el('span');anchorLbl.textContent='📌 '+_anchorText.slice(0,80)+(_anchorText.length>80?'…':'');
+    const clearAnchor = el('button',{class:'clear-anchor',title:'Remove anchor',onclick:()=>{
+      _anchorBlockId=null; _anchorText=null;
+      anchorPreview.remove();
+    }});clearAnchor.textContent='✕';
+    anchorPreview.append(anchorLbl,clearAnchor);
+    newArea.appendChild(anchorPreview);
+  }
+
+  // Templates button — inserts saved snippet into textarea
+  const tmplRow = el('div',{style:'display:flex;justify-content:flex-end;margin-bottom:6px;'});
+  const tmplBtn = el('button',{class:'btn btn-ghost btn-sm',onclick:async()=>{
+    const existing = document.getElementById('ct-popover');
+    if(existing){ existing.remove(); return; }
+    const templates = await getMyCommentTemplates();
+    const popover = el('div',{id:'ct-popover',style:'position:absolute;right:20px;bottom:100%;margin-bottom:6px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);width:300px;max-height:260px;overflow-y:auto;z-index:200;'});
+    if(!templates.length){
+      const empty = el('div',{style:'padding:14px 16px;font-size:13px;color:var(--fg3);'});
+      empty.textContent = 'No snippets yet. ';
+      const link = el('button',{class:'btn btn-ghost btn-sm',style:'display:inline;padding:0;font-size:13px;',onclick:()=>{popover.remove();openCommentTemplateManager();}});
+      link.textContent = 'Add some →';
+      empty.appendChild(link);
+      popover.appendChild(empty);
+    } else {
+      const manageRow = el('div',{style:'padding:8px 12px 6px;border-bottom:1px solid var(--border);display:flex;justify-content:flex-end;'});
+      const manageBtn = el('button',{class:'btn btn-ghost btn-sm',onclick:()=>{popover.remove();openCommentTemplateManager();}});
+      manageBtn.textContent='Manage snippets';
+      manageRow.appendChild(manageBtn);
+      popover.appendChild(manageRow);
+      templates.forEach(t => {
+        const item = el('div',{style:'padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--border);'});
+        item.onmouseenter=()=>item.style.background='var(--hover)';
+        item.onmouseleave=()=>item.style.background='';
+        const tn=el('div',{style:'font-size:13px;font-weight:600;color:var(--fg);margin-bottom:2px;'});tn.textContent=t.title;
+        const tb=el('div',{style:'font-size:12px;color:var(--fg3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;'});tb.textContent=t.body;
+        item.append(tn,tb);
+        item.onclick=()=>{
+          ta.value = ta.value ? ta.value + '\n' + t.body : t.body;
+          ta.focus();
+          popover.remove();
+        };
+        popover.appendChild(item);
+      });
+    }
+    // Position relative to newArea
+    newArea.style.position='relative';
+    newArea.appendChild(popover);
+    // Close on outside click
+    setTimeout(()=>document.addEventListener('click', function handler(e){
+      if(!popover.contains(e.target) && e.target!==tmplBtn){
+        popover.remove(); document.removeEventListener('click',handler);
+      }
+    }),10);
+  }});
+  tmplBtn.textContent='📋 Snippets';
+  tmplRow.appendChild(tmplBtn);
+  newArea.appendChild(tmplRow);
+
   const postBtn = el('button',{class:'btn btn-primary btn-sm',style:'align-self:flex-end;'});postBtn.textContent='Post Comment';
   postBtn.onclick = async()=>{
     const body3 = ta.value.trim();
     if(!body3) return;
     postBtn.disabled=true;postBtn.textContent='Posting…';
-    await postComment(studentUid, toolContext, body3, projectId);
+    await postComment(studentUid, toolContext, body3, projectId, _anchorBlockId, _anchorText);
     ta.value='';
+    _anchorBlockId=null; _anchorText=null;
+    document.getElementById('comment-anchor-preview')?.remove();
     postBtn.disabled=false;postBtn.textContent='Post Comment';
     loadComments();
     toast('Feedback posted');
@@ -2539,7 +2809,14 @@ function openCommentSidebar(studentUid, toolContext, projectId, label){
     for(const c of comments){
       const item = el('div',{class:'comment-item'});
       const ts = c.createdAt?.toDate?.()?c.createdAt.toDate().toLocaleDateString():'';
-      item.innerHTML=`
+      // Anchor chip — shown when comment was attached to a specific block
+      if(c.anchorText){
+        const anchor = el('div',{class:'comment-anchor'+(c.anchorBlockId?'':' stale')});
+        anchor.title = c.anchorBlockId ? 'Anchored to a specific passage' : 'The original passage may have been edited';
+        anchor.textContent = '📌 '+c.anchorText.slice(0,80)+(c.anchorText.length>80?'…':'');
+        item.appendChild(anchor);
+      }
+      item.innerHTML+=`
         <div class="comment-meta"><span class="comment-author">${esc(c.authorName)}</span><span class="comment-time">${ts}</span></div>
         <div class="comment-body">${esc(c.body)}</div>
       `;
@@ -2618,6 +2895,13 @@ async function renderFeedbackItems(container, comments, markAsRead){
     const item = el('div',{class:'unread-item'});
     const ts = c.createdAt?.toDate?.()?c.createdAt.toDate().toLocaleDateString():'';
     const contextDiv=el('div',{class:'unread-item-context'});contextDiv.textContent=c.toolContext;
+    if(c.anchorText){
+      const anchor=el('div',{class:'comment-anchor',style:'margin-bottom:4px;'});
+      anchor.textContent='📌 '+c.anchorText.slice(0,80)+(c.anchorText.length>80?'…':'');
+      item.append(contextDiv,anchor);
+    } else {
+      item.appendChild(contextDiv);
+    }
     const bodyDiv=el('div',{class:'unread-item-body'});bodyDiv.textContent=c.body;
     const timeDiv=el('div',{style:'font-size:11px;color:var(--fg3);margin-top:4px'});timeDiv.textContent=ts;
     item.append(contextDiv,bodyDiv,timeDiv);
@@ -2797,11 +3081,114 @@ async function renderHome(container){
     const grid = el('div',{class:'projects-grid'});
     projects.forEach(p=>{
       const card = projectCard(p);
-      // Students get a share toggle on each project card
       if(!isTeacher()) card.appendChild(makeShareToggle(p));
       grid.appendChild(card);
     });
     wrap.appendChild(grid);
+
+    // Item 11: What to work on next — reads the most recently active project
+    // and surfaces the next useful action across three buckets:
+    // walkthrough progression, unfinished work, feedback.
+    const activeProject = projects[0]; // sorted by updatedAt desc, so first = most recent
+    if(activeProject && !isTeacher()){
+      const nextSection = el('div',{style:'margin-top:32px;'});
+      const secTitle = el('div',{style:'font-family:"Belleza",serif;font-size:18px;color:var(--fg);margin-bottom:4px;'});
+      secTitle.textContent = 'What to work on next';
+      const secSub = el('div',{style:'font-size:12px;color:var(--fg3);margin-bottom:16px;'});
+      secSub.textContent = 'Based on your most recent project: '+esc(activeProject.name||'Untitled');
+      nextSection.append(secTitle,secSub);
+      const cardList = el('div',{style:'display:flex;flex-direction:column;gap:8px;'});
+      const loadingEl = el('div',{style:'color:var(--fg3);font-size:13px;padding:8px 0;'});
+      loadingEl.textContent='Checking your project\u2026';
+      cardList.appendChild(loadingEl);
+      nextSection.appendChild(cardList);
+      wrap.appendChild(nextSection);
+
+      // Async — load project stats and compute suggestions
+      Promise.all([
+        fsQuery('characters',where('storyProjectId','==',activeProject.id)),
+        fsQuery('locations',where('storyProjectId','==',activeProject.id)),
+        fsQuery('outlines',where('storyProjectId','==',activeProject.id)),
+        fsQuery('scenes',where('storyProjectId','==',activeProject.id)),
+        fsQuery('documents',where('storyProjectId','==',activeProject.id)),
+        fsQuery('worlds',where('storyProjectId','==',activeProject.id)),
+        getUnreadComments(),
+      ]).then(([chars,locs,outlineItems,scenes,docs,worlds,unread])=>{
+        cardList.innerHTML='';
+        const suggestions = [];
+
+        // ── Walkthrough progression bucket ──
+        const WALKTHROUGH = [
+          { label:'Add your first character',       icon:'◉', sub:'characters', done:chars.length>0 },
+          { label:'Add a location',                 icon:'⬡', sub:'locations',  done:locs.length>0  },
+          { label:'Set up your world',              icon:'◎', sub:'world',       done:worlds.length>0 },
+          { label:'Create an outline',              icon:'≡', sub:'outline',     done:outlineItems.length>0 },
+          { label:'Break your story into scenes',   icon:'◧', sub:'scenes',      done:scenes.length>0 },
+          { label:'Open the writing desk',          icon:'✦', sub:'writing',     done:docs.some(d=>d.content&&d.content.length>50) },
+        ];
+        const nextStep = WALKTHROUGH.find(s=>!s.done);
+        if(nextStep){
+          suggestions.push({
+            priority:1, icon:nextStep.icon, label:nextStep.label,
+            action:()=>navigate('dashboard',activeProject.id,nextStep.sub),
+            tag:'Next step',tagColor:'var(--primary)',
+          });
+        }
+
+        // ── Unfinished work bucket ──
+        const shortScenes = scenes.filter(s=>(!s.draftContent||s.draftContent.length<30));
+        if(shortScenes.length>0){
+          suggestions.push({
+            priority:2, icon:'◧',
+            label:shortScenes.length+' scene'+(shortScenes.length!==1?'s':'')+' without a draft',
+            action:()=>navigate('dashboard',activeProject.id,'scenes'),
+            tag:'Unfinished',tagColor:'var(--gold)',
+          });
+        }
+        const emptyDocs = docs.filter(d=>!d.content||d.content.length<50);
+        if(emptyDocs.length>0 && docs.length>0){
+          suggestions.push({
+            priority:2, icon:'✦',
+            label:emptyDocs.length+' document'+(emptyDocs.length!==1?'s':'')+' waiting to be written',
+            action:()=>navigate('dashboard',activeProject.id,'writing'),
+            tag:'Unfinished',tagColor:'var(--gold)',
+          });
+        }
+
+        // ── Feedback bucket (lighter weight) ──
+        const projectFeedback = unread.filter(c=>c.projectId===activeProject.id);
+        if(projectFeedback.length>0){
+          suggestions.push({
+            priority:3, icon:'💬',
+            label:projectFeedback.length+' unread feedback comment'+(projectFeedback.length!==1?'s':''),
+            action:()=>navigate('dashboard',activeProject.id,'overview'),
+            tag:'Feedback',tagColor:'var(--teal)',
+          });
+        }
+
+        if(!suggestions.length){
+          const allDone=el('div',{style:'font-size:13px;color:var(--fg3);padding:8px 0;'});
+          allDone.textContent='You\u2019re all caught up on this project. Keep writing!';
+          cardList.appendChild(allDone); return;
+        }
+
+        suggestions.sort((a,b)=>a.priority-b.priority).slice(0,4).forEach(s=>{
+          const row=el('div',{style:'display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);cursor:pointer;transition:all 0.15s;'});
+          row.onmouseenter=()=>{row.style.borderColor='var(--border2)';row.style.transform='translateX(2px)';};
+          row.onmouseleave=()=>{row.style.borderColor='var(--border)';row.style.transform='';};
+          row.onclick=s.action;
+          const ico=el('div',{style:'font-size:18px;flex-shrink:0;color:var(--fg3);width:24px;text-align:center;'});ico.textContent=s.icon;
+          const info=el('div',{style:'flex:1;'});
+          const lbl2=el('div',{style:'font-size:13px;font-weight:600;color:var(--fg);'});lbl2.textContent=s.label;
+          info.appendChild(lbl2);
+          const badge=el('span',{style:'display:inline-block;margin-top:3px;font-size:10px;padding:2px 8px;border-radius:10px;background:var(--bg3);color:'+s.tagColor+';border:1px solid var(--border);'});
+          badge.textContent=s.tag; info.appendChild(badge);
+          const arrow=el('div',{style:'color:var(--fg3);font-size:16px;flex-shrink:0;'});arrow.textContent='\u2192';
+          row.append(ico,info,arrow);
+          cardList.appendChild(row);
+        });
+      }).catch(()=>{cardList.innerHTML='';});
+    }
   }
 
   // Class Projects section — shared work from classmates (students only)
@@ -2847,9 +3234,107 @@ function projectCard(p){
   return card;
 }
 
+// Item 10: Project templates — pre-seeds project with starter content based on type
+const PROJECT_TEMPLATES = {
+  blank:      { label:'Blank Project',      icon:'◈', description:'Start from scratch. Nothing pre-populated.', colorLabel:'purple' },
+  feature:    { label:'Feature Film',       icon:'🎬', description:'A feature-length screenplay. Includes Three-Act outline and a writing desk document.', colorLabel:'blue' },
+  tvspec:     { label:'TV Spec Script',     icon:'📺', description:'A spec episode for an existing show. Includes a TV Episode outline and a writing desk document.', colorLabel:'teal' },
+  shortfilm:  { label:'Short Film',         icon:'⬡', description:'A short-form screenplay under 15 pages. Includes a Short Film outline.', colorLabel:'green' },
+  pilot:      { label:'Pilot & Series',     icon:'🌐', description:'An original TV series. Includes a Pilot & Series Premise outline and a worldbuilding section.', colorLabel:'gold' },
+  narrative:  { label:'Narrative / Story',  icon:'✦', description:'A prose story or narrative script. Includes a Three-Act outline and a document.', colorLabel:'purple' },
+};
+
+async function seedProjectTemplate(projectId, templateKey){
+  const tmpl = PROJECT_TEMPLATES[templateKey];
+  if(!tmpl || templateKey==='blank') return;
+
+  const seeds = [];
+
+  // Outline seeding
+  const outlineSeed = {
+    feature:   'three-act',
+    tvspec:    'tv-episode',
+    shortfilm: 'short-film',
+    pilot:     'pilot-premise',
+    narrative: 'three-act',
+  }[templateKey];
+
+  if(outlineSeed){
+    const outlineTmpl = STRUCTURE_TEMPLATES[outlineSeed];
+    const outlineId = 'ol-'+Date.now();
+    const outlineName = outlineTmpl.name;
+    seeds.push(fsCreate('outlineMetas',{storyProjectId:projectId, outlineId, name:outlineName, templateKey:outlineSeed, wizardData:null}));
+    (outlineTmpl.items||[]).forEach((it,i)=>{
+      seeds.push(fsCreate('outlines',{storyProjectId:projectId,outlineId,outlineName,text:it.text,level:it.level,order:i}));
+    });
+  }
+
+  // Writing desk document seeding
+  const docLabel = {feature:'Feature Screenplay',tvspec:'Spec Script',shortfilm:'Short Film',narrative:'Draft'}[templateKey];
+  if(docLabel){
+    seeds.push(fsCreate('documents',{
+      storyProjectId:projectId, title:docLabel,
+      content:'', sceneBlocks:[], formatVersion:'v2',
+      formatType: templateKey==='narrative' ? 'narrative' : 'screenplay',
+    }));
+  }
+
+  await Promise.all(seeds);
+}
+
 async function createAndOpenProject(){
-  const id = await fsCreate('projects',{name:'Untitled Story',description:'',tags:[],colorLabel:'purple'});
-  navigate('dashboard',id,'overview');
+  // Show template picker modal
+  const overlay=el('div',{class:'modal-overlay',onclick:e=>{if(e.target===overlay)overlay.remove();}});
+  const modal=el('div',{class:'modal',style:'max-width:540px;'});
+  const title=el('div',{class:'modal-title'});title.textContent='New Project';
+  modal.appendChild(title);
+
+  const desc=el('div',{style:'font-size:13px;color:var(--fg3);margin-bottom:16px;'});
+  desc.textContent='Choose a starting point. You can always change everything later.';
+  modal.appendChild(desc);
+
+  let selectedTemplate='blank';
+  const grid=el('div',{style:'display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:18px;'});
+  Object.entries(PROJECT_TEMPLATES).forEach(([key,tmpl])=>{
+    const card=el('div',{style:'padding:12px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);cursor:pointer;transition:all 0.15s;'});
+    const topRow=el('div',{style:'display:flex;align-items:center;gap:8px;margin-bottom:4px;'});
+    const icon=el('span',{style:'font-size:16px;'});icon.textContent=tmpl.icon;
+    const lbl=el('span',{style:'font-size:13px;font-weight:600;color:var(--fg);'});lbl.textContent=tmpl.label;
+    topRow.append(icon,lbl);
+    const descEl=el('div',{style:'font-size:11px;color:var(--fg3);line-height:1.4;'});descEl.textContent=tmpl.description;
+    card.append(topRow,descEl);
+    card.onclick=()=>{
+      grid.querySelectorAll('[data-tkey]').forEach(c=>{c.style.borderColor='var(--border)';c.style.background='var(--bg2)';});
+      card.style.borderColor='var(--primary)';card.style.background='var(--active-bg)';
+      selectedTemplate=key;
+    };
+    card.dataset.tkey=key;
+    if(key==='blank'){card.style.borderColor='var(--primary)';card.style.background='var(--active-bg)';}
+    grid.appendChild(card);
+  });
+  modal.appendChild(grid);
+
+  // Project name field
+  const nameLbl=el('label',{class:'label',style:'display:block;margin-bottom:4px;'});nameLbl.textContent='Project name';
+  const nameInput=el('input',{class:'input',placeholder:'My Story',style:'margin-bottom:16px;'});
+  modal.append(nameLbl,nameInput);
+
+  const footer=el('div',{class:'modal-footer'});
+  const cancelBtn=el('button',{class:'btn btn-ghost',onclick:()=>overlay.remove()});cancelBtn.textContent='Cancel';
+  const createBtn=el('button',{class:'btn btn-primary',onclick:async()=>{
+    const name=(nameInput.value||'').trim()||'Untitled Story';
+    const tmpl=PROJECT_TEMPLATES[selectedTemplate];
+    createBtn.disabled=true;createBtn.textContent='Creating\u2026';
+    const id=await fsCreate('projects',{name,description:'',tags:[],colorLabel:tmpl.colorLabel||'purple'});
+    await seedProjectTemplate(id,selectedTemplate);
+    overlay.remove();
+    navigate('dashboard',id,'overview');
+  }});createBtn.textContent='Create Project';
+  footer.append(cancelBtn,createBtn);
+  modal.appendChild(footer);
+  overlay.appendChild(modal);
+  document.body.appendChild(overlay);
+  setTimeout(()=>nameInput.focus(),50);
 }
 
 async function deleteProjectCascade(projectId){
@@ -2860,6 +3345,7 @@ async function deleteProjectCascade(projectId){
     fsBatchDelete('scenes','storyProjectId',projectId),
     fsBatchDelete('worlds','storyProjectId',projectId),
     fsBatchDelete('outlines','storyProjectId',projectId),
+    fsBatchDelete('outlineMetas','storyProjectId',projectId),
     fsBatchDelete('documents','storyProjectId',projectId),
     fsBatchDelete('generatedDocs','storyProjectId',projectId),
     fsBatchDelete('props','storyProjectId',projectId),
@@ -3443,6 +3929,7 @@ function cbDivider(label){
 
 function cbIdentity(pane, data){
   cbTitle(pane,'Who are they?','Start with the basics. The only required field is their name — fill in what you know now and come back to the rest later.');
+  pane.appendChild(lbCallout('◎','A character is not a collection of traits. They are a specific person with a specific history making specific choices. Start with the name and let the rest follow.'));
   pane.appendChild(cbF('name','Full Name *','e.g. Elena Vasquez, "Razor," Marcus Webb',data.name,1,'The name they go by in your story. Could be a nickname, a code name, or a full formal name.'));
   pane.appendChild(cbRow(
     cbF('age','Age','e.g. 34',data.age),
@@ -3463,6 +3950,7 @@ function cbIdentity(pane, data){
 }
 
 function cbAppearance(pane, data){
+  pane.appendChild(lbCallout('◉','Appearance reveals character before anyone speaks. What someone chooses to wear, how they carry themselves, what they let fall apart — these are all decisions, even when they feel unconscious.'));
   cbTitle(pane,'What do they look like?','Appearance is the first language a character speaks. Answer what you know — every field is optional, but specifics are more useful than vague descriptions.');
   pane.appendChild(cbDivider('Physical Build'));
   pane.appendChild(cbRow(
@@ -3499,6 +3987,7 @@ function cbAppearance(pane, data){
 }
 
 function cbVoice(pane, data){
+  pane.appendChild(lbCallout('‸','If you close your eyes and hear this character speak, what do you hear? Voice is not just vocabulary — it is rhythm, silence, what they avoid saying, and how they fill the space when they are uncomfortable.'));
   cbTitle(pane,'How do they think and speak?','Voice is one of the most powerful tools in character writing. A reader should be able to identify your character from a single line of dialogue.');
   pane.appendChild(cbF('speakingStyle','Speaking Style','e.g. Clipped and direct. Rambles when nervous. Speaks in questions. Formal, never uses contractions.',data.speakingStyle,2,'The rhythm and manner of how they talk.',[
     'Try writing one line of dialogue this character would say in a tense moment.',
@@ -3522,6 +4011,7 @@ function cbVoice(pane, data){
 }
 
 function cbBackstory(pane, data){
+  pane.appendChild(lbCallout('✿','The backstory you write here will never appear on screen. That is the point. A character who carries a history they never fully explain is more alive than one whose past is narrated. Build it so you know it — then let it leak.'));
   cbTitle(pane,'Where did they come from?','You don\'t need a complete biography — just enough to explain why they are who they are. A character\'s past explains their present without excusing it.');
   pane.appendChild(cbF('childhoodHome','Childhood Home','e.g. Small town in rural Tennessee. A crowded apartment in Mumbai. Foster care in Detroit.',data.childhoodHome,1,'Where and what kind of environment did they grow up in?'));
   pane.appendChild(cbF('familyDynamic','Family Dynamic','e.g. Raised by a single mother. Estranged from parents. Close-knit immigrant family. Only child.',data.familyDynamic,2,'Who raised them and what was the household like?',[
@@ -3549,6 +4039,7 @@ function cbBackstory(pane, data){
 }
 
 function cbPsychology(pane, data){
+  pane.appendChild(lbCallout('◎','What does your character want? What do they actually need? These are rarely the same thing — and the gap between them is where your story lives.'));
   cbTitle(pane,'How do they work on the inside?','Psychology is the engine beneath behavior. This step digs into what drives your character, what breaks them, and what they\'re capable of.');
   pane.appendChild(cbF('personality','Personality in One Paragraph','How do they move through the world? What\'s their baseline — before anything goes wrong?',data.personality,3,'Their default mode: optimistic or guarded, curious or closed, warm or cool.',[
     'Describe them at a dinner party — a setting where personality is impossible to hide.',
@@ -3580,6 +4071,7 @@ function cbPsychology(pane, data){
 }
 
 function cbRole(pane, data){
+  pane.appendChild(lbCallout('✶','A character’s role in the story is not their job title or their relationship to the protagonist. It is the function they serve in the dramatic machine — what they put under pressure, what they reveal, what they resist.'));
   cbTitle(pane,'What do they want — and need?','A character\'s want is what they\'re consciously chasing. Their need is what would actually make them whole. The gap between the two is where the story lives.');
   pane.appendChild(cbF('wantVsNeed','Want vs. Need','e.g. WANT: to solve the murder and restore order. NEED: to forgive herself for the partner she couldn\'t save.',data.wantVsNeed,4,'What do they think they want? What do they actually need — even if they\'d never admit it?',[
     'The WANT is usually external and concrete: a goal, a person, a status, a thing.',
@@ -4475,6 +4967,7 @@ function sbWarning(text){
 
 // ── Step 1: S — Setup ──
 function sbSetup(pane, data, chars, locs){
+  pane.appendChild(lbCallout('▧','Setup is not exposition. It is the establishment of a specific pressure: who wants what, who stands in the way, and what it will cost if they fail. Everything else in the scene grows from this.'));
   const t=el('div',{class:'wizard-pane-title'});t.textContent='S — Setup: Who wants what?';
   const s=el('div',{class:'wizard-pane-sub'});s.textContent='The Setup is not the situation — it is the desire behind it. Every character entering this scene must want something specific. That want is the engine of the scene.';
   pane.append(t,s);
@@ -4554,6 +5047,7 @@ function sbSetup(pane, data, chars, locs){
 
 // ── Step 2: C — Confrontation ──
 function sbConfrontation(pane, data){
+  pane.appendChild(lbCallout('◆','Confrontation is not argument. It is the collision of two different needs inside a shared space. The best confrontations are not about who wins — they are about what the collision reveals.'));
   const t=el('div',{class:'wizard-pane-title'});t.textContent='C — Confrontation: Where wants collide';
   const s=el('div',{class:'wizard-pane-sub'});s.textContent='Confrontation is where the wants from your Setup come into tension. Conflict is NOT required — tension always is. A silence, an unanswered question, or a polite exchange can all be confrontation.';
   pane.append(t,s);
@@ -4593,6 +5087,7 @@ function sbConfrontation(pane, data){
 
 // ── Step 3: T — Turn ──
 function sbTurn(pane, data){
+  pane.appendChild(lbCallout('▲','The turn is the reason the scene exists. Something shifts — information, power, understanding, relationship. If nothing turns, there is no scene, only action. What does the audience know at the end that they did not know at the start?'));
   const t=el('div',{class:'wizard-pane-title'});t.textContent='T — The Turn: Find the pivot';
   const s=el('div',{class:'wizard-pane-sub'});s.textContent='The Turn is the most important element of the scene. It is NOT the climax and NOT the loudest moment. It is the exact beat where the scene changes direction — often a single line, a look, or a silence.';
   pane.append(t,s);
@@ -4628,6 +5123,7 @@ function sbTurn(pane, data){
 
 // ── Step 4: R — Resolution ──
 function sbResolution(pane, data){
+  pane.appendChild(lbCallout('▽','Resolution is not closure. It is a new unstable equilibrium — the situation after the turn. The best scene endings create the need for the next scene. What is now true that was not true before?'));
   const t=el('div',{class:'wizard-pane-title'});t.textContent='R — Resolution: Something must change';
   const s=el('div',{class:'wizard-pane-sub'});s.textContent='The Resolution is not the ending — it is the answer to the question the Setup created. Something must be different when the scene ends. A scene where nothing changes is not a scene.';
   pane.append(t,s);
@@ -4677,6 +5173,7 @@ function sbResolution(pane, data){
 
 // ── Step 5: Craft & Context ──
 function sbCraft(pane, data){
+  pane.appendChild(lbCallout('✎','Craft questions help you pressure-test the scene before you write it. Not all of these need answers — but if you cannot answer any of them, the scene may not be ready to write yet.'));
   const t=el('div',{class:'wizard-pane-title'});t.textContent='Craft & Context';
   const s=el('div',{class:'wizard-pane-sub'});s.textContent='Optional craft layer. These questions help you think about subtext, tone, and staging — the difference between a scene that works and one that resonates.';
   pane.append(t,s);
@@ -4821,50 +5318,96 @@ async function renderScenes(container, projectId){
   explain.innerHTML = 'Sluglines you write directly in a screenplay automatically appear here as scenes. Scenes you create here are not added to a script until you choose to insert them.';
   wrap.appendChild(explain);
   const _hintSc=toolHintBanner('scenes'); if(_hintSc) wrap.appendChild(_hintSc);
-  if(scenes.length===0){wrap.appendChild(emptyState('◧','No Scenes Yet','Break your story into scenes and keep track of the action.'));}
+  if(scenes.length===0){wrap.appendChild(emptyState('▧','No Scenes Yet','Break your story into scenes and keep track of the action.'));}
   else{
-    const list = el('div',{class:'scene-list'});
-    scenes.forEach(sc=>{
+    const list = el('div',{class:'scene-list',id:'scene-drag-list'});
+    // Item 22: Drag-to-reorder. Sort by 'order' field if present, fall back to sequenceNumber for legacy data.
+    scenes.sort((a,b)=>{
+      const ao = a.order!==undefined ? a.order : (a.sequenceNumber||0);
+      const bo = b.order!==undefined ? b.order : (b.sequenceNumber||0);
+      return ao - bo;
+    });
+
+    let dragSrc = null;
+
+    function buildSceneItem(sc, idx){
       const loc = locs.find(l=>l.id===sc.locationId);
       const scChars = chars.filter(c=>sc.characterIds&&sc.characterIds.includes(c.id));
-      const item = el('div',{class:'scene-item'});
-      const num = el('div',{class:'scene-num'},['#'+sc.sequenceNumber]);
+      const item = el('div',{class:'scene-item',draggable:'true'});
+      item.dataset.id = sc.id;
+      item.style.cursor = 'grab';
+
+      const handle = el('div',{style:'flex-shrink:0;color:var(--fg3);font-size:14px;cursor:grab;padding:0 6px 0 0;user-select:none;line-height:1;',title:'Drag to reorder'});
+      handle.textContent='⋮⋮';
+
+      const num = el('div',{class:'scene-num'},'#'+(idx+1));
       const body = el('div',{class:'scene-body'});
 
-      // Word count: prefer linked block content, fall back to draftContent
       const link = linkMap[sc.id];
-      const wordSrc = link ? (link.block.content || '') : (sc.draftContent || '');
+      const wordSrc = link ? (link.block.content||'') : (sc.draftContent||'');
       const draftWords = wordSrc ? wordCount(wordSrc) : 0;
 
-      // Build chips: word count + in-script indicator
       let chips = '';
       if(draftWords > 0){
         chips += '<span style="display:inline-block;margin-left:8px;font-size:10px;font-family:\'JetBrains Mono\',monospace;background:rgba(94,202,200,0.1);color:var(--teal);border:1px solid rgba(94,202,200,0.22);padding:1px 6px;border-radius:8px;letter-spacing:0.3px;" title="Word count">✎ '+draftWords+'w</span>';
       }
       if(link){
-        chips += '<span style="display:inline-block;margin-left:6px;font-size:10px;font-family:\'JetBrains Mono\',monospace;background:rgba(94,202,200,0.06);color:var(--teal);border:1px solid rgba(94,202,200,0.15);padding:1px 6px;border-radius:8px;letter-spacing:0.3px;" title="In script: '+esc(link.doc.title||'Untitled')+'">✦ in script</span>';
+        chips += '<span style="display:inline-block;margin-left:6px;font-size:10px;font-family:\'JetBrains Mono\',monospace;background:rgba(94,202,200,0.06);color:var(--teal);border:1px solid rgba(94,202,200,0.15);padding:1px 6px;border-radius:8px;letter-spacing:0.3px;" title="In script: '+esc(link.doc.title||'Untitled')+'">❆ in script</span>';
       }
       body.innerHTML='<h3>'+esc(sc.title)+chips+'</h3><p>'+esc(sc.description||'No description')+'</p>';
 
       if(loc||scChars.length){
         const meta = el('div',{class:'scene-chars'});
-        if(loc){const lt=el('span',{class:'tag',style:'background:rgba(94,202,200,0.1);color:var(--teal);border-color:rgba(94,202,200,0.2)'});lt.textContent='⬡ '+loc.name;meta.appendChild(lt);}
+        if(loc){const lt=el('span',{class:'tag',style:'background:rgba(94,202,200,0.1);color:var(--teal);border-color:rgba(94,202,200,0.2)'});lt.textContent='⧡ '+loc.name;meta.appendChild(lt);}
         scChars.forEach(c=>{const ct=el('span',{class:'tag'});ct.textContent='◉ '+c.name;meta.appendChild(ct);});
         body.appendChild(meta);
       }
+
       const acts = el('div',{style:'display:flex;gap:6px;margin-left:auto;opacity:0;transition:opacity 0.15s;'});
-      item.addEventListener('mouseenter',()=>acts.style.opacity='1'); item.addEventListener('mouseleave',()=>acts.style.opacity='0');
-      const draftSceneBtn = el('button',{class:'btn btn-ghost btn-sm',onclick:()=>openSceneDraftEditor(sc,projectId,chars,locs),title: link ? 'Edit this scene (changes also update the script)' : 'Write or edit the screenplay prose for this scene'});
+      item.addEventListener('mouseenter',()=>acts.style.opacity='1');
+      item.addEventListener('mouseleave',()=>acts.style.opacity='0');
+      const draftSceneBtn = el('button',{class:'btn btn-ghost btn-sm',onclick:()=>openSceneDraftEditor(sc,projectId,chars,locs),title:link?'Edit this scene (synced to script)':'Draft screenplay prose for this scene'});
       draftSceneBtn.textContent = draftWords > 0 ? '✎ Edit' : '✎ Draft';
       const eb=el('button',{class:'btn btn-ghost btn-sm',onclick:()=>openSceneDrawer(sc,projectId,chars,locs,scenes.length+1)});eb.textContent='Details';
-      const db2=el('button',{class:'btn btn-danger btn-sm',onclick:()=>{
-        deleteSceneWithLinkedBlock(sc, projectId, () => {
-          renderScenes(container,projectId);
-          toast('Deleted');
-        });
-      }});db2.textContent='\u2715';
-      acts.append(draftSceneBtn,eb,db2); item.append(num,body,acts); list.appendChild(item);
-    });
+      const db2=el('button',{class:'btn btn-danger btn-sm',onclick:()=>confirmDelete('Delete "'+sc.title+'"?',async()=>{await fsDelete('scenes',sc.id);renderScenes(container,projectId);toast('Deleted');})});db2.textContent='✕';
+      acts.append(draftSceneBtn,eb,db2);
+      item.append(handle,num,body,acts);
+
+      // Drag-and-drop handlers
+      item.addEventListener('dragstart',e=>{
+        dragSrc=item; e.dataTransfer.effectAllowed='move';
+        setTimeout(()=>{item.style.opacity='0.4';},0);
+      });
+      item.addEventListener('dragend',()=>{
+        item.style.opacity='1';
+        list.querySelectorAll('.scene-item').forEach(i=>i.classList.remove('drag-over'));
+      });
+      item.addEventListener('dragover',e=>{
+        e.preventDefault(); e.dataTransfer.dropEffect='move';
+        if(item!==dragSrc) item.classList.add('drag-over');
+      });
+      item.addEventListener('dragleave',()=>item.classList.remove('drag-over'));
+      item.addEventListener('drop',async e=>{
+        e.preventDefault(); item.classList.remove('drag-over');
+        if(!dragSrc||dragSrc===item) return;
+        const items=[...list.querySelectorAll('.scene-item')];
+        const fromIdx=items.indexOf(dragSrc);
+        const toIdx=items.indexOf(item);
+        if(fromIdx<toIdx) list.insertBefore(dragSrc,item.nextSibling);
+        else list.insertBefore(dragSrc,item);
+        // Re-number badges and persist new order to Firestore
+        const reordered=[...list.querySelectorAll('.scene-item')];
+        await Promise.all(reordered.map((el2,i)=>{
+          el2.querySelector('.scene-num').textContent='#'+(i+1);
+          return fsUpdate('scenes',el2.dataset.id,{order:i});
+        }));
+        toast('Scene order saved');
+      });
+
+      return item;
+    }
+
+    scenes.forEach((sc,idx)=>list.appendChild(buildSceneItem(sc,idx)));
     wrap.appendChild(list);
   }
   container.appendChild(wrap);
@@ -4938,7 +5481,7 @@ function openSceneDrawer(scene, projectId, chars, locs, nextSeq){
       ${chars.length?`<div class="field"><label class="label">Characters</label><div style="display:flex;flex-direction:column;gap:8px;padding:10px;background:var(--bg3);border-radius:var(--radius-sm);">${charOpts}</div></div>`:''}
     </div>
     <div class="drawer-footer">
-      ${!isNew?`<button class="btn btn-danger" id="sd-delete">Delete</button>`:''}
+      ${!isNew?`<button class="btn btn-danger" onclick="confirmDelete('Delete this scene?',async()=>{await fsDelete('scenes','${scene.id}');document.querySelector('.drawer-overlay').remove();renderScenes(document.getElementById('content'),'${projectId}');toast('Deleted');})">Delete</button>`:''}
       ${!isNew?`<button class="btn btn-ghost" id="sd-draft" title="Write the actual screenplay prose for this scene">✎ Draft Scene</button>`:''}
       <button class="btn btn-ghost" onclick="this.closest('.drawer-overlay').remove()">Cancel</button>
       <button class="btn btn-primary" id="sd-save">Save Scene</button>
@@ -4947,17 +5490,6 @@ function openSceneDrawer(scene, projectId, chars, locs, nextSeq){
   const locCombo = buildLocationCombo('sd-loc', locs, data.locationId);
   drawer.querySelector('#sd-loc-container').appendChild(locCombo);
   document.body.appendChild(overlay); overlay.appendChild(drawer);
-  // 5-0b.1 (bug 1.2): wire delete via the linked-block-aware helper.
-  const sdDeleteBtn = drawer.querySelector('#sd-delete');
-  if(sdDeleteBtn){
-    sdDeleteBtn.onclick = () => {
-      deleteSceneWithLinkedBlock(scene, projectId, () => {
-        overlay.remove();
-        renderScenes(document.getElementById('content'), projectId);
-        toast('Deleted');
-      });
-    };
-  }
   drawer.querySelector('#sd-save').onclick=async()=>{
     const cbs=Array.from(drawer.querySelectorAll('input[type="checkbox"]:checked')).map(c=>c.value);
     const locVal = v('sd-loc');
@@ -4965,11 +5497,7 @@ function openSceneDrawer(scene, projectId, chars, locs, nextSeq){
     const up={title:v('sd-title'),description:v('sd-desc'),locationId:locId,sequenceNumber:parseInt(v('sd-seq'))||1,characterIds:cbs};
     showSaving();
     if(isNew) await fsCreate('scenes',{storyProjectId:projectId,...up});
-    else {
-      await fsUpdate('scenes',scene.id,up);
-      // 5-0b.1 (bug 1.4): propagate sequenceNumber to the linked script block.
-      await syncSceneNumberFromCard({id: scene.id, sequenceNumber: up.sequenceNumber}, projectId);
-    }
+    else await fsUpdate('scenes',scene.id,up);
     showSaved();
     overlay.remove(); renderScenes(document.getElementById('content'),projectId); toast(isNew?'Scene created':'Scene saved');
   };
@@ -4985,8 +5513,6 @@ function openSceneDrawer(scene, projectId, chars, locs, nextSeq){
       const up={title:v('sd-title'),description:v('sd-desc'),locationId:locId,sequenceNumber:parseInt(v('sd-seq'))||1,characterIds:cbs};
       showSaving();
       await fsUpdate('scenes',scene.id,up);
-      // 5-0b.1 (bug 1.4): propagate sequenceNumber to the linked script block.
-      await syncSceneNumberFromCard({id: scene.id, sequenceNumber: up.sequenceNumber}, projectId);
       showSaved();
       overlay.remove();
       const fresh = await fsGet('scenes', scene.id);
@@ -5939,9 +6465,13 @@ function buildWbStep(pane, stepId){
 // ══════════════════════════════════════════════
 
 // Story structure templates
+// Each entry: { name, category, description, items[] }
+// category: 'film' | 'tv' | 'general' — used by wizard recommendation logic
 const STRUCTURE_TEMPLATES = {
-  'blank': { name:'Blank Outline', items:[] },
-  'three-act': { name:'Three-Act Structure', items:[
+  'blank': { name:'Blank Outline', category:'general', description:'Start from scratch with no pre-built structure.', items:[] },
+
+  // ── Film templates ──────────────────────────────────────────
+  'three-act': { name:'Three-Act Structure', category:'film', description:'The foundational film structure. Setup, confrontation, resolution. Works for nearly any story with a character at its center.', items:[
     {text:'ACT ONE — SETUP', level:1},
     {text:'Opening image / status quo', level:2},
     {text:'Inciting incident', level:2},
@@ -5957,38 +6487,7 @@ const STRUCTURE_TEMPLATES = {
     {text:'Finale', level:2},
     {text:'Final image', level:2},
   ]},
-  'five-act': { name:"Five-Act (Freytag's Pyramid)", items:[
-    {text:'ACT I — EXPOSITION', level:1},
-    {text:'Establish world and protagonist', level:2},
-    {text:'Inciting incident', level:2},
-    {text:'ACT II — RISING ACTION', level:1},
-    {text:'Complications escalate', level:2},
-    {text:'Stakes raised', level:2},
-    {text:'ACT III — CLIMAX', level:1},
-    {text:'Point of no return', level:2},
-    {text:'Crisis / confrontation', level:2},
-    {text:'ACT IV — FALLING ACTION', level:1},
-    {text:'Consequences unfold', level:2},
-    {text:'Loose ends surface', level:2},
-    {text:'ACT V — RESOLUTION', level:1},
-    {text:'Denouement', level:2},
-    {text:'New equilibrium', level:2},
-  ]},
-  'heros-journey': { name:"Hero's Journey", items:[
-    {text:'1. The Ordinary World', level:1},
-    {text:'2. Call to Adventure', level:1},
-    {text:'3. Refusal of the Call', level:1},
-    {text:'4. Meeting the Mentor', level:1},
-    {text:'5. Crossing the Threshold', level:1},
-    {text:'6. Tests, Allies, Enemies', level:1},
-    {text:'7. Approach to the Inmost Cave', level:1},
-    {text:'8. The Ordeal', level:1},
-    {text:'9. The Reward', level:1},
-    {text:'10. The Road Back', level:1},
-    {text:'11. The Resurrection', level:1},
-    {text:'12. Return with the Elixir', level:1},
-  ]},
-  'save-the-cat': { name:'Save the Cat (Blake Snyder)', items:[
+  'save-the-cat': { name:'Save the Cat (Blake Snyder)', category:'film', description:'A precise beat-sheet model with page targets. Best for plot-driven stories where momentum and audience engagement are the priority.', items:[
     {text:'Opening image (p.1)', level:1},
     {text:'Theme stated (p.5)', level:1},
     {text:'Setup (pp.1–10)', level:1},
@@ -6005,7 +6504,127 @@ const STRUCTURE_TEMPLATES = {
     {text:'Finale (pp.85–110)', level:1},
     {text:'Final image (p.110)', level:1},
   ]},
-  'kishoten': { name:'Kishōtenketsu (4-Act)', items:[
+  'short-film': { name:'Short Film (Under 15 min)', category:'film', description:'A compressed arc for short-form work. One clear situation, one turn, one resolution. Economy is everything.', items:[
+    {text:'OPENING — Establish the world and the problem', level:1},
+    {text:'Who is this person? What do we need to understand?', level:2},
+    {text:'What is wrong, missing, or at stake from the first frame?', level:2},
+    {text:'COMPLICATION — Something disrupts the status quo', level:1},
+    {text:'The event or decision that sets the story in motion', level:2},
+    {text:'What does the character want? What stands in the way?', level:2},
+    {text:'TURN — The pivot moment', level:1},
+    {text:'Something is revealed, chosen, or lost', level:2},
+    {text:'The story cannot go back to what it was', level:2},
+    {text:'RESOLUTION — The new reality', level:1},
+    {text:'How has the character or situation changed?', level:2},
+    {text:'Final image — what do we leave the audience with?', level:2},
+  ]},
+  'five-act': { name:"Five-Act (Freytag's Pyramid)", category:'film', description:'A classical dramatic structure tracing rise, climax, and fall. Useful for tragedies and stories where consequence is the point.', items:[
+    {text:'ACT I — EXPOSITION', level:1},
+    {text:'Establish world and protagonist', level:2},
+    {text:'Inciting incident', level:2},
+    {text:'ACT II — RISING ACTION', level:1},
+    {text:'Complications escalate', level:2},
+    {text:'Stakes raised', level:2},
+    {text:'ACT III — CLIMAX', level:1},
+    {text:'Point of no return', level:2},
+    {text:'Crisis / confrontation', level:2},
+    {text:'ACT IV — FALLING ACTION', level:1},
+    {text:'Consequences unfold', level:2},
+    {text:'Loose ends surface', level:2},
+    {text:'ACT V — RESOLUTION', level:1},
+    {text:'Denouement', level:2},
+    {text:'New equilibrium', level:2},
+  ]},
+
+  // ── TV / Episodic templates ──────────────────────────────────
+  'tv-episode': { name:'TV Episode (Teaser + 4 Acts + Tag)', category:'tv', description:'Standard one-hour drama or half-hour comedy episode structure. A-plot and B-plot tracked through acts, with cold open and tag.', items:[
+    {text:'COLD OPEN / TEASER', level:1},
+    {text:'Hook — drop us into action, mystery, or character', level:2},
+    {text:'Establish the episode\'s central question or threat', level:2},
+    {text:'ACT ONE — Establish & Disrupt', level:1},
+    {text:'A-plot: introduce or escalate the episode\'s main problem', level:2},
+    {text:'B-plot: introduce the secondary storyline', level:2},
+    {text:'End of act turn — something complicates the situation', level:2},
+    {text:'ACT TWO — Complicate & Escalate', level:1},
+    {text:'A-plot: attempts to solve the problem make things worse', level:2},
+    {text:'B-plot: develops independently, begins connecting to A-plot', level:2},
+    {text:'Midpoint — a reversal, revelation, or raising of stakes', level:2},
+    {text:'ACT THREE — Crisis & Break', level:1},
+    {text:'A-plot: the situation reaches its worst point', level:2},
+    {text:'B-plot: converges with or complicates the A-plot', level:2},
+    {text:'End of act turn — the path to resolution becomes clear (or seems to)', level:2},
+    {text:'ACT FOUR — Resolution', level:1},
+    {text:'A-plot: the central problem is resolved (for now)', level:2},
+    {text:'B-plot: payoff or pivot to next episode', level:2},
+    {text:'Character change or cost — what did this episode cost someone?', level:2},
+    {text:'TAG / CODA', level:1},
+    {text:'A quiet moment after the storm — or a new complication', level:2},
+    {text:'Season arc plant or callback', level:2},
+  ]},
+  'mini-series': { name:'Mini-Series / Limited Series Arc', category:'tv', description:'A multi-episode arc structure for limited series (4–8 episodes). Maps the full story across episodes with a clear beginning, escalation, and end.', items:[
+    {text:'SERIES PREMISE & CENTRAL QUESTION', level:1},
+    {text:'What is the story asking? What will be answered by the finale?', level:2},
+    {text:'What changes for the world or the characters by the end?', level:2},
+    {text:'EPISODE 1 — Establish the world and the wound', level:1},
+    {text:'Introduce the central characters and their status quo', level:2},
+    {text:'The inciting event that sets the story in motion', level:2},
+    {text:'End hook — why does the audience return?', level:2},
+    {text:'EPISODES 2–3 — Complicate and deepen', level:1},
+    {text:'The situation worsens; alliances and conflicts form', level:2},
+    {text:'Character backstory reveals that reframe the present', level:2},
+    {text:'A second major event raises the stakes', level:2},
+    {text:'MIDPOINT — The series pivot', level:1},
+    {text:'A revelation or reversal that changes what the story is about', level:2},
+    {text:'Characters are forced to make an irreversible choice', level:2},
+    {text:'EPISODES 4–6 — Escalation toward the breaking point', level:1},
+    {text:'Consequences of the midpoint cascade', level:2},
+    {text:'The worst version of the situation arrives', level:2},
+    {text:'Penultimate episode — everything is lost or on the line', level:2},
+    {text:'FINALE — Resolution and cost', level:1},
+    {text:'The central question is answered', level:2},
+    {text:'What has been permanently changed or lost?', level:2},
+    {text:'Final image — what world do we leave behind?', level:2},
+  ]},
+  'pilot-premise': { name:'Pilot & Series Premise', category:'tv', description:'A planning outline for an original series concept. Maps the series world, characters, and season arc — plus the pilot episode that launches it all.', items:[
+    {text:'SERIES CONCEPT', level:1},
+    {text:'Logline — one sentence: who, what, what\'s at stake', level:2},
+    {text:'Tone and genre — what does this show feel like?', level:2},
+    {text:'World — where and when does this take place? What are the rules?', level:2},
+    {text:'Central question — what does the whole series ask or explore?', level:2},
+    {text:'SERIES REGULARS', level:1},
+    {text:'Protagonist — who is at the center? What do they want vs. need?', level:2},
+    {text:'Supporting cast — who are the recurring presences?', level:2},
+    {text:'Antagonist or opposing force — what stands in the way?', level:2},
+    {text:'SEASON ONE ARC', level:1},
+    {text:'Where do we start? What is the status quo?', level:2},
+    {text:'What is the season\'s central conflict or question?', level:2},
+    {text:'Midseason turn — what changes at the halfway point?', level:2},
+    {text:'Season finale — how does Season One end? What is resolved? What is opened?', level:2},
+    {text:'PILOT EPISODE', level:1},
+    {text:'Cold open — how do we enter this world?', level:2},
+    {text:'Act One — introduce the world, the protagonist, the status quo', level:2},
+    {text:'Act Two — the inciting event that disrupts everything', level:2},
+    {text:'Act Three — the protagonist is forced to engage with the new reality', level:2},
+    {text:'Act Four — a choice is made; the series is launched', level:2},
+    {text:'End hook — why does the audience return for Episode 2?', level:2},
+  ]},
+
+  // ── General / cross-format templates ───────────────────────
+  'heros-journey': { name:"Hero's Journey", category:'general', description:'A mythic arc tracing departure, transformation, and return. Works for any format where a character crosses into an unfamiliar world and is changed by it.', items:[
+    {text:'1. The Ordinary World', level:1},
+    {text:'2. Call to Adventure', level:1},
+    {text:'3. Refusal of the Call', level:1},
+    {text:'4. Meeting the Mentor', level:1},
+    {text:'5. Crossing the Threshold', level:1},
+    {text:'6. Tests, Allies, Enemies', level:1},
+    {text:'7. Approach to the Inmost Cave', level:1},
+    {text:'8. The Ordeal', level:1},
+    {text:'9. The Reward', level:1},
+    {text:'10. The Road Back', level:1},
+    {text:'11. The Resurrection', level:1},
+    {text:'12. Return with the Elixir', level:1},
+  ]},
+  'kishoten': { name:'Kishōtenketsu (4-Act)', category:'general', description:'A Japanese four-act structure with no central conflict. Harmony → development → unexpected twist → reconciliation. For stories that turn on revelation rather than opposition.', items:[
     {text:'KI — Introduction', level:1},
     {text:'Establish characters and world', level:2},
     {text:'Sow the seeds quietly', level:2},
@@ -6019,7 +6638,7 @@ const STRUCTURE_TEMPLATES = {
     {text:'Bring the threads together', level:2},
     {text:'Resolution through understanding, not conquest', level:2},
   ]},
-  'story-circle': { name:"Dan Harmon's Story Circle", items:[
+  'story-circle': { name:"Dan Harmon's Story Circle", category:'general', description:'A cyclical eight-step structure. The character leaves comfort, gets what they want, pays for it, and returns changed. Originally designed for TV comedy but works broadly.', items:[
     {text:'1. A character is in a zone of comfort', level:1},
     {text:'2. But they want something', level:1},
     {text:'3. They enter an unfamiliar situation', level:1},
@@ -6031,26 +6650,346 @@ const STRUCTURE_TEMPLATES = {
   ]},
 };
 
+// ══════════════════════════════════════════════
+//  OUTLINE WIZARD
+//  4-step decision tree → recommends a structure template → creates
+//  outlineMeta + outline items. wizardData stored on meta doc from day one.
+// ══════════════════════════════════════════════
+
+// Recommendation logic: [format, engine, tone] → templateKey
+function _owRecommend(format, engine, tone){
+  if(format === 'tv-episode')   return 'tv-episode';
+  if(format === 'mini-series')  return 'mini-series';
+  if(format === 'pilot-premise')return 'pilot-premise';
+  if(format === 'short-film')   return 'short-film';
+  // Film / general
+  if(tone === 'epic-mythic')                        return 'heros-journey';
+  if(tone === 'experimental')                       return engine === 'world-concept' ? 'kishoten' : 'story-circle';
+  if(engine === 'character' || engine === 'emotional') return 'three-act';
+  if(engine === 'plot-conflict')                    return 'save-the-cat';
+  if(engine === 'world-concept')                    return 'kishoten';
+  return 'three-act'; // safe default
+}
+
+// Alternative template suggestions per primary recommendation
+const _owAlternatives = {
+  'three-act':      ['save-the-cat','five-act','story-circle'],
+  'save-the-cat':   ['three-act','five-act'],
+  'heros-journey':  ['three-act','story-circle'],
+  'kishoten':       ['story-circle','heros-journey'],
+  'story-circle':   ['kishoten','three-act'],
+  'five-act':       ['three-act','save-the-cat'],
+  'tv-episode':     ['story-circle','three-act'],
+  'mini-series':    ['heros-journey','three-act'],
+  'pilot-premise':  ['mini-series','three-act'],
+  'short-film':     ['three-act','story-circle'],
+};
+
+function showOutlineWizard(projectId, container){
+  const data = { format:'', engine:'', tone:'', chosenTemplate:'', outlineName:'' };
+  let step = 0;
+  const STEPS = ['Format','Story Engine','Tone & Pacing','Recommendation','Review & Create'];
+
+  const overlay = el('div',{class:'wizard-overlay'});
+
+  function render(){
+    overlay.innerHTML = '';
+
+    // Topbar
+    const topbar = el('div',{class:'wizard-topbar'});
+    const titleEl = el('div',{class:'wizard-topbar-title'});titleEl.textContent = 'Outline Wizard';
+    const progressWrap = el('div',{style:'display:flex;flex-direction:column;align-items:center;gap:6px;'});
+    const dots = el('div',{class:'wizard-progress'});
+    STEPS.forEach((_,i)=>{
+      const dot = el('div',{class:'wizard-step-dot'+(i===step?' active':i<step?' done':'')});
+      dots.appendChild(dot);
+    });
+    const stepLbl = el('div',{class:'wizard-step-label'});
+    stepLbl.textContent = 'Step '+(step+1)+' of '+STEPS.length+' — '+STEPS[step];
+    progressWrap.append(dots, stepLbl);
+    const closeBtn = el('button',{class:'btn btn-ghost btn-sm',onclick:()=>{
+      if(step < STEPS.length-1){ wizardExitConfirm(()=>overlay.remove()); }
+      else { overlay.remove(); }
+    }});closeBtn.textContent = '✕ Exit';
+    topbar.append(titleEl, progressWrap, closeBtn);
+
+    // Body
+    const body = el('div',{class:'wizard-body'});
+    const pane = el('div',{class:'wizard-pane'});
+    body.appendChild(pane);
+
+    // Footer
+    const footer = el('div',{class:'wizard-footer'});
+    const backBtn = el('button',{class:'btn btn-ghost',onclick:()=>{ step--; render(); }});
+    backBtn.textContent = '← Back';
+    if(step===0) backBtn.style.visibility='hidden';
+    const nav = el('div',{class:'wizard-footer-nav'});
+
+    // ── Step content ──
+    if(step===0){
+      // Format
+      pane.appendChild(lbCallout('≡','The structure you choose should match the form you\'re writing in. A TV episode has different bones than a feature film — and a short film needs a different economy than either.'));
+      const q = el('div',{class:'wizard-field'});
+      const ql = el('label',{class:'wizard-field-label'});ql.textContent = 'What format are you working in?';
+      q.appendChild(ql);
+      const opts = [
+        ['film','🎬  Film Script','A feature-length screenplay (approx. 90–120 pages)'],
+        ['tv-episode','📺  TV Episode','A single episode of a series — spec or original'],
+        ['mini-series','🗂  Mini-Series / Limited','A multi-episode arc (4–8 episodes) with a defined end'],
+        ['pilot-premise','🌐  Pilot & Series Premise','Planning an original series: world, characters, and pilot episode'],
+        ['short-film','⬡  Short Film','A short-form screenplay (under 15 pages)'],
+        ['other','◈  Other / Not Sure','General story structure — choose based on vibe, not format'],
+      ];
+      opts.forEach(([val, label, desc])=>{
+        const card = el('div',{class:'wb-template-card'+(data.format===val?' selected':''),style:'margin-top:8px;cursor:pointer;'});
+        card.innerHTML = '<div style="font-weight:600;font-size:14px;">'+label+'</div><div style="font-size:12px;color:var(--fg3);margin-top:3px;">'+desc+'</div>';
+        card.onclick = ()=>{
+          data.format = val;
+          pane.querySelectorAll('.wb-template-card').forEach(c=>c.classList.remove('selected'));
+          card.classList.add('selected');
+        };
+        q.appendChild(card);
+      });
+      pane.appendChild(q);
+
+      const nextBtn = el('button',{class:'btn btn-primary',onclick:()=>{
+        if(!data.format){ toast('Pick a format to continue','error'); return; }
+        // TV formats skip engine/tone steps — go straight to recommendation
+        if(['tv-episode','mini-series','pilot-premise'].includes(data.format)){
+          data.chosenTemplate = _owRecommend(data.format,'','');
+          step = 3; render(); return;
+        }
+        step++; render();
+      }});
+      nextBtn.textContent = 'Next →';
+      nav.appendChild(nextBtn);
+
+    } else if(step===1){
+      // Story Engine
+      pane.appendChild(lbCallout('◉','Every story is driven by something. The engine is the force that makes the plot move — and it shapes which structure will feel natural.'));
+      const q = el('div',{class:'wizard-field'});
+      const ql = el('label',{class:'wizard-field-label'});ql.textContent = 'What is the primary engine of your story?';
+      q.appendChild(ql);
+      const opts = [
+        ['character','A character\'s transformation','The story is about who someone becomes — or fails to become'],
+        ['plot-conflict','External conflict and plot','Something happens, and the character must respond. Events drive the story.'],
+        ['world-concept','A world or concept to explore','The world itself is the subject. Character and plot serve the idea.'],
+        ['emotional','An emotional or thematic journey','The story is about a feeling, a question, or a truth — not a plot outcome.'],
+      ];
+      opts.forEach(([val, label, desc])=>{
+        const card = el('div',{class:'wb-template-card'+(data.engine===val?' selected':''),style:'margin-top:8px;cursor:pointer;'});
+        card.innerHTML = '<div style="font-weight:600;font-size:14px;">'+label+'</div><div style="font-size:12px;color:var(--fg3);margin-top:3px;">'+desc+'</div>';
+        card.onclick = ()=>{
+          data.engine = val;
+          pane.querySelectorAll('.wb-template-card').forEach(c=>c.classList.remove('selected'));
+          card.classList.add('selected');
+        };
+        q.appendChild(card);
+      });
+      pane.appendChild(q);
+      // Tips
+      const tipsWrap = el('div',{class:'wizard-tips-block'});
+      const tipToggle = el('button',{class:'wizard-tips-toggle'});tipToggle.textContent = '💡 Stuck? Try this';
+      const tipBody = el('div',{class:'wizard-tips-body',style:'display:none;'});
+      tipBody.innerHTML = '<ul style="margin:0;padding-left:18px;"><li>Think about the last film or show that affected you. Was it a character who changed, or a plot that surprised you?</li><li>If you removed all the events from your story, would anything still be interesting? If yes — it\'s probably character or theme.</li><li>You can always change this later. Pick the engine that feels most true right now.</li></ul>';
+      tipToggle.onclick = ()=>{ tipBody.style.display = tipBody.style.display==='none'?'block':'none'; };
+      tipsWrap.append(tipToggle, tipBody);
+      pane.appendChild(tipsWrap);
+
+      const nextBtn = el('button',{class:'btn btn-primary',onclick:()=>{
+        if(!data.engine){ toast('Pick a story engine to continue','error'); return; }
+        step++; render();
+      }});
+      nextBtn.textContent = 'Next →';
+      nav.appendChild(nextBtn);
+
+    } else if(step===2){
+      // Tone & Pacing
+      pane.appendChild(lbCallout('◎','Structure and tone are linked. An epic mythic journey needs room to breathe. A propulsive thriller needs act breaks that click. Your tone shapes your form.'));
+      const q = el('div',{class:'wizard-field'});
+      const ql = el('label',{class:'wizard-field-label'});ql.textContent = 'What is the tone and pacing of your story?';
+      q.appendChild(ql);
+      const opts = [
+        ['propulsive','Propulsive and plot-driven','Fast-moving. Each scene turns. The audience can\'t look away.'],
+        ['character-driven','Quiet and character-driven','Slower. The drama lives in faces and small choices, not big events.'],
+        ['epic-mythic','Epic and mythic','Grand in scale. Archetypal. The story feels larger than the characters in it.'],
+        ['experimental','Experimental or non-linear','The form is part of the meaning. Structure is a conscious choice, not a default.'],
+      ];
+      opts.forEach(([val, label, desc])=>{
+        const card = el('div',{class:'wb-template-card'+(data.tone===val?' selected':''),style:'margin-top:8px;cursor:pointer;'});
+        card.innerHTML = '<div style="font-weight:600;font-size:14px;">'+label+'</div><div style="font-size:12px;color:var(--fg3);margin-top:3px;">'+desc+'</div>';
+        card.onclick = ()=>{
+          data.tone = val;
+          pane.querySelectorAll('.wb-template-card').forEach(c=>c.classList.remove('selected'));
+          card.classList.add('selected');
+        };
+        q.appendChild(card);
+      });
+      pane.appendChild(q);
+
+      const nextBtn = el('button',{class:'btn btn-primary',onclick:()=>{
+        if(!data.tone){ toast('Pick a tone to continue','error'); return; }
+        data.chosenTemplate = _owRecommend(data.format, data.engine, data.tone);
+        step++; render();
+      }});
+      nextBtn.textContent = 'See Recommendation →';
+      nav.appendChild(nextBtn);
+
+    } else if(step===3){
+      // Recommendation
+      const rec = STRUCTURE_TEMPLATES[data.chosenTemplate] || STRUCTURE_TEMPLATES['three-act'];
+      pane.appendChild(lbCallout('✦','Based on your answers, here\'s the structure that fits best. You can swap to an alternative below, or rename your outline — then move on to review.'));
+
+      // Primary recommendation card
+      const recCard = el('div',{style:'background:var(--active-bg);border:1px solid var(--primary);border-radius:var(--radius);padding:16px;margin-bottom:16px;'});
+      const recTitle = el('div',{style:'font-size:16px;font-weight:700;color:var(--primary);margin-bottom:6px;'});
+      recTitle.textContent = '✦ Recommended: '+rec.name;
+      const recDesc = el('div',{style:'font-size:13px;color:var(--fg2);line-height:1.5;'});
+      recDesc.textContent = rec.description || '';
+      recCard.append(recTitle, recDesc);
+      pane.appendChild(recCard);
+
+      // Alternatives
+      const alts = (_owAlternatives[data.chosenTemplate]||[]).map(k=>STRUCTURE_TEMPLATES[k]).filter(Boolean);
+      if(alts.length){
+        const altLabel = el('div',{class:'wizard-field-label',style:'margin-bottom:8px;'});altLabel.textContent = 'Or choose a different structure:';
+        pane.appendChild(altLabel);
+        alts.forEach((t,i)=>{
+          const altKey = (_owAlternatives[data.chosenTemplate]||[])[i];
+          const altCard = el('div',{class:'wb-template-card'+(data.chosenTemplate===altKey?' selected':''),style:'margin-bottom:6px;cursor:pointer;'});
+          altCard.innerHTML = '<div style="font-weight:600;font-size:13px;">'+t.name+'</div><div style="font-size:12px;color:var(--fg3);margin-top:2px;">'+(t.description||'')+'</div>';
+          altCard.onclick = ()=>{
+            data.chosenTemplate = altKey;
+            pane.querySelectorAll('.wb-template-card').forEach(c=>c.classList.remove('selected'));
+            altCard.classList.add('selected');
+            recTitle.textContent = '✦ Selected: '+t.name;
+            recDesc.textContent = t.description||'';
+          };
+          pane.appendChild(altCard);
+        });
+      }
+
+      // Outline name field
+      const nameWrap = el('div',{class:'wizard-field',style:'margin-top:20px;'});
+      const nameLbl = el('label',{class:'wizard-field-label'});nameLbl.textContent = 'Give this outline a name';
+      const nameInput = el('input',{class:'input',placeholder:'e.g. Episode 3 Beat Sheet, Feature Draft 1, Season Arc…',value:data.outlineName});
+      nameInput.oninput = ()=>{ data.outlineName = nameInput.value; };
+      nameWrap.append(nameLbl, nameInput);
+      pane.appendChild(nameWrap);
+
+      const nextBtn = el('button',{class:'btn btn-primary',onclick:()=>{
+        if(!data.outlineName.trim()){
+          // Auto-fill name from template if blank
+          data.outlineName = (STRUCTURE_TEMPLATES[data.chosenTemplate]||{}).name || 'New Outline';
+          nameInput.value = data.outlineName;
+        }
+        step++; render();
+      }});
+      nextBtn.textContent = 'Review →';
+      nav.appendChild(nextBtn);
+
+    } else {
+      // Step 4 — Review & Create
+      const tmpl = STRUCTURE_TEMPLATES[data.chosenTemplate] || STRUCTURE_TEMPLATES['three-act'];
+      const name = data.outlineName || tmpl.name;
+
+      const reviewCard = el('div',{style:'background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:20px;'});
+      reviewCard.innerHTML = '<div style="font-size:13px;color:var(--fg3);margin-bottom:10px;text-transform:uppercase;letter-spacing:0.08em;">Ready to create</div>'
+        +'<div style="font-size:16px;font-weight:700;margin-bottom:4px;">'+esc(name)+'</div>'
+        +'<div style="font-size:13px;color:var(--fg2);">'+esc(tmpl.name)+(tmpl.items.length?' — '+tmpl.items.length+' beats':' — blank')+'</div>';
+      pane.appendChild(reviewCard);
+
+      // Preview of items
+      if(tmpl.items.length){
+        const prevLabel = el('div',{class:'wizard-field-label',style:'margin-bottom:8px;'});prevLabel.textContent = 'Structure preview:';
+        pane.appendChild(prevLabel);
+        const prevList = el('div',{style:'max-height:280px;overflow-y:auto;border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;background:var(--bg2);'});
+        tmpl.items.forEach(it=>{
+          const row = el('div',{style:'padding:3px 0 3px '+(((it.level||1)-1)*16)+'px;font-size:13px;color:'+(it.level===1?'var(--fg)':'var(--fg3)')+';font-weight:'+(it.level===1?'600':'400')+';'});
+          row.textContent = it.text;
+          prevList.appendChild(row);
+        });
+        pane.appendChild(prevList);
+      }
+
+      const saveBtn = el('button',{class:'btn btn-primary',onclick:async()=>{
+        saveBtn.disabled=true; saveBtn.textContent='Creating…';
+        try{
+          const newId = 'ol-'+Date.now();
+          const finalName = data.outlineName.trim() || tmpl.name;
+          // Create meta document — wizardData stored from day one
+          await fsCreate('outlineMetas',{
+            storyProjectId:projectId,
+            outlineId:newId,
+            name:finalName,
+            templateKey:data.chosenTemplate,
+            wizardData:{
+              format:data.format,
+              engine:data.engine,
+              tone:data.tone,
+              chosenTemplate:data.chosenTemplate,
+            },
+          });
+          // Create items
+          if(tmpl.items.length > 0){
+            for(let i=0;i<tmpl.items.length;i++){
+              const it = tmpl.items[i];
+              await fsCreate('outlines',{storyProjectId:projectId,outlineId:newId,outlineName:finalName,text:it.text,level:it.level,order:i});
+            }
+          } else {
+            await fsCreate('outlines',{storyProjectId:projectId,outlineId:newId,outlineName:finalName,text:'',level:1,order:0});
+          }
+          _activeOutlineId[projectId] = newId;
+          overlay.remove();
+          await renderOutline(container, projectId);
+          toast('Outline created');
+        } catch(e){
+          console.error(e);
+          toast('Error creating outline — try again','error');
+          saveBtn.disabled=false; saveBtn.textContent='Create Outline';
+        }
+      }});
+      saveBtn.textContent = 'Create Outline';
+      nav.appendChild(saveBtn);
+    }
+
+    footer.append(backBtn, nav);
+    overlay.append(topbar, body, footer);
+    document.body.appendChild(overlay);
+  }
+
+  render();
+}
+
 // Active outline ID per project (session-only — resets to first on reload)
 const _activeOutlineId = {};
 
 async function renderOutline(container, projectId) {
   container.innerHTML = '<div style="padding:60px;text-align:center;color:var(--fg3);">Loading…</div>';
 
-  // Load all outlines (grouped by outlineId)
-  const allItems = await fsQuery('outlines', where('storyProjectId','==',projectId));
-  // Get distinct outline groups
+  // Load outline items and meta documents in parallel
+  const [allItems, allMetas] = await Promise.all([
+    fsQuery('outlines', where('storyProjectId','==',projectId)),
+    fsQuery('outlineMetas', where('storyProjectId','==',projectId)),
+  ]);
+
+  // Build meta lookup: outlineId -> meta doc
+  const metaByGroup = {};
+  allMetas.forEach(m => { metaByGroup[m.outlineId] = m; });
+
+  // Group items by outlineId; prefer meta doc name as source of truth
   const outlineGroups = {};
   allItems.forEach(item => {
     const gid = item.outlineId || 'default';
-    if (!outlineGroups[gid]) outlineGroups[gid] = { id:gid, name:item.outlineName||'Outline', items:[] };
+    const metaName = metaByGroup[gid] ? metaByGroup[gid].name : null;
+    if (!outlineGroups[gid]) outlineGroups[gid] = { id:gid, name:metaName||item.outlineName||'Outline', items:[] };
     outlineGroups[gid].items.push(item);
   });
-  // If no outlines exist, create a default one
+  // If no outlines exist, set up empty default group
   if (Object.keys(outlineGroups).length === 0) {
     outlineGroups['default'] = { id:'default', name:'Outline', items:[] };
   }
-  // Sort items within each group
+  // Sort items within each group by order
   Object.values(outlineGroups).forEach(g => g.items.sort((a,b)=>(a.order||0)-(b.order||0)));
 
   const groupList = Object.values(outlineGroups);
@@ -6064,40 +7003,59 @@ async function renderOutline(container, projectId) {
 
   // Header
   const header = el('div',{class:'page-header'});
-  header.innerHTML = '<div><div class="page-title">Outline</div><div class="page-subtitle">Multiple outlines supported — add a new one with +</div></div>';
+  header.innerHTML = '<div><div class="page-title">Outline</div><div class="page-subtitle">Build from a template or start blank — multiple outlines supported</div></div>';
   const headerRight = el('div',{style:'display:flex;gap:8px;align-items:center;flex-wrap:wrap;'});
 
-  // Structure template dropdown
-  const structLabel = el('span',{style:'font-size:12px;color:var(--fg3);'});structLabel.textContent='New from template:';
-  const structSelect = el('select',{class:'select',style:'width:auto;font-size:12px;padding:5px 10px;'});
-  Object.entries(STRUCTURE_TEMPLATES).forEach(([k,v])=>{
-    const opt=document.createElement('option');opt.value=k;opt.textContent=v.name;
-    structSelect.appendChild(opt);
-  });
+  // PDF button
   const pdfOutlineBtn = el('button',{class:'btn btn-ghost btn-sm',onclick:()=>{
     const ag=outlineGroups[_activeOutlineId[projectId]];
     if(ag) generateOutlinePdf(projectId, ag.id, ag.name);
-  }});pdfOutlineBtn.textContent='📄 Create Document';
+  }});
+  pdfOutlineBtn.textContent='📄 Create Document';
   headerRight.appendChild(pdfOutlineBtn);
-  const addFromTemplate = el('button',{class:'btn btn-primary btn-sm',onclick:async()=>{
+
+  // Wizard button — primary creation path
+  const wizardBtn = el('button',{class:'btn btn-primary btn-sm'});
+  wizardBtn.innerHTML = '✦ Build with Wizard';
+  wizardBtn.onclick = () => showOutlineWizard(projectId, container);
+  headerRight.appendChild(wizardBtn);
+
+  // Direct template dropdown — secondary path, grouped by category
+  const structSelect = el('select',{class:'select',style:'width:auto;font-size:12px;padding:5px 10px;'});
+  const catOrder = [['film','Film'],['tv','Television'],['general','General / Other']];
+  catOrder.forEach(([cat, label])=>{
+    const entries = Object.entries(STRUCTURE_TEMPLATES).filter(([,v])=>(v.category||'general')===cat);
+    if(!entries.length) return;
+    const grp = document.createElement('optgroup');
+    grp.label = label;
+    entries.forEach(([k,v])=>{
+      const opt=document.createElement('option');opt.value=k;opt.textContent=v.name;
+      grp.appendChild(opt);
+    });
+    structSelect.appendChild(grp);
+  });
+
+  const addFromTemplate = el('button',{class:'btn btn-ghost btn-sm',onclick:async()=>{
     const key = structSelect.value;
     const tmpl = STRUCTURE_TEMPLATES[key];
     const newId = 'ol-'+Date.now();
     const name = tmpl.name === 'Blank Outline' ? 'New Outline' : tmpl.name;
+    // Create meta document first (source of truth for name and template)
+    await fsCreate('outlineMetas',{storyProjectId:projectId, outlineId:newId, name, templateKey:key, wizardData:null});
     // Create items
-    for(let i=0;i<tmpl.items.length;i++){
-      const it = tmpl.items[i];
-      await fsCreate('outlines',{storyProjectId:projectId,outlineId:newId,outlineName:name,text:it.text,level:it.level,order:i});
-    }
-    if(tmpl.items.length === 0){
-      // blank — create one empty item so the group exists
+    if(tmpl.items.length > 0){
+      for(let i=0;i<tmpl.items.length;i++){
+        const it = tmpl.items[i];
+        await fsCreate('outlines',{storyProjectId:projectId,outlineId:newId,outlineName:name,text:it.text,level:it.level,order:i});
+      }
+    } else {
       await fsCreate('outlines',{storyProjectId:projectId,outlineId:newId,outlineName:name,text:'',level:1,order:0});
     }
     _activeOutlineId[projectId] = newId;
     await renderOutline(container, projectId);
   }});
-  addFromTemplate.textContent = '+ Create';
-  headerRight.append(structLabel, structSelect, addFromTemplate);
+  addFromTemplate.textContent = '+ Add';
+  headerRight.append(structSelect, addFromTemplate);
   header.appendChild(headerRight);
   wrap.appendChild(header);
   const _hintOl=toolHintBanner('outline'); if(_hintOl) wrap.appendChild(_hintOl);
@@ -6108,24 +7066,32 @@ async function renderOutline(container, projectId) {
     const tab = el('div',{class:'outline-tab'+(_activeOutlineId[projectId]===g.id?' active':'')});
     tab.textContent = g.name;
     tab.onclick = () => { _activeOutlineId[projectId]=g.id; renderOutline(container,projectId); };
-    // Double-click to rename
+    // Double-click to rename — writes to meta doc when available, falls back to items for legacy
     tab.ondblclick = async(e) => {
       e.stopPropagation();
       const newName = prompt('Rename outline:', g.name);
       if(!newName || newName===g.name) return;
-      // Update all items in this group
-      const groupItems = allItems.filter(i=>(i.outlineId||'default')===g.id);
-      await Promise.all(groupItems.map(i=>fsUpdate('outlines',i.id,{outlineName:newName})));
+      const meta = metaByGroup[g.id];
+      if(meta){
+        await fsUpdate('outlineMetas', meta.id, {name:newName});
+      } else {
+        const groupItems = allItems.filter(i=>(i.outlineId||'default')===g.id);
+        await Promise.all(groupItems.map(i=>fsUpdate('outlines',i.id,{outlineName:newName})));
+      }
       await renderOutline(container,projectId);
     };
     tabs.appendChild(tab);
   });
-  // Delete tab button (only if more than one outline)
+  // Delete tab (only if more than one outline exists)
   if(groupList.length > 1){
     const activeGroup = outlineGroups[_activeOutlineId[projectId]];
     const delTab = el('div',{class:'outline-tab',style:'color:var(--red);margin-left:auto;',onclick:()=>{
       confirmDelete('Delete outline "'+activeGroup.name+'" and all its items?', async()=>{
-        await Promise.all(activeGroup.items.map(i=>fsDelete('outlines',i.id)));
+        const meta = metaByGroup[activeGroup.id];
+        await Promise.all([
+          ...activeGroup.items.map(i=>fsDelete('outlines',i.id)),
+          meta ? fsDelete('outlineMetas', meta.id) : Promise.resolve(),
+        ]);
         _activeOutlineId[projectId] = groupList.find(g=>g.id!==activeGroup.id)?.id || 'default';
         await renderOutline(container,projectId);
       });
@@ -6135,7 +7101,7 @@ async function renderOutline(container, projectId) {
   }
   wrap.appendChild(tabs);
 
-  // Active outline items
+  // Active outline items list
   const listContainer = el('div',{id:'outline-list'});
   wrap.appendChild(listContainer);
   container.appendChild(wrap);
@@ -6886,14 +7852,17 @@ function getBlockSlug(block){
 function extractLocationFromSlug(slug){
   if(!slug) return null;
   const s = slug.trim().toUpperCase();
-  // Must start with INT., EXT., or INT./EXT.
-  const m = s.match(/^(?:INT\.|EXT\.|INT\.\/EXT\.)\s+(.+?)(?:\s+-\s+(?:DAY|NIGHT|DAWN|DUSK|CONTINUOUS|LATER|MOMENTS LATER|MORNING|EVENING|AFTERNOON|SUNSET|SUNRISE|CONTINUOUS ACTION))?$/);
+  // Require a COMPLETE slugline: prefix + location name + dash + time-of-day.
+  // The time-of-day suffix is REQUIRED — partial sluglines like "INT. KITCH"
+  // will not match, preventing premature location card creation while typing.
+  // Accepted prefixes: INT. | EXT. | INT./EXT. | I/E
+  const m = s.match(/^(?:INT\.|EXT\.|INT\.\/EXT\.|I\/E\.?)\s+(.+?)\s+-\s+(DAY|NIGHT|DAWN|DUSK|CONTINUOUS|LATER|MOMENTS LATER|MORNING|EVENING|AFTERNOON|SUNSET|SUNRISE|CONTINUOUS ACTION)$/);
   if(!m) return null;
-  // Clean up: strip trailing time-of-day if it snuck in, trim, title-case
   let name = m[1].trim();
-  // Remove a trailing dash + anything (catches non-standard time labels)
+  // Strip any residual trailing dash segment (non-standard time labels)
   name = name.replace(/\s*-\s*\S+.*$/, '').trim();
-  if(!name) return null;
+  // Minimum length guard — single-character names are noise
+  if(!name || name.length < 3) return null;
   // Convert ALL-CAPS to Title Case for cleaner display
   name = name.split(/\s+/).map(w=>w.charAt(0)+w.slice(1).toLowerCase()).join(' ');
   return name;
@@ -6903,137 +7872,6 @@ function extractLocationFromSlug(slug){
 function getBlockWordCount(block){
   if(!block || !block.content) return 0;
   return wordCount(block.content);
-}
-
-// ── Cleanup helpers (5-0b.1: bug 1.1 fix) ──
-// scanScriptIssues walks the block array and returns a list of fixable
-// problems the user can review and remove via the Clean Up modal. Each issue
-// is { index, block, kind, reason } where index is the position in the
-// original blocks array. Issue kinds:
-//   - 'empty':            block is completely empty (no slugline, no words)
-//   - 'heading-only':     slugline present but zero scene content written
-//   - 'orphan-placeholder': placeholder block with no sceneId and no slugline
-//   - 'duplicate':        an empty block whose slugline matches an adjacent block
-function scanScriptIssues(blocks){
-  const issues = [];
-  if(!Array.isArray(blocks)) return issues;
-  blocks.forEach((b, i) => {
-    if(!b || b.kind === 'preamble') return;
-    const slug = getBlockSlug(b);
-    const wc = getBlockWordCount(b);
-    // Subtract the slug words from the body-content estimate so a heading-only
-    // block reads as 0 body words.
-    const slugWords = slug ? slug.split(/\s+/).filter(Boolean).length : 0;
-    const bodyWords = Math.max(0, wc - slugWords);
-
-    if(b.kind === 'placeholder' && !b.sceneId && !slug){
-      issues.push({ index:i, block:b, kind:'orphan-placeholder',
-        reason:'Empty placeholder card with no scene link' });
-      return;
-    }
-    if(!slug && bodyWords === 0){
-      issues.push({ index:i, block:b, kind:'empty',
-        reason:'Empty block (no slugline, no content)' });
-      return;
-    }
-    if(slug && bodyWords === 0){
-      issues.push({ index:i, block:b, kind:'heading-only',
-        reason:'Slugline present but no scene content written' });
-      return;
-    }
-    // Duplicate: an empty heading-only block whose slug matches the previous
-    // or next non-preamble block. Already handled by 'heading-only' above
-    // unless we want to flag both copies — current rule: only flag the empty
-    // one, which is what 'heading-only' catches. No additional case needed.
-  });
-  return issues;
-}
-
-// showCleanupModal renders a review modal listing each issue with a checkbox
-// (default checked). On confirm, calls onConfirm(selectedIndices) where
-// selectedIndices is the array of original-block-array positions to remove.
-function showCleanupModal(issues, onConfirm){
-  const overlay = el('div', {style:
-    'position:fixed;inset:0;z-index:600;display:flex;align-items:center;'+
-    'justify-content:center;background:rgba(0,0,0,0.65);animation:fadeIn 0.15s;'
-  });
-  const box = el('div', {style:
-    'background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);'+
-    'padding:24px;width:520px;max-width:92vw;max-height:80vh;'+
-    'display:flex;flex-direction:column;gap:14px;'
-  });
-  const title = el('div', {style:
-    'font-family:\u2019Belleza\u2019,serif;font-size:20px;color:var(--fg);'
-  });
-  title.textContent = '\u2728 Script Cleanup';
-  box.appendChild(title);
-
-  if(issues.length === 0){
-    const msg = el('div', {style:'font-size:14px;color:var(--fg2);line-height:1.6;'});
-    msg.textContent = 'Your script looks clean \u2014 no empty or duplicate scenes found.';
-    box.appendChild(msg);
-    const btnRow = el('div', {style:'display:flex;justify-content:flex-end;'});
-    const closeBtn = el('button', {class:'btn btn-primary'});
-    closeBtn.textContent = 'OK';
-    closeBtn.onclick = () => overlay.remove();
-    btnRow.appendChild(closeBtn);
-    box.appendChild(btnRow);
-    overlay.appendChild(box);
-    document.body.appendChild(overlay);
-    return;
-  }
-
-  const sub = el('div', {style:'font-size:13px;color:var(--fg2);line-height:1.5;'});
-  sub.textContent = 'Found ' + issues.length + ' issue' + (issues.length===1?'':'s') +
-    '. Uncheck anything you want to keep, then confirm to remove the rest.';
-  box.appendChild(sub);
-
-  const list = el('div', {style:
-    'overflow-y:auto;max-height:360px;border:1px solid var(--border);'+
-    'border-radius:8px;padding:10px;display:flex;flex-direction:column;gap:8px;'
-  });
-  // Each row is { issue, checkbox }
-  const rows = issues.map(issue => {
-    const row = el('div', {style:
-      'display:flex;align-items:flex-start;gap:10px;padding:8px;'+
-      'border-radius:6px;background:var(--bg);'
-    });
-    const cb = el('input', {type:'checkbox', style:'margin-top:3px;flex-shrink:0;'});
-    cb.checked = true;
-    const info = el('div', {style:'flex:1;min-width:0;'});
-    const slug = getBlockSlug(issue.block) || '(no slugline)';
-    const slugEl = el('div', {style:
-      'font-family:\u2019JetBrains Mono\u2019,monospace;font-size:12px;'+
-      'color:var(--fg);margin-bottom:3px;overflow:hidden;text-overflow:ellipsis;'+
-      'white-space:nowrap;'
-    });
-    slugEl.textContent = slug;
-    const reasonEl = el('div', {style:'font-size:11px;color:var(--fg3);'});
-    reasonEl.textContent = issue.reason;
-    info.append(slugEl, reasonEl);
-    row.append(cb, info);
-    list.appendChild(row);
-    return { issue, cb };
-  });
-  box.appendChild(list);
-
-  const btnRow = el('div', {style:'display:flex;justify-content:space-between;gap:10px;'});
-  const cancel = el('button', {class:'btn btn-ghost'});
-  cancel.textContent = 'Cancel';
-  cancel.onclick = () => overlay.remove();
-  const confirm = el('button', {class:'btn btn-primary'});
-  confirm.textContent = 'Remove selected';
-  confirm.onclick = () => {
-    const selected = rows.filter(r => r.cb.checked).map(r => r.issue.index);
-    overlay.remove();
-    if(selected.length > 0) onConfirm(selected);
-    else toast('Nothing selected');
-  };
-  btnRow.append(cancel, confirm);
-  box.appendChild(btnRow);
-
-  overlay.appendChild(box);
-  document.body.appendChild(overlay);
 }
 
 // Build the v2 status bar.
@@ -7105,8 +7943,7 @@ function buildV2Navigator(blocks, doc, lockState, callbacks){
   } else {
     blocks.forEach((b, i) => {
       if(b.kind === 'preamble') return;
-      const item = el('div', {class:'v2-nav-item'+(b.kind==='placeholder'?' placeholder':''),
-        style:'position:relative;'});
+      const item = el('div', {class:'v2-nav-item'+(b.kind==='placeholder'?' placeholder':'')});
       const numInfo = computeSceneNumber(blocks, i, lockState);
       const num = el('div', {class:'v2-nav-num'}); num.textContent = numInfo.value;
       const text = el('div', {class:'v2-nav-text'});
@@ -7118,26 +7955,12 @@ function buildV2Navigator(blocks, doc, lockState, callbacks){
       meta.textContent = wc + ' words';
       if(!b.sceneId){
         const orphan = el('span',{class:'v2-nav-orphan',style:'margin-left:6px;'});
-        orphan.textContent = '\u00b7 orphan';
+        orphan.textContent = '· orphan';
         orphan.title = 'This scene is not linked to a Scene Builder card.';
         meta.appendChild(orphan);
       }
       text.appendChild(meta);
-      // 5-0b.1 (bug 1.2): delete button, visible on hover.
-      const delBtn = el('button', {class:'btn-icon', style:
-        'position:absolute;right:6px;top:50%;transform:translateY(-50%);'+
-        'opacity:0;transition:opacity 0.15s;color:var(--red);font-size:13px;'+
-        'padding:2px 6px;line-height:1;background:transparent;border:0;cursor:pointer;',
-        title:'Delete this scene from the script'
-      });
-      delBtn.textContent = '\u2715';
-      delBtn.onclick = (e) => {
-        e.stopPropagation();
-        if(typeof callbacks.onDeleteBlock === 'function') callbacks.onDeleteBlock(b);
-      };
-      item.addEventListener('mouseenter', () => { delBtn.style.opacity = '1'; });
-      item.addEventListener('mouseleave', () => { delBtn.style.opacity = '0'; });
-      item.append(num, text, delBtn);
+      item.append(num, text);
       item.onclick = () => callbacks.onJump(b);
       list.appendChild(item);
     });
@@ -7605,13 +8428,7 @@ async function renderV2ScreenplayEditor(view, doc, projectId){
       if(newVal) b.manualNumber = newVal;
       else delete b.manualNumber;
       await fsUpdate('documents', doc.id, { sceneBlocks: state.blocks });
-      // 5-0b.1 (bug 1.4): if this block is linked to a scene card, propagate
-      // the integer prefix of the new manualNumber back to the card.
-      if(b.sceneId && newVal){
-        await syncSceneNumberFromBlock(b, projectId);
-      }
       rerenderFlow();
-      rerenderChrome();  // also refresh navigator (it shows scene numbers)
     });
   }
 
@@ -7639,53 +8456,6 @@ async function renderV2ScreenplayEditor(view, doc, projectId){
       });
       toast('Removed ' + selectedIndices.length + ' block' + (selectedIndices.length === 1 ? '' : 's'));
       rerenderFlow();
-      rerenderChrome();  // 5-0b.1 fix: also refresh navigator + status bar
-    });
-  }
-
-  // 5-0b.1 (bug 1.2): delete a single block from the script via the navigator.
-  // If the block has a sceneId, the linked scene card is also deleted (with a
-  // warning if the block contains writing). For unlinked blocks, just remove
-  // the block.
-  async function onDeleteBlock(block){
-    const slug = getBlockSlug(block) || '(empty heading)';
-    const wc = getBlockWordCount(block);
-    const hasContent = wc > 0;
-    const linkedSceneId = block.sceneId || null;
-
-    // Build the confirmation prompt based on what's about to be lost.
-    let promptMsg;
-    if(linkedSceneId && hasContent){
-      promptMsg = 'Delete \u201c' + slug + '\u201d?\n\n' +
-        'This scene contains ' + wc + ' word' + (wc===1?'':'s') + '. ' +
-        'Both the script writing and the linked scene card will be removed. ' +
-        'This cannot be undone.';
-    } else if(linkedSceneId){
-      promptMsg = 'Delete \u201c' + slug + '\u201d?\n\n' +
-        'The block and its linked scene card will be removed.';
-    } else if(hasContent){
-      promptMsg = 'Delete \u201c' + slug + '\u201d?\n\n' +
-        'This scene contains ' + wc + ' word' + (wc===1?'':'s') + '. ' +
-        'This cannot be undone.';
-    } else {
-      promptMsg = 'Delete \u201c' + slug + '\u201d?';
-    }
-
-    confirmDelete(promptMsg, async () => {
-      // Remove the block from state.blocks
-      state.blocks = state.blocks.filter(b => b.id !== block.id);
-      await fsUpdate('documents', doc.id, {
-        sceneBlocks: state.blocks,
-        content: flattenBlocksToHtml(state.blocks),
-      });
-      // If linked, also delete the scene card. Silent on failure since the
-      // card may already be gone (legacy orphan from before this fix).
-      if(linkedSceneId){
-        try { await fsDelete('scenes', linkedSceneId); } catch(e){}
-      }
-      toast('Scene deleted');
-      rerenderFlow();
-      rerenderChrome();
     });
   }
 
@@ -7967,7 +8737,6 @@ async function renderV2ScreenplayEditor(view, doc, projectId){
     const newNav = buildV2Navigator(state.blocks, doc, doc.lockState || 'draft', {
       onJump: jumpToBlock,
       onCollapse: onNavToggle,
-      onDeleteBlock: onDeleteBlock,
     });
     if(navigatorEl) navigatorEl.replaceWith(newNav);
     else wrap.insertBefore(newNav, editorHost);
@@ -8060,114 +8829,6 @@ async function findLinkedScriptDoc(sceneId, projectId){
     }
   }
   return null;
-}
-
-// 5-0b.1 (bug 1.2): delete a scene card with awareness of any linked script
-// block. If the linked block contains writing, warn the user before deleting
-// both. If no block is linked, behave as a simple card delete. Calls
-// onComplete() on successful delete; does nothing on cancel.
-async function deleteSceneWithLinkedBlock(scene, projectId, onComplete){
-  const linkedDoc = await findLinkedScriptDoc(scene.id, projectId);
-  const linkedBlock = linkedDoc
-    ? linkedDoc.sceneBlocks.find(b => b.sceneId === scene.id)
-    : null;
-  const wc = linkedBlock ? getBlockWordCount(linkedBlock) : 0;
-  const hasContent = wc > 0;
-
-  let promptMsg;
-  if(linkedBlock && hasContent){
-    promptMsg = 'Delete \u201c' + (scene.title||'Untitled') + '\u201d?\n\n' +
-      'This scene contains ' + wc + ' word' + (wc===1?'':'s') + ' of script writing in \u201c' +
-      (linkedDoc.title || 'Untitled') + '\u201d. ' +
-      'Deleting will remove both the scene card and the writing. This cannot be undone.';
-  } else if(linkedBlock){
-    promptMsg = 'Delete \u201c' + (scene.title||'Untitled') + '\u201d?\n\n' +
-      'Both the scene card and its empty block in \u201c' +
-      (linkedDoc.title || 'Untitled') + '\u201d will be removed.';
-  } else {
-    promptMsg = 'Delete \u201c' + (scene.title||'Untitled') + '\u201d?';
-  }
-
-  confirmDelete(promptMsg, async () => {
-    // Delete the scene card
-    await fsDelete('scenes', scene.id);
-    // Delete the linked block from the document, if any
-    if(linkedDoc && linkedBlock){
-      const newBlocks = linkedDoc.sceneBlocks.filter(b => b.id !== linkedBlock.id);
-      await fsUpdate('documents', linkedDoc.id, {
-        sceneBlocks: newBlocks,
-        content: flattenBlocksToHtml(newBlocks),
-      });
-    }
-    if(typeof onComplete === 'function') onComplete();
-  });
-}
-
-// ── Scene-number sync helpers (5-0b.1: bug 1.4 fix) ──
-// Model C, Option 1: scene cards and script blocks stay in sync for linked
-// scenes; unlinked scenes/blocks are independent. Manual letter suffixes on
-// chip values (e.g., "14A") write the integer prefix back to the card.
-
-// Extract the integer prefix from a chip's manualNumber. Returns null if no
-// integer can be parsed. Examples: "14" -> 14, "14A" -> 14, "" -> null.
-function _parseManualNumberInt(manualNumber){
-  if(manualNumber == null) return null;
-  const m = String(manualNumber).match(/^(\d+)/);
-  return m ? parseInt(m[1], 10) : null;
-}
-
-// Called after a scene card's sequenceNumber is written. Finds the linked
-// script block (if any) and updates its manualNumber to the new value.
-// Silent on errors / missing links — sync is best-effort.
-async function syncSceneNumberFromCard(scene, projectId){
-  if(!scene || !scene.id || !projectId) return;
-  try {
-    const linkedDoc = await findLinkedScriptDoc(scene.id, projectId);
-    if(!linkedDoc) return;
-    const newManual = scene.sequenceNumber != null ? String(scene.sequenceNumber) : null;
-    let changed = false;
-    const newBlocks = linkedDoc.sceneBlocks.map(b => {
-      if(b.sceneId !== scene.id) return b;
-      // Don't overwrite a manual letter-suffix override (e.g., "14A") with the
-      // integer alone — preserve the suffix and just update the prefix.
-      const existingSuffix = b.manualNumber
-        ? String(b.manualNumber).replace(/^\d+/, '')
-        : '';
-      const newVal = newManual != null ? newManual + existingSuffix : null;
-      if(b.manualNumber === newVal) return b;
-      changed = true;
-      return Object.assign({}, b, { manualNumber: newVal });
-    });
-    if(changed){
-      await fsUpdate('documents', linkedDoc.id, {
-        sceneBlocks: newBlocks,
-        content: flattenBlocksToHtml(newBlocks),
-      });
-    }
-  } catch(e){
-    // Best-effort sync; don't surface errors to the user.
-    console.warn('syncSceneNumberFromCard failed', e);
-  }
-}
-
-// Called after a script block's manualNumber is changed via the chip popover.
-// Finds the linked scene card (if any) and updates its sequenceNumber to the
-// integer prefix of manualNumber. If manualNumber is null/empty, leaves the
-// card alone (auto-positional numbering doesn't propagate to the card in 5-0b.1
-// for chip-edit; full positional sync lands with scene reordering in 5-0d).
-async function syncSceneNumberFromBlock(block, projectId){
-  if(!block || !block.sceneId || !projectId) return;
-  try {
-    const intVal = _parseManualNumberInt(block.manualNumber);
-    if(intVal == null) return;  // No integer to propagate
-    // Read the card to avoid stomping unchanged values
-    const sceneSnap = await fsGet('scenes', block.sceneId);
-    if(!sceneSnap) return;
-    if(sceneSnap.sequenceNumber === intVal) return;
-    await fsUpdate('scenes', block.sceneId, { sequenceNumber: intVal });
-  } catch(e){
-    console.warn('syncSceneNumberFromBlock failed', e);
-  }
 }
 
 // Show a picker when multiple v2 screenplays exist. Returns the chosen doc or null.
@@ -8796,15 +9457,281 @@ const TOOL_TIPS = {
   writing:    { icon:'✦', tip:`Your writing workspace. Create narrative documents or feature-length screenplays with autofill, CONT'D tagging, and entity linking.` },
 };
 
+// ══════════════════════════════════════════════
+//  ITEM 18: TEACHER-AUTHORED TIPS
+//  Teachers write custom tips targeting specific tools/wizard steps
+//  and specific audiences (universal, class, student).
+// ══════════════════════════════════════════════
+
+// Named placement slots — tool → available slots
+const TEACHER_TIP_SLOTS = {
+  characters: [
+    { value:'tool',               label:'At the top of the Characters tool' },
+    { value:'wizard:identity',    label:'Character Wizard — Identity step' },
+    { value:'wizard:appearance',  label:'Character Wizard — Appearance step' },
+    { value:'wizard:personality', label:'Character Wizard — Personality step' },
+    { value:'wizard:backstory',   label:'Character Wizard — Backstory step' },
+  ],
+  locations: [
+    { value:'tool',               label:'At the top of the Locations tool' },
+    { value:'wizard:heading',     label:'Location Wizard — Name & Heading step' },
+    { value:'wizard:sensory',     label:'Location Wizard — Sensory Details step' },
+    { value:'wizard:geography',   label:'Location Wizard — Geography & Context step' },
+  ],
+  scenes: [
+    { value:'tool',               label:'At the top of the Scenes tool' },
+    { value:'wizard:basics',      label:'Scene Wizard — Scene Basics step' },
+    { value:'wizard:action',      label:'Scene Wizard — Action & Conflict step' },
+  ],
+  outline: [
+    { value:'tool',               label:'At the top of the Outline tool' },
+    { value:'wizard:format',      label:'Outline Wizard — Format step' },
+    { value:'wizard:engine',      label:'Outline Wizard — Story Engine step' },
+    { value:'wizard:tone',        label:'Outline Wizard — Tone & Pacing step' },
+  ],
+  world:     [{ value:'tool', label:'At the top of the World Building tool' }],
+  beatboard: [{ value:'tool', label:'At the top of the Beat Board' }],
+  writing:   [{ value:'tool', label:'At the top of the Writing Desk' }],
+  overview:  [{ value:'tool', label:'At the top of the Project Overview' }],
+  props:     [{ value:'tool', label:'At the top of the Props library' }],
+};
+
+const TEACHER_TIP_TOOL_LABELS = {
+  characters:'Characters', locations:'Locations', scenes:'Scenes',
+  outline:'Outline', world:'World Building', beatboard:'Beat Board',
+  writing:'Writing Desk', overview:'Overview', props:'Props',
+};
+
+// Firestore helpers
+function teacherTipsCol(){ return collection(db,'teacherTips'); }
+function teacherTipDoc(id){ return doc(db,'teacherTips',id); }
+
+// Cache of tips applicable to the current student session
+// Populated once per navigate() by loadTeacherTipsForStudent()
+let _cachedTeacherTips = null;
+
+async function loadTeacherTipsForStudent(){
+  // Load tips applicable to this user: universal + class + student-specific
+  // This is called once on student session start; results are cached for the session.
+  _cachedTeacherTips = null;
+  try {
+    // Get all tips authored by any teacher (students can't author tips)
+    const snap = await getDocs(teacherTipsCol());
+    const all = snap.docs.map(d=>({id:d.id,...d.data()}));
+    // Get classrooms this student is in
+    const myClassrooms = await getStudentClassrooms(currentUser.uid);
+    const myClassIds = new Set(myClassrooms.map(c=>c.id));
+    _cachedTeacherTips = all.filter(t => {
+      const a = t.audience;
+      if(!a) return false;
+      if(a.scope==='universal') return true;
+      if(a.scope==='class' && a.classId && myClassIds.has(a.classId)) return true;
+      if(a.scope==='student' && a.studentUid===currentUser.uid) return true;
+      return false;
+    });
+  } catch(e){ _cachedTeacherTips = []; }
+}
+
+// Get cached tips for a specific placement (tool + slot)
+function getTeacherTipsForSlot(tool, slot){
+  if(!_cachedTeacherTips) return [];
+  return _cachedTeacherTips.filter(t => t.placement && t.placement.tool===tool && t.placement.slot===slot);
+}
+
+// Render teacher tips as DOM nodes for injection into tool pages
+// Returns an array of elements (may be empty)
+function renderTeacherTipBanners(tool, slot){
+  const tips = getTeacherTipsForSlot(tool, slot);
+  return tips.map(t => {
+    const banner = el('div',{class:'tool-hint',style:'border-left-color:#c9a227;'});
+    const iconEl = el('span',{class:'tool-hint-icon'});iconEl.textContent='💡';
+    const textWrap = el('span',{class:'tool-hint-text'});
+    const label = el('span',{style:'font-size:10px;text-transform:uppercase;letter-spacing:0.08em;color:#c9a227;font-weight:700;display:block;margin-bottom:3px;'});
+    label.textContent='Teacher Tip';
+    const txt = el('span',{style:'display:block;'});txt.textContent=t.text||'';
+    textWrap.append(label,txt);
+    const closeBtn = el('button',{class:'tool-hint-close',onclick:()=>banner.remove()});closeBtn.textContent='✕';
+    banner.append(iconEl,textWrap,closeBtn);
+    return banner;
+  });
+}
+
+// ── Teacher tips manager modal ──
+function openTeacherTipsManager(){
+  const overlay = el('div',{class:'modal-overlay',onclick:e=>{if(e.target===overlay)overlay.remove();}});
+  const modal = el('div',{class:'modal',style:'max-width:560px;'});
+  const title = el('div',{class:'modal-title'});title.textContent='💡 Teacher Tips';
+  modal.appendChild(title);
+  const desc = el('div',{style:'font-size:13px;color:var(--fg3);margin-bottom:18px;line-height:1.5;'});
+  desc.textContent='Write tips that appear for students in specific tools or wizard steps. Tips can target all students, a specific class, or one student.';
+  modal.appendChild(desc);
+
+  const listWrap = el('div',{id:'tt-list',style:'display:flex;flex-direction:column;gap:8px;margin-bottom:18px;max-height:240px;overflow-y:auto;'});
+  modal.appendChild(listWrap);
+
+  async function refreshTipList(){
+    listWrap.innerHTML='<div style="color:var(--fg3);font-size:13px;padding:8px 0;">Loading…</div>';
+    const snap = await getDocs(query(teacherTipsCol(), where('authorUid','==',currentUser.uid), orderBy('createdAt','asc')));
+    const tips = snap.docs.map(d=>({id:d.id,...d.data()}));
+    listWrap.innerHTML='';
+    if(!tips.length){
+      const empty=el('div',{style:'color:var(--fg3);font-size:13px;padding:8px 0;'});
+      empty.textContent='No tips yet. Create one below.';
+      listWrap.appendChild(empty); return;
+    }
+    tips.forEach(t=>{
+      const row=el('div',{style:'display:flex;align-items:flex-start;gap:10px;padding:10px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm);'});
+      const info=el('div',{style:'flex:1;min-width:0;'});
+      const placement=el('div',{style:'font-size:11px;color:var(--primary);font-weight:600;margin-bottom:3px;text-transform:uppercase;letter-spacing:0.06em;'});
+      const toolLabel = TEACHER_TIP_TOOL_LABELS[t.placement?.tool]||t.placement?.tool||'?';
+      const slotLabel = (TEACHER_TIP_SLOTS[t.placement?.tool]||[]).find(s=>s.value===t.placement?.slot)?.label||t.placement?.slot||'';
+      placement.textContent=toolLabel+(slotLabel?' — '+slotLabel:'');
+      const txt=el('div',{style:'font-size:13px;color:var(--fg);margin-bottom:3px;'});txt.textContent=t.text||'';
+      const aud=el('div',{style:'font-size:11px;color:var(--fg3);'});
+      aud.textContent=t.audience?.scope==='universal'?'All students':t.audience?.scope==='class'?'Class: '+(t.audience.className||t.audience.classId):('Student: '+(t.audience.studentName||t.audience.studentUid));
+      info.append(placement,txt,aud);
+      const del=el('button',{class:'btn btn-ghost btn-sm',style:'color:var(--red);flex-shrink:0;',onclick:async()=>{
+        if(!confirm('Delete this tip?')) return;
+        await deleteDoc(teacherTipDoc(t.id));
+        refreshTipList();
+      }});del.textContent='✕';
+      row.append(info,del);
+      listWrap.appendChild(row);
+    });
+  }
+
+  // ── New tip form ──
+  const addSection=el('div',{style:'border-top:1px solid var(--border);padding-top:16px;'});
+  const addTitle=el('div',{style:'font-size:12px;font-weight:600;color:var(--fg3);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:12px;'});
+  addTitle.textContent='New Tip';
+  addSection.appendChild(addTitle);
+
+  // Tip text
+  const textLbl=el('label',{class:'label',style:'margin-bottom:4px;display:block;'});textLbl.textContent='Tip text';
+  const textInput=el('textarea',{class:'textarea',rows:'2',placeholder:'What do you want students to know or try here?'});
+  addSection.append(textLbl,textInput);
+
+  // Tool selector
+  const toolLbl=el('label',{class:'label',style:'margin:10px 0 4px;display:block;'});toolLbl.textContent='Tool';
+  const toolSelect=el('select',{class:'select',style:'margin-bottom:8px;'});
+  Object.entries(TEACHER_TIP_TOOL_LABELS).forEach(([k,v])=>{
+    const opt=document.createElement('option');opt.value=k;opt.textContent=v;toolSelect.appendChild(opt);
+  });
+
+  // Slot selector — updates when tool changes
+  const slotLbl=el('label',{class:'label',style:'margin-bottom:4px;display:block;'});slotLbl.textContent='Position';
+  const slotSelect=el('select',{class:'select',style:'margin-bottom:10px;'});
+  function refreshSlots(){
+    slotSelect.innerHTML='';
+    const slots=TEACHER_TIP_SLOTS[toolSelect.value]||[{value:'tool',label:'At the top of the tool'}];
+    slots.forEach(s=>{const o=document.createElement('option');o.value=s.value;o.textContent=s.label;slotSelect.appendChild(o);});
+  }
+  toolSelect.onchange=refreshSlots;
+  refreshSlots();
+  addSection.append(toolLbl,toolSelect,slotLbl,slotSelect);
+
+  // Audience
+  const audLbl=el('label',{class:'label',style:'margin-bottom:6px;display:block;'});audLbl.textContent='Who sees this?';
+  addSection.appendChild(audLbl);
+
+  const audRadios=el('div',{style:'display:flex;flex-direction:column;gap:6px;margin-bottom:10px;'});
+  const audOpts=[['universal','All students'],['class','Specific class'],['student','Specific student']];
+  let selectedAud='universal';
+  const condWrap=el('div',{style:'margin-top:8px;display:none;'});
+
+  async function showAudCondition(){
+    condWrap.innerHTML='';
+    if(selectedAud==='universal'){ condWrap.style.display='none'; return; }
+    condWrap.style.display='block';
+    const classes=await getAllClassrooms();
+    if(selectedAud==='class'){
+      const sel=el('select',{class:'select',id:'tt-class-sel'});
+      classes.filter(c=>!c.archived).forEach(c=>{const o=document.createElement('option');o.value=c.id;o.textContent=c.name;sel.appendChild(o);});
+      condWrap.appendChild(sel);
+    } else {
+      // student — pick class first, then student
+      const classSel=el('select',{class:'select',id:'tt-class-sel',style:'margin-bottom:6px;'});
+      classes.filter(c=>!c.archived).forEach(c=>{const o=document.createElement('option');o.value=c.id;o.textContent=c.name;classSel.appendChild(o);});
+      const stuSel=el('select',{class:'select',id:'tt-stu-sel'});stuSel.innerHTML='<option value="">Loading students…</option>';
+      async function loadStudents(){
+        stuSel.innerHTML='<option value="">Loading…</option>';
+        const members=await getClassroomMembers(classSel.value);
+        stuSel.innerHTML='';
+        members.forEach(m=>{const o=document.createElement('option');o.value=m.uid;o.textContent=m.displayName||m.email||m.uid;stuSel.appendChild(o);});
+      }
+      classSel.onchange=loadStudents;
+      condWrap.append(classSel,stuSel);
+      loadStudents();
+    }
+  }
+
+  audOpts.forEach(([val,label])=>{
+    const row=el('div',{style:'display:flex;align-items:center;gap:8px;cursor:pointer;'});
+    const rb=el('input',{type:'radio',name:'tt-aud',value:val,id:'tt-aud-'+val});
+    if(val==='universal') rb.checked=true;
+    const lbl2=el('label',{for:'tt-aud-'+val,style:'cursor:pointer;font-size:13px;color:var(--fg2);'});lbl2.textContent=label;
+    rb.onchange=()=>{ selectedAud=val; showAudCondition(); };
+    row.append(rb,lbl2); audRadios.appendChild(row);
+  });
+  addSection.append(audRadios,condWrap);
+
+  const saveBtn=el('button',{class:'btn btn-primary btn-sm',onclick:async()=>{
+    const text=textInput.value.trim();
+    if(!text){ toast('Write the tip text first','error'); return; }
+    const tool=toolSelect.value;
+    const slot=slotSelect.value;
+    let audience={scope:selectedAud};
+    if(selectedAud==='class'){
+      const cs=document.getElementById('tt-class-sel');
+      if(!cs||!cs.value){ toast('Pick a class','error'); return; }
+      const classes=await getAllClassrooms();
+      const c=classes.find(x=>x.id===cs.value);
+      audience.classId=cs.value; audience.className=c?c.name:'';
+    } else if(selectedAud==='student'){
+      const cs=document.getElementById('tt-class-sel');
+      const ss=document.getElementById('tt-stu-sel');
+      if(!cs||!cs.value||!ss||!ss.value){ toast('Pick a class and student','error'); return; }
+      audience.classId=cs.value;
+      audience.studentUid=ss.value;
+      audience.studentName=ss.options[ss.selectedIndex]?.text||'';
+    }
+    saveBtn.disabled=true; saveBtn.textContent='Saving…';
+    await addDoc(teacherTipsCol(),{
+      authorUid:currentUser.uid, text, placement:{tool,slot}, audience,
+      createdAt:serverTimestamp(), updatedAt:serverTimestamp(),
+    });
+    textInput.value=''; saveBtn.disabled=false; saveBtn.textContent='Add Tip';
+    refreshTipList();
+    toast('Tip saved');
+  }});
+  saveBtn.textContent='Add Tip';
+  addSection.appendChild(saveBtn);
+  modal.appendChild(addSection);
+
+  const footer=el('div',{class:'modal-footer'});
+  const closeBtn=el('button',{class:'btn btn-ghost',onclick:()=>overlay.remove()});closeBtn.textContent='Close';
+  footer.appendChild(closeBtn);
+  modal.appendChild(footer);
+  overlay.appendChild(modal);
+  document.body.appendChild(overlay);
+  refreshTipList();
+}
+
 function toolHintBanner(toolId){
   const info = TOOL_TIPS[toolId];
   if(!info) return null;
+  // Container that holds both the built-in banner and any teacher tip banners
+  const frag = document.createDocumentFragment();
   const banner = el('div',{class:'tool-hint'});
   const iconEl = el('span',{class:'tool-hint-icon'});iconEl.textContent=info.icon;
   const textEl = el('span',{class:'tool-hint-text'});textEl.textContent=info.tip;
   const closeBtn = el('button',{class:'tool-hint-close',onclick:()=>banner.remove()});closeBtn.textContent='✕';
   banner.append(iconEl,textEl,closeBtn);
-  return banner;
+  frag.appendChild(banner);
+  // Append teacher tips for this tool at tool-level slot
+  renderTeacherTipBanners(toolId,'tool').forEach(b=>frag.appendChild(b));
+  // Return a wrapper div containing all banners so callers get a single node
+  const wrap=el('div');wrap.appendChild(frag);return wrap;
 }
 function confirmDelete(msg,onConfirm){
   const overlay=el('div',{class:'modal-overlay',onclick:e=>{if(e.target===overlay)overlay.remove();}});
@@ -9348,30 +10275,161 @@ async function renderDocumentLibrary(container,projectId){
 // ══════════════════════════════════════════════
 //  PROPS
 // ══════════════════════════════════════════════
+// ── Item PROPS-LIB: Props library with occurrence counts and backlinks ──
+// Count how many times a prop name appears in all v2 screenplay content.
+// Uses plain-text search across all blocks — this catches all mentions,
+// not just highlighted chips (which may be fewer).
+async function getPropOccurrenceCounts(projectId, props){
+  if(!props.length) return {};
+  const counts = {};
+  props.forEach(p => counts[p.id] = 0);
+  try {
+    const docs = await fsQuery('documents', where('storyProjectId','==',projectId));
+    docs.forEach(doc => {
+      const blocks = migrateV2Blocks(doc.sceneBlocks||[]);
+      const fullText = blocks.map(b=>{
+        const tmp=document.createElement('div'); tmp.innerHTML=b.content||''; return tmp.textContent||'';
+      }).join(' ').toLowerCase();
+      props.forEach(p => {
+        const name = (p.name||'').toLowerCase();
+        if(!name) return;
+        let idx=0, c=0;
+        while((idx=fullText.indexOf(name,idx))!==-1){ c++; idx+=name.length; }
+        counts[p.id]=(counts[p.id]||0)+c;
+      });
+    });
+  } catch(e){}
+  return counts;
+}
+
+// Get all scene backlinks for an entity (scenes that have it linked via chip)
+async function getEntityBacklinks(projectId, entityId, entityType){
+  const results = [];
+  try {
+    const docs = await fsQuery('documents', where('storyProjectId','==',projectId));
+    docs.forEach(doc => {
+      const blocks = migrateV2Blocks(doc.sceneBlocks||[]);
+      blocks.forEach(block => {
+        const tmp=document.createElement('div'); tmp.innerHTML=block.content||'';
+        const chips=[...tmp.querySelectorAll('.link-btn')];
+        const found=chips.some(c=>c.dataset.linkType===entityType&&c.dataset.linkId===entityId);
+        if(found){
+          results.push({ docId:doc.id, docTitle:doc.title||'Untitled', blockId:block.id, blockText:(tmp.textContent||'').trim().slice(0,80) });
+        }
+      });
+    });
+  } catch(e){}
+  return results;
+}
+
 async function renderProps(container,projectId){
   container.innerHTML='<div style="padding:60px;text-align:center;color:var(--fg3);">Loading…</div>';
-  const props=await fsQuery('props',where('storyProjectId','==',projectId));
+  const [props, v2Docs] = await Promise.all([
+    fsQuery('props',where('storyProjectId','==',projectId)),
+    getV2Screenplays(projectId),
+  ]);
+  props.sort((a,b)=>(a.name||'').localeCompare(b.name||''));
+
+  // Occurrence counts (text-based, catches all mentions)
+  const occurrences = await getPropOccurrenceCounts(projectId, props);
+
+  // Chip backlink counts (only highlighted/linked chips)
+  const chipCounts = {};
+  props.forEach(p => chipCounts[p.id]=0);
+  v2Docs.forEach(doc => {
+    const blocks = migrateV2Blocks(doc.sceneBlocks||[]);
+    blocks.forEach(block => {
+      const tmp=document.createElement('div'); tmp.innerHTML=block.content||'';
+      tmp.querySelectorAll('.link-btn[data-link-type="prop"]').forEach(chip => {
+        if(chipCounts[chip.dataset.linkId]!==undefined) chipCounts[chip.dataset.linkId]++;
+      });
+    });
+  });
+
   container.innerHTML='';
   const wrap=el('div',{class:'page'});
   const header=el('div',{class:'page-header'});
-  header.innerHTML='<div><div class="page-title">Props</div><div class="page-subtitle">'+props.length+' prop'+(props.length!==1?'s':'')+' · Linkable from the screenplay and outline editors</div></div>';
-  const addBtn=el('button',{class:'btn btn-primary',onclick:()=>openPropDrawer(null,projectId)});addBtn.textContent='+ Add Prop';
+  header.innerHTML='<div><div class="page-title">Props</div><div class="page-subtitle">'+props.length+' prop'+(props.length!==1?'s':'')+' · Highlight text in the editor and use the ◇ Link button to add props from your script</div></div>';
+  const addBtn=el('button',{class:'btn btn-ghost',onclick:()=>openPropDrawer(null,projectId)});addBtn.textContent='+ Add Manually';
   header.appendChild(addBtn);wrap.appendChild(header);
   const _hintP=toolHintBanner('props'); if(_hintP) wrap.appendChild(_hintP);
-  if(!props.length){wrap.appendChild(emptyState('◇','No Props Yet','Track significant objects — weapons, vehicles, MacGuffins, anything that recurs across scenes.'));}
-  else{
+
+  if(!props.length){
+    wrap.appendChild(emptyState('◇','No Props Yet','Highlight a word or phrase in the screenplay editor and click ◇ Link to create a prop. Or use + Add Manually above.'));
+  } else {
     const grid=el('div',{class:'items-grid'});
     props.forEach(p=>{
       const card=el('div',{class:'item-card'});
-      card.innerHTML='<h3>'+escHtml(p.name)+'</h3><p>'+escHtml(p.description||'No description')+'</p>'+(p.significance?'<p style="margin-top:6px;font-size:11px;"><span class="tag" style="background:rgba(229,184,110,0.1);color:var(--gold);border-color:rgba(229,184,110,0.25);font-size:10px;">'+escHtml(p.significance)+'</span></p>':'');
+      const occ = occurrences[p.id]||0;
+      const chips = chipCounts[p.id]||0;
+
+      // Name + occurrence badge
+      const nameRow=el('div',{style:'display:flex;align-items:flex-start;gap:8px;margin-bottom:6px;'});
+      const nameEl=el('h3',{style:'margin:0;flex:1;'});nameEl.textContent=p.name;
+      if(occ>0){
+        const badge=el('span',{style:'flex-shrink:0;font-size:10px;font-family:"JetBrains Mono",monospace;background:rgba(130,100,220,0.1);color:#8b6fdc;border:1px solid rgba(130,100,220,0.25);padding:2px 7px;border-radius:8px;white-space:nowrap;'});
+        badge.textContent=occ+' mention'+(occ!==1?'s':'');
+        nameRow.append(nameEl,badge);
+      } else {
+        nameRow.appendChild(nameEl);
+      }
+      card.appendChild(nameRow);
+
+      const desc=el('p',{style:'margin:0 0 8px;font-size:13px;color:var(--fg3);'});
+      desc.textContent=p.description||'No description yet.';
+      card.appendChild(desc);
+
+      if(p.significance){
+        const sig=el('div',{style:'margin-bottom:8px;'});
+        const tag=el('span',{class:'tag',style:'background:rgba(130,100,220,0.08);color:#8b6fdc;border-color:rgba(130,100,220,0.2);font-size:10px;'});
+        tag.textContent=p.significance; sig.appendChild(tag); card.appendChild(sig);
+      }
+
+      // Backlinks chip count hint
+      if(chips>0){
+        const bl=el('div',{style:'font-size:11px;color:var(--fg3);margin-bottom:8px;'});
+        bl.textContent='◇ Linked in '+chips+' passage'+(chips!==1?'s':'');
+        card.appendChild(bl);
+      }
+
       const footer=el('div',{class:'item-card-footer'});
-      const eb=el('button',{class:'btn btn-ghost btn-sm',onclick:()=>openPropDrawer(p,projectId)});eb.textContent='Edit';
+      const eb=el('button',{class:'btn btn-ghost btn-sm',onclick:()=>openPropDrawer(p,projectId,container)});eb.textContent='Edit';
+      const blBtn=el('button',{class:'btn btn-ghost btn-sm',onclick:()=>showPropBacklinks(p,projectId)});blBtn.textContent='Used in';
       const db=el('button',{class:'btn btn-danger btn-sm',onclick:()=>confirmDelete('Delete "'+p.name+'"?',async()=>{await fsDelete('props',p.id);renderProps(container,projectId);toast('Deleted');})});db.textContent='✕';
-      footer.append(eb,db);card.appendChild(footer);grid.appendChild(card);
+      footer.append(eb,blBtn,db);card.appendChild(footer);grid.appendChild(card);
     });
     wrap.appendChild(grid);
   }
   container.appendChild(wrap);
+}
+
+// Show a modal with all passages where a prop is chip-linked
+async function showPropBacklinks(prop, projectId){
+  const backlinks = await getEntityBacklinks(projectId, prop.id, 'prop');
+  const overlay=el('div',{class:'modal-overlay',onclick:e=>{if(e.target===overlay)overlay.remove();}});
+  const modal=el('div',{class:'modal',style:'max-width:500px;'});
+  const title=el('div',{class:'modal-title'});title.textContent='◇ '+prop.name+' — Used in';
+  modal.appendChild(title);
+  if(!backlinks.length){
+    const empty=el('div',{style:'color:var(--fg3);font-size:13px;padding:8px 0;'});
+    empty.textContent='Not linked in any passages yet. Highlight the prop name in the editor and use the ◇ Link button to create a backlink.';
+    modal.appendChild(empty);
+  } else {
+    const list=el('div',{style:'display:flex;flex-direction:column;gap:8px;max-height:320px;overflow-y:auto;'});
+    backlinks.forEach(bl=>{
+      const row=el('div',{style:'padding:10px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm);'});
+      const docLbl=el('div',{style:'font-size:11px;font-weight:600;color:var(--primary);margin-bottom:4px;text-transform:uppercase;letter-spacing:0.06em;'});
+      docLbl.textContent=bl.docTitle;
+      const passage=el('div',{style:'font-size:13px;color:var(--fg2);font-style:italic;'});
+      passage.textContent='“'+bl.blockText+(bl.blockText.length>=80?'…':'')+'”';
+      row.append(docLbl,passage); list.appendChild(row);
+    });
+    modal.appendChild(list);
+  }
+  const footer=el('div',{class:'modal-footer'});
+  const closeBtn=el('button',{class:'btn btn-ghost',onclick:()=>overlay.remove()});closeBtn.textContent='Close';
+  footer.appendChild(closeBtn); modal.appendChild(footer);
+  overlay.appendChild(modal); document.body.appendChild(overlay);
 }
 
 function openPropDrawer(prop,projectId){
@@ -9460,7 +10518,7 @@ function showLinkPopover(anchorEl, onSelect, projectId){
 
   let hasContent=false;
   sections.forEach(sec=>{
-    if(!sec.items.length)return;
+    if(!sec.items.length && sec.type!=='prop') return;
     hasContent=true;
     const title=document.createElement('div');title.className='link-popover-title';title.textContent=sec.title;pop.appendChild(title);
     sec.items.slice(0,6).forEach(item=>{
@@ -9469,6 +10527,20 @@ function showLinkPopover(anchorEl, onSelect, projectId){
       row.onmousedown=e=>{e.preventDefault();removeLinkPopover();onSelect(sec.type,item);};
       pop.appendChild(row);
     });
+    // Props section: add inline "New prop…" creation option
+    if(sec.type==='prop'){
+      const newRow=document.createElement('div');newRow.className='link-popover-item';
+      newRow.style.color='var(--fg3)';newRow.style.fontStyle='italic';
+      newRow.innerHTML='<span>+</span><span>New prop\u2026</span>';
+      newRow.onmousedown=e=>{
+        e.preventDefault(); removeLinkPopover();
+        const name=prompt('Prop name (from your selected text):');
+        if(!name||!name.trim()) return;
+        // Signal new-prop creation with _isNew flag — the link button callback handles fsCreate
+        onSelect('prop',{id:'__new__',name:name.trim(),_isNew:true});
+      };
+      pop.appendChild(newRow);
+    }
     const sep=document.createElement('div');sep.className='link-popover-sep';pop.appendChild(sep);
   });
 
@@ -9760,15 +10832,28 @@ function addLinkToolbarBtn(toolbar, editor, projectId, saveCallback){
     // Check saved range — selection is already gone by the time onclick fires
     if(!_savedRange){toast('Select some text first to link it','info');return;}
     await loadLinkCache(projectId);
-    showLinkPopover(linkBtn,(type,entity)=>{
+    showLinkPopover(linkBtn,async(type,entity)=>{
       restoreSelection(); // put the selection back before wrapping
+      // Item PROPS-LIB: auto-create a prop card if this is a new prop being linked
+      // (entity.id === '__new__' signals a new-prop creation from the popover)
+      if(type==='prop' && entity._isNew){
+        // Create the prop document and get the real ID back
+        const newPropId = await fsCreate('props',{
+          storyProjectId:projectId,
+          name:entity.name,
+          description:'',
+          significance:'',
+          appearsIn:'',
+          manuallyCreated:false,
+        });
+        entity = {...entity, id:newPropId, _isNew:false};
+        toast('Prop "'+entity.name+'" added to Props library');
+      }
       wrapSelectionAsLink(type,entity);
       _savedRange = null;
       if(typeof saveCallback === 'function'){
-        // Caller-provided save (v2 uses scheduleDocSave())
         saveCallback();
       } else if(editor && editor._docId){
-        // Legacy v1 path: save directly to documents.content
         clearTimeout(editorSaveTimer);
         editorSaveTimer=setTimeout(async()=>{showSaving();await fsUpdate('documents',editor._docId,{content:editor.innerHTML});showSaved();},800);
       }
@@ -10657,6 +11742,8 @@ let viewingStudentUid = null;
 // Expose functions needed by inline onclick strings
 window.showFeedbackModal = showFeedbackModal;
 window.openCommentSidebar = openCommentSidebar;
+window.openTeacherTipsManager = openTeacherTipsManager;
+window.openCommentTemplateManager = openCommentTemplateManager;
 
 /*
  ╔══════════════════════════════════════════════════════════════════╗
@@ -10743,9 +11830,28 @@ onAuthStateChanged(auth, async user=>{
       viewingStudentUid=null;
       navigate('home');
     });
+    // ── Browser-back fix (5-0c): wire popstate once after auth ──
+    window.addEventListener('popstate', e=>{
+      const s = e.state;
+      if(!s){ navigate('home',null,null,null,true); return; }
+      if(s.type==='classView'){
+        document.getElementById('feedback-fab')?.remove();
+        document.getElementById('comment-sidebar')?.remove();
+        destroyAllPinWorkspaces();
+        classViewState = {view:s.view||'list', classroomId:s.classroomId||null, studentUid:s.studentUid||null, studentName:s.studentName||null, sub:s.sub||'overview'};
+        currentRoute = {page:'classView', projectId:null, sub:null, subId:null};
+        render();
+      } else {
+        navigate(s.page, s.projectId, s.sub, s.subId, true);
+      }
+    }, {once: true}); // attach once — re-auth would double-attach otherwise
+    // Seed the initial history entry so the very first back press works
+    history.replaceState({type:'project', page:'home', projectId:null, sub:null, subId:null}, '', '#home');
     // Seed Vegas Noir for the owner account, silently
     await loadUserTheme();
     await maybeSeedVegasNoir();
+    // Load teacher tips for student users (no-op for teachers since they author, not receive)
+    if(!isTeacher()) await loadTeacherTipsForStudent();
     navigate('home');
   } else {
     currentUser = null;
