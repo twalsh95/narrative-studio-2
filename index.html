@@ -2987,62 +2987,25 @@ function makeShareToggle(project){
   return toggleRow;
 }
 
+// Sign-in lives on the Walsh Classroom hub now (walshclassroom.com/account/), one
+// account for every app. Signed-out visitors go there and come back to the same
+// spot. The hub and this app share one origin, so the sign-in carries over.
+function hubSignInUrl(){
+  const back = location.pathname + location.search + location.hash;
+  return (window.wc && wc.signInUrl) ? wc.signInUrl(back) : '/account/?next=' + encodeURIComponent(back);
+}
 function renderAuth(){
   document.getElementById('topbar').style.display='none';
   document.getElementById('main').style.display='none';
   const container = document.getElementById('auth-container');
-  container.innerHTML='';
-
-  let activeTab = 'signin';
-  let errorMsg = '';
-
-  function buildAuth(){
-    container.innerHTML='';
-    const wrap = el('div',{class:'auth-wrap'});
-    const card = el('div',{class:'auth-card'});
-    card.innerHTML=`
-      <div class="auth-logo">✦ Narrative Studio</div>
-      <div class="auth-sub">Your personal writing workspace</div>
-      <div class="auth-tabs">
-        <div class="auth-tab${activeTab==='signin'?' active':''}" id="tab-signin">Sign In</div>
-        <div class="auth-tab${activeTab==='signup'?' active':''}" id="tab-signup">Create Account</div>
-      </div>
-      ${errorMsg?`<div class="auth-error">${esc(errorMsg)}</div>`:''}
-      ${activeTab==='signup'?`<div class="field" style="margin-bottom:14px"><label class="label">Your Name</label><input class="input" id="auth-name" placeholder="How should we address you?"></div>`:''}
-      <div class="field" style="margin-bottom:14px"><label class="label">Email</label><input class="input" id="auth-email" type="email" placeholder="you@example.com"></div>
-      <div class="field" style="margin-bottom:24px"><label class="label">Password</label><input class="input" id="auth-pass" type="password" placeholder="••••••••"></div>
-      <button class="btn btn-primary" style="width:100%;justify-content:center;padding:12px;" id="auth-submit">${activeTab==='signin'?'Sign In':'Create Account'}</button>
-    `;
-    wrap.appendChild(card);
-    container.appendChild(wrap);
-
-    card.querySelector('#tab-signin').onclick=()=>{activeTab='signin';errorMsg='';buildAuth();};
-    card.querySelector('#tab-signup').onclick=()=>{activeTab='signup';errorMsg='';buildAuth();};
-    card.querySelector('#auth-submit').onclick=()=>handleAuth();
-    card.addEventListener('keydown',e=>{if(e.key==='Enter')handleAuth();});
-    setTimeout(()=>{const em=document.getElementById('auth-email');if(em)em.focus();},50);
-  }
-
-  async function handleAuth(){
-    const email=v('auth-email'), pass=v('auth-pass'), name=v('auth-name');
-    if(!email||!pass){errorMsg='Please enter your email and password.';buildAuth();return;}
-    const btn=document.getElementById('auth-submit');
-    if(btn){btn.textContent='…';btn.disabled=true;}
-    try{
-      if(activeTab==='signup'){
-        const cred = await createUserWithEmailAndPassword(auth,email,pass);
-        if(name) await updateProfile(cred.user,{displayName:name});
-      } else {
-        await signInWithEmailAndPassword(auth,email,pass);
-      }
-      // onAuthStateChanged handles the rest
-    } catch(err){
-      errorMsg = friendlyAuthError(err.code);
-      buildAuth();
-    }
-  }
-
-  buildAuth();
+  const url = hubSignInUrl();
+  container.innerHTML = '<div class="auth-wrap"><div class="auth-card">' +
+    '<div class="auth-logo">✦ Narrative Studio</div>' +
+    '<div class="auth-sub">Log in with your Walsh Classroom account. Same email and password as before.</div>' +
+    '<a class="btn btn-primary" style="width:100%;justify-content:center;padding:12px;text-decoration:none;" href="' + url + '">Log in at Walsh Classroom</a>' +
+    '</div></div>';
+  // Go straight there; the card above is only what shows if the redirect is slow.
+  setTimeout(() => { if(!currentUser) location.replace(url); }, 300);
 }
 
 function friendlyAuthError(code){
