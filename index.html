@@ -3272,11 +3272,14 @@ async function seedProjectTemplate(projectId, templateKey){
   // Writing desk document seeding
   const docLabel = {feature:'Feature Screenplay',tvspec:'Spec Script',shortfilm:'Short Film',narrative:'Draft'}[templateKey];
   if(docLabel){
-    seeds.push(fsCreate('documents',{
-      storyProjectId:projectId, title:docLabel,
-      content:'', sceneBlocks:[], formatVersion:'v2',
-      formatType: templateKey==='narrative' ? 'narrative' : 'screenplay',
-    }));
+    // Same shape as createDoc(): the rest of the app reads `type`, not `formatType`.
+    const docType = templateKey==='narrative' ? 'narrative' : 'screenplay';
+    const seedDoc = {
+      storyProjectId:projectId, type:docType, title:docLabel, content:'',
+      titlePage:{title:'',writtenBy:'',basedOn:'',contact:''},
+    };
+    if(docType==='screenplay'){ seedDoc.formatVersion='v2'; seedDoc.sceneBlocks=[]; seedDoc.lockState='draft'; }
+    seeds.push(fsCreate('documents',seedDoc));
   }
 
   await Promise.all(seeds);
@@ -7233,9 +7236,24 @@ async function addOutlineItem(projectId, outlineId, outlineName, order, level, c
 // ══════════════════════════════════════════════
 //  WRITING DESK
 // ══════════════════════════════════════════════
+// Template documents made before Nov 2026 were saved with `formatType` instead of
+// `type`, so they listed as "undefined" and always opened in the prose editor.
+// Give them a type once. An untouched screenplay becomes a screenplay; anything
+// already written in stays narrative, the editor it was written in, so no
+// student text is reinterpreted.
+function repairDocType(d){
+  if(!d || d.type) return d;
+  const untouched = !String(d.content||'').replace(/<[^>]*>/g,'').trim() && !(d.sceneBlocks||[]).length;
+  d.type = (d.formatType==='screenplay' && untouched) ? 'screenplay' : 'narrative';
+  const fix = {type:d.type};
+  if(d.type==='screenplay'){ fix.formatVersion = d.formatVersion = 'v2'; fix.sceneBlocks = d.sceneBlocks = []; fix.lockState = d.lockState = 'draft'; }
+  fsUpdate('documents', d.id, fix).catch(()=>{});
+  return d;
+}
+
 async function renderWritingDesk(container, projectId){
   container.innerHTML='<div style="padding:60px;text-align:center;color:var(--fg3);">Loading…</div>';
-  const docs = await fsQuery('documents',where('storyProjectId','==',projectId));
+  const docs = (await fsQuery('documents',where('storyProjectId','==',projectId))).map(repairDocType);
   docs.sort((a,b)=>{
     const at=a.updatedAt?.toDate?a.updatedAt.toDate():new Date(a.updatedAt||0);
     const bt=b.updatedAt?.toDate?b.updatedAt.toDate():new Date(b.updatedAt||0);
@@ -7291,7 +7309,7 @@ async function createDoc(projectId, type){
 // ══════════════════════════════════════════════
 let editorSaveTimer=null;
 async function renderEditor(container, projectId, docId){
-  const doc = await fsGet('documents',docId);
+  const doc = repairDocType(await fsGet('documents',docId));
   if(!doc){navigate('dashboard',projectId,'writing');return;}
   container.innerHTML='';
   const view=el('div',{class:'editor-view'});
@@ -8054,6 +8072,12 @@ function buildBlockEditor(block, blocks, blockIndex, lockState, projectId, callb
   editor.addEventListener('keydown', (e) => {
     callbacks.onBlockKeydown(e, block, editor);
   });
+
+  // Selecting a whole line (triple-click) in Chrome also selects the start of
+  // the NEXT line. Typing over that selection merged the two lines and kept
+  // the next line's type, so a retyped scene heading could turn into dialogue.
+  // Trim the selection back to the end of the line it starts in.
+  editor.addEventListener('beforeinput', () => trimSelectionToLine(editor));
 
   editor.addEventListener('mouseup', () => callbacks.onCursorMove(block, editor));
   editor.addEventListener('keyup', (e) => {
@@ -9311,6 +9335,24 @@ function unwrapParenthetical(paragraphNode){
       sel.addRange(r);
     }
   }
+}
+
+// If a selection runs from one line into only the very start of the next line
+// (what a triple-click gives in Chrome), end it at the end of the first line.
+function trimSelectionToLine(editor){
+  const sel = window.getSelection();
+  if(!sel.rangeCount || sel.isCollapsed) return;
+  const r = sel.getRangeAt(0);
+  const top = n => { while(n && n.parentNode !== editor) n = n.parentNode; return n; };
+  const sp = top(r.startContainer), ep = top(r.endContainer);
+  if(!sp || !ep || sp === ep || sp.nextElementSibling !== ep) return;
+  const head = document.createRange();
+  head.setStart(ep, 0); head.setEnd(r.endContainer, r.endOffset);
+  if(head.toString() !== '') return;  // the selection really covers text on the next line
+  const t = document.createRange();
+  t.setStart(r.startContainer, r.startOffset);
+  t.setEnd(sp, sp.childNodes.length);
+  sel.removeAllRanges(); sel.addRange(t);
 }
 
 function applyTypeToCurrentLine(editor,type){
