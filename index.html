@@ -1387,6 +1387,17 @@ function _buildHash(page, projectId, sub, subId){
   return h;
 }
 
+// Open the page an address points at (the reverse of _buildHash). Used once, right
+// after sign-in, so a link to #class or #project/... lands there, not on home.
+// Anything unrecognised goes home; a project that no longer exists is sent home
+// by the project page itself.
+function openRequestedPage(hash){
+  const parts = String(hash || '').replace(/^#/, '').split('/').filter(Boolean).map(decodeURIComponent);
+  if(parts[0] === 'class'){ navigateClassView('list'); return; }
+  if(parts[0] === 'project' && parts[1]){ navigate('dashboard', parts[1], parts[2] || 'overview', parts[3] || null); return; }
+  navigate('home');
+}
+
 function navigate(page, projectId, sub, subId, _fromPopstate){
   document.getElementById('feedback-fab')?.remove();
   document.getElementById('comment-sidebar')?.remove();
@@ -11897,6 +11908,9 @@ onAuthStateChanged(auth, async user=>{
         navigate(s.page, s.projectId, s.sub, s.subId, true);
       }
     }, {once: true}); // attach once — re-auth would double-attach otherwise
+    // Remember the page the link asked for (e.g. coming back from the hub's
+    // log-in page) before the history seed below overwrites the address.
+    const requestedHash = location.hash;
     // Seed the initial history entry so the very first back press works
     history.replaceState({type:'project', page:'home', projectId:null, sub:null, subId:null}, '', '#home');
     // Seed Vegas Noir for the owner account, silently
@@ -11904,7 +11918,7 @@ onAuthStateChanged(auth, async user=>{
     await maybeSeedVegasNoir();
     // Load teacher tips for student users (no-op for teachers since they author, not receive)
     if(!isTeacher()) await loadTeacherTipsForStudent();
-    navigate('home');
+    openRequestedPage(requestedHash);
   } else {
     currentUser = null;
     _userProfile = null;
