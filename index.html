@@ -983,13 +983,15 @@ async function redeemTeacherInviteCode(rawCode){
   if(data.usedBy) throw new Error('Code already used');
   const expires = data.expiresAt && data.expiresAt.toDate ? data.expiresAt.toDate() : new Date(data.expiresAt);
   if(expires && expires.getTime() < Date.now()) throw new Error('Code expired');
-  // Mark code used and promote.
-  await setDoc(teacherInviteDoc(code), {
-    usedBy: currentUser.uid, usedAt: serverTimestamp()
+  // Mark the code used and promote in ONE batch. The security rules only let a
+  // profile become a teacher when the invite code it names is marked used by the
+  // same person in the same write (see platform/firestore.rules in walshclassroom).
+  const batch = writeBatch(db);
+  batch.update(teacherInviteDoc(code), { usedBy: currentUser.uid, usedAt: serverTimestamp() });
+  batch.set(userProfileDoc(currentUser.uid), {
+    role: 'teacher', inviteCode: code, updatedAt: serverTimestamp()
   }, { merge: true });
-  await setDoc(userProfileDoc(currentUser.uid), {
-    role: 'teacher', updatedAt: serverTimestamp()
-  }, { merge: true });
+  await batch.commit();
   // Refresh profile cache.
   await loadUserProfile();
   return true;
