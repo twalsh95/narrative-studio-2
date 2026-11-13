@@ -1510,7 +1510,7 @@ function renderHomeButtons(tr){
   }
   // Student: show "My Classes" button + unread badge + "Become a teacher" link
   if(!isTeacher()){
-    const classesBtn = el('button',{class:'btn btn-ghost btn-sm',onclick:()=>showMyClassesModal()});classesBtn.textContent='🎓 My Classes';
+    const classesBtn = el('button',{class:'btn btn-ghost btn-sm',onclick:()=>{ location.href='/classes/'; }});classesBtn.textContent='🎓 My Classes';classesBtn.title='Join or leave a class on Walsh Classroom';
     tr.insertBefore(classesBtn,tr.firstChild);
     // Item 17 (5-0): teacher invite redemption entry point.
     const becomeBtn = el('button',{class:'btn btn-ghost btn-sm',onclick:e=>{e.stopPropagation();showBecomeTeacherModal();},title:t('topbar.becomeTeacher.tip','Have a teacher invite code?')});
@@ -1592,7 +1592,7 @@ async function renderClassroomList(container){
   const hdrRight = el('div',{style:'display:flex;gap:8px;align-items:center;'});
   const snippetsBtn = el('button',{class:'btn btn-ghost',onclick:()=>openCommentTemplateManager()});snippetsBtn.textContent='📋 Feedback Snippets';
   const tipsBtn = el('button',{class:'btn btn-ghost',onclick:()=>openTeacherTipsManager()});tipsBtn.textContent='💡 Manage Tips';
-  const newBtn = el('button',{class:'btn btn-primary',onclick:()=>openCreateClassroomModal()});newBtn.textContent='+ Create Classroom';
+  const newBtn = el('button',{class:'btn btn-primary',onclick:()=>{ location.href='/classes/'; }});newBtn.textContent='+ Make a class';newBtn.title='Classes are made and managed on Walsh Classroom';
   hdrRight.append(snippetsBtn, tipsBtn, newBtn);
   hdr.appendChild(hdrRight);
   wrap.appendChild(hdr);
@@ -1685,7 +1685,7 @@ async function renderClassroomRoster(container, classroomId){
         <td style="font-size:12px;color:var(--fg3)" id="st-la-${m.uid}">…</td>
         <td style="display:flex;gap:6px;align-items:center;">
           <button class="btn btn-primary btn-sm" onclick="openStudentWorkspace('${classroomId}','${m.uid}','${esc(m.displayName||m.email)}')">Open Workspace</button>
-          <button class="btn btn-danger btn-sm" onclick="removeStudentFromClass('${classroomId}','${m.uid}','${esc(m.displayName||m.email)}')">Remove</button>
+          <a class="btn btn-ghost btn-sm" href="/classes/" title="Rosters are managed on Walsh Classroom">Manage</a>
         </td>
       `;
       tbody.appendChild(tr2);
@@ -2948,16 +2948,58 @@ async function getSharedProjectsForStudent(studentUid){
   } catch(e){ return []; }
 }
 
+// ── Classmate sharing (Phase 3) ──
+// Rosters are teacher-only now, so students can't list classmates. Instead, a shared
+// project is listed in each of the owner's classes: classrooms/{id}/shared/{uid_projectId}.
+// Classmates read that list, then the project itself (readable because shared:true).
+function sharedEntryDoc(classroomId, ownerUid, projectId){
+  return doc(db,'classrooms',classroomId,'shared',ownerUid+'_'+projectId);
+}
+async function listProjectInClasses(project, shared, classes){
+  classes = classes || await getStudentClassrooms(currentUser.uid);
+  await Promise.all(classes.map(c => shared
+    ? setDoc(sharedEntryDoc(c.id, currentUser.uid, project.id), {
+        ownerUid: currentUser.uid,
+        ownerName: currentUser.displayName || currentUser.email,
+        projectId: project.id,
+        title: project.title || project.name || 'Untitled',
+        updatedAt: serverTimestamp()
+      })
+    : deleteDoc(sharedEntryDoc(c.id, currentUser.uid, project.id))
+  ).map(p => p.catch(()=>{})));
+}
+// Projects shared before Phase 3 aren't listed yet; list them once per session.
+let _sharedBackfillDone = false;
+async function backfillSharedListings(classes){
+  if(_sharedBackfillDone || !classes.length) return;
+  _sharedBackfillDone = true;
+  const mine = await getSharedProjectsForStudent(currentUser.uid);
+  for(const p of mine) await listProjectInClasses(p, true, classes);
+}
+
 async function getClassmateSharedProjects(studentUid){
   const classes = await getStudentClassrooms(studentUid);
   if(!classes.length) return [];
+  backfillSharedListings(classes).catch(()=>{});
   const allShared = [];
+  const seen = new Set();
   for(const classroom of classes){
-    const members = await getClassroomMembers(classroom.id);
-    for(const m of members){
-      if(m.uid===studentUid) continue;
-      const shared = await getSharedProjectsForStudent(m.uid);
-      shared.forEach(p=>allShared.push({...p, ownerName:m.displayName||m.email, ownerUid:m.uid}));
+    let entries = [];
+    try {
+      const snap = await getDocs(collection(db,'classrooms',classroom.id,'shared'));
+      entries = snap.docs.map(d=>d.data());
+    } catch(e){ continue; }
+    for(const en of entries){
+      if(en.ownerUid===studentUid) continue;
+      const key = en.ownerUid+'_'+en.projectId;
+      if(seen.has(key)) continue;
+      seen.add(key);
+      try {
+        const snap = await getDoc(doc(db,'users',en.ownerUid,'projects',en.projectId));
+        if(snap.exists() && snap.data().shared===true){
+          allShared.push({id:snap.id, ...snap.data(), ownerName:en.ownerName, ownerUid:en.ownerUid});
+        }
+      } catch(e){ /* unshared or deleted since it was listed */ }
     }
   }
   return allShared;
@@ -2966,6 +3008,8 @@ async function getClassmateSharedProjects(studentUid){
 async function setProjectShared(projectId, shared){
   showSaving();
   await fsUpdate('projects', projectId, {shared});
+  const project = await fsGet('projects', projectId).catch(()=>null);
+  await listProjectInClasses(project || {id:projectId}, shared).catch(()=>{});
   showSaved();
   toast(shared?'Project shared with classmates':'Project unshared');
 }
