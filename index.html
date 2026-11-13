@@ -1628,11 +1628,12 @@ function classroomCard(c, isArchived){
   const actions = el('div',{class:'classroom-actions'});
   if(!isArchived){
     const openBtn=el('button',{class:'btn btn-primary btn-sm',onclick:e=>{e.stopPropagation();navigateClassView('roster',c.id);}});openBtn.textContent='View Roster';
-    const archBtn=el('button',{class:'btn btn-ghost btn-sm',onclick:e=>{e.stopPropagation();confirmDelete('Archive "'+c.name+'"? Students will no longer be able to join.',async()=>{await updateDoc(classroomDoc(c.id),{archived:true,updatedAt:serverTimestamp()});renderClassView(document.getElementById('content'));toast('Classroom archived');});}});archBtn.textContent='Archive';
-    actions.append(openBtn,archBtn);
+    // Classes are managed on the Walsh Classroom hub (archive, restore, roster, apps).
+    const manageBtn=el('button',{class:'btn btn-ghost btn-sm',title:'Archive, rosters and apps are managed on Walsh Classroom',onclick:e=>{e.stopPropagation();location.href='/classes/';}});manageBtn.textContent='Manage';
+    actions.append(openBtn,manageBtn);
   } else {
-    const unarchBtn=el('button',{class:'btn btn-ghost btn-sm',onclick:e=>{e.stopPropagation();updateDoc(classroomDoc(c.id),{archived:false,updatedAt:serverTimestamp()}).then(()=>{renderClassView(document.getElementById('content'));toast('Classroom restored');});}});unarchBtn.textContent='Restore';
-    actions.append(unarchBtn);
+    const manageBtn=el('button',{class:'btn btn-ghost btn-sm',title:'Restore it on Walsh Classroom',onclick:e=>{e.stopPropagation();location.href='/classes/';}});manageBtn.textContent='Manage';
+    actions.append(manageBtn);
   }
   card.appendChild(actions);
   // async load member count
