@@ -1046,10 +1046,52 @@ async function getClassroomMembers(classroomId){
   return snap.docs.map(d=>({uid:d.id,...d.data()}));
 }
 
+// ── Phase 3.1 (Nov 2026): classes are readable only by their teacher, their students
+// and Tom. Students find their classes through enrollments/{classroomId}_{uid} and join
+// through classCodes/{code}. Until those rules are published, each function falls back
+// to the old way (listing classes) when the new collections are refused.
+// Same rules and data as walshclassroom/platform/classes.js.
+function enrollmentDoc(classroomId, uid){ return doc(db,'enrollments',classroomId+'_'+uid); }
+function classCodeDoc(code){ return doc(db,'classCodes',code); }
+function normalizeClassCode(raw){
+  const s = String(raw||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
+  return s.length===8 ? s.slice(0,4)+'-'+s.slice(4) : String(raw||'').toUpperCase().trim();
+}
+const _denied = e => e && e.code === 'permission-denied';
+
 async function getStudentClassrooms(uid){
-  // Updated in 5-0 (Item 17): no longer filtered by single TEACHER_UID.
-  // Return ALL active classrooms the student is a member of, regardless of
-  // which teacher owns them. This unblocks multi-teacher deployments.
+  let rows;
+  try {
+    rows = (await getDocs(query(collection(db,'enrollments'), where('uid','==',uid)))).docs.map(d=>d.data());
+  } catch(e){
+    if(_denied(e)) return getStudentClassroomsOldWay(uid);
+    throw e;
+  }
+  if(!rows.length){
+    // Joined before enrollments existed: the teacher-access records name the class.
+    try {
+      const acc = await getDocs(query(collection(db,'classAccess'), where('studentUid','==',uid)));
+      for(const a of acc.docs.map(d=>d.data())){
+        if(!a.classroomId) continue;
+        const m = await getDoc(classroomMemberDoc(a.classroomId, uid)).catch(()=>null);
+        if(!m || !m.exists()) continue;
+        await setDoc(enrollmentDoc(a.classroomId, uid), { classroomId:a.classroomId, uid, teacherUid:a.teacherUid, updatedAt:serverTimestamp() }).catch(()=>{});
+        rows.push({ classroomId:a.classroomId });
+      }
+    } catch(e){ /* nothing to fill in */ }
+  }
+  const results = [];
+  for(const r of rows){
+    const m = await getDoc(classroomMemberDoc(r.classroomId, uid)).catch(()=>null);
+    if(!m || !m.exists()){ deleteDoc(enrollmentDoc(r.classroomId, uid)).catch(()=>{}); continue; }
+    const c = await getDoc(classroomDoc(r.classroomId)).catch(()=>null);
+    if(c && c.exists() && !c.data().archived) results.push({id:c.id,...c.data()});
+  }
+  return results;
+}
+
+async function getStudentClassroomsOldWay(uid){
+  // Before Phase 3.1: list open classes and check each for this student.
   const allQ = query(collection(db,'classrooms'), where('archived','==',false));
   const snap = await getDocs(allQ);
   const results = [];
@@ -1080,24 +1122,44 @@ async function createClassroom(name){
     archived:false,
     createdAt:serverTimestamp(), updatedAt:serverTimestamp()
   }));
+  // Phase 3.1: the code students join with. Refused before those rules; the hub fills it in later.
+  await setDoc(classCodeDoc(code), { classroomId: ref.id, teacherUid: currentUser.uid }).catch(()=>{});
   return {id:ref.id, name, code};
 }
 
-async function joinClassroomByCode(code){
-  const q = query(collection(db,'classrooms'), where('code','==',code.toUpperCase().trim()), where('archived','==',false));
-  const snap = await getDocs(q);
-  if(snap.empty) return null;
-  const classroomId = snap.docs[0].id;
-  const data = snap.docs[0].data();
+async function joinClassroomByCode(rawCode){
+  const code = normalizeClassCode(rawCode);
+  let classroomId, teacherUid, data = null;
+  try {
+    const hit = await getDoc(classCodeDoc(code));
+    if(!hit.exists()) return null;
+    classroomId = hit.data().classroomId; teacherUid = hit.data().teacherUid;
+  } catch(e){
+    if(!_denied(e)) throw e;
+    // Before Phase 3.1: find the class by listing.
+    const snap = await getDocs(query(collection(db,'classrooms'), where('code','==',code), where('archived','==',false)));
+    if(snap.empty) return null;
+    classroomId = snap.docs[0].id; data = snap.docs[0].data(); teacherUid = data.teacherUid;
+  }
+  // The membership carries the code, which the rules check. The class, the teacher's
+  // access record and the enrollment all need the membership to exist first.
   await setDoc(classroomMemberDoc(classroomId, currentUser.uid),{
     displayName: currentUser.displayName||currentUser.email,
     email: currentUser.email,
+    code,
     joinedAt: serverTimestamp()
   });
+  if(!data){ const c = await getDoc(classroomDoc(classroomId)); data = c.exists() ? c.data() : {name:'your class'}; }
+  await setDoc(doc(db,'classAccess',teacherUid+'_'+currentUser.uid), {
+    teacherUid, studentUid: currentUser.uid, classroomId,
+    studentName: currentUser.displayName||currentUser.email, updatedAt: serverTimestamp()
+  }).catch(()=>{});
+  await setDoc(enrollmentDoc(classroomId, currentUser.uid), { classroomId, uid: currentUser.uid, teacherUid, updatedAt: serverTimestamp() }).catch(()=>{});
   return {id:classroomId,...data};
 }
 
 async function leaveClassroom(classroomId){
+  await deleteDoc(enrollmentDoc(classroomId, currentUser.uid)).catch(()=>{});   // refused before Phase 3.1
   await deleteDoc(classroomMemberDoc(classroomId, currentUser.uid));
 }
 
